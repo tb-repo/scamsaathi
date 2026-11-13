@@ -1,0 +1,75 @@
+# Official reporting channels (FR-051, R-009). The advisory agent may only show contacts from
+# this file; the guardrail blocks any other phone number or URL in advice (docs/08 T-10).
+# Re-verify before release and at every phase start (ADR-008). A test fails when an entry is
+# older than the freshness window or has no source.
+contacts:
+  - id: helpline_1930
+    name: National Cyber Crime Helpline
+    channel: phone
+    value: "1930"
+    use_when: money_lost  # call as soon as possible after a financial fraud
+    verified_on: 2026-11-11
+    source_url: https://cybercrime.gov.in/Webform/crmcondi.aspx
+    note: Official portal states the Cyber Crime Helpline is 1930; I4C FAQ says to call 1930 and then complete the complaint on the portal.
+  - id: ncrp_portal
+    name: National Cyber Crime Reporting Portal
+    channel: url
+    value: https://cybercrime.gov.in
+    use_when: money_lost
+    verified_on: 2026-11-11
+    source_url: https://i4c.mha.gov.in/FAQ.aspx
+    note: Keep ready - bank or wallet name, 12-digit transaction ID / UTR, date and time, screenshots.
+  - id: ncrp_suspect
+    name: Report a suspect number, UPI ID, or website (Cyber Crime Portal)
+    channel: url
+    value: https://cybercrime.gov.in/Webform/cyber_suspect.aspx
+    use_when: suspected
+    verified_on: 2026-11-11
+    source_url: https://cybercrime.gov.in/Default.aspx
+  - id: chakshu
+    name: Chakshu - report suspected fraud call, SMS, or WhatsApp (DoT Sanchar Saathi)
+    channel: url
+    value: https://sancharsaathi.gov.in/sfc
+    use_when: suspected  # not for cases where money was already lost
+    verified_on: 2026-11-12
+    source_url: https://sancharsaathi.gov.in/sfc/
+    note: Report within 30 days for action. Examples listed include KYC updates, impersonation of officials, and sextortion. If money was already lost, report on 1930 or cybercrime.gov.in instead.
+  - id: chakshu_spam
+    name: Chakshu - report spam (unsolicited commercial calls or SMS)
+    channel: url
+    value: https://sancharsaathi.gov.in/sfc
+    use_when: spam
+    verified_on: 2026-11-12
+    source_url: https://sancharsaathi.gov.in/sfc/
+    note: Same Chakshu page, "Report Spam (UCC)" option. Complaints within 30 days are investigated.
+  - id: ucc_1909
+    name: 1909 - complain about or block spam (unsolicited commercial) calls and SMS
+    channel: phone
+    value: "1909"
+    use_when: spam
+    verified_on: 2026-11-13
+    source_url: https://www.pib.gov.in/PressReleasePage.aspx?PRID=2311989
+    note: Call or SMS 1909, or use the TRAI DND app or your telecom operator's app. Complain within 7 days of the call or SMS and give the sender's number, the date, and a short description (TCCCPR 2018 reg. 23 and 25 as amended on 12 Feb 2025, docs/IndianOfficialDocs/Regulation_12022025.pdf). The Third Amendment 2026 (notification dated 18 Sep 2026, docs/IndianOfficialDocs/Regulation_18092026.pdf) adds an appeal to the Appellate Authority (new reg. 23(1)(c)), within 15 days of the resolution, or, if no resolution is received within 15 days of complaining, within the next 15 days. Per its Annexure this starts 90 days after Gazette publication (about 17 Dec 2026 if published on 18 Sep 2026), so it is not shown to users yet (docs/16 section 13).
+  - id: report_intl_call
+    name: Sanchar Saathi - Report International Call (calls from abroad showing an Indian +91 number)
+    channel: url
+    value: https://sancharsaathi.gov.in/InternationalCall/ReportIntCall.jsp
+    use_when: suspected
+    verified_on: 2026-11-12
+    source_url: https://sancharsaathi.gov.in/InternationalCall/ReportIntCall.jsp
+    note: The form asks for the Indian number displayed, the country the call came from, and the date (up to 30 days old).
+  - id: sanchar_connections
+    name: Sanchar Saathi - Know Mobile Connections in Your Name
+    channel: url
+    value: https://sancharsaathi.gov.in
+    use_when: suspected
+    verified_on: 2026-11-12
+    source_url: https://sancharsaathi.gov.in/Home/help.jsp
+    note: Lets a person see mobile connections issued in their name and get unknown ones disconnected.
+  - id: police_112
+    name: Emergency Response (police)
+    channel: phone
+    value: "112"
+    use_when: danger  # immediate threat to safety
+    verified_on: 2026-11-11
+    source_url: https://cybercrime.gov.in/Webform/crmcondi.aspx

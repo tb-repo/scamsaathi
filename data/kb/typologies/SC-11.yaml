@@ -1,0 +1,31 @@
+code: SC-11
+name: Remote access / fake customer support
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Fake customer-care numbers (found through search results, ads, or social media) or callers
+  claiming to fix a problem ask the person to install a screen-sharing or remote-control app such
+  as AnyDesk or TeamViewer, or an unknown APK. They then watch or control the phone and move money.
+how_it_works:
+  - The victim searches online for a helpline and finds a fake number, or receives a support call.
+  - The "agent" asks them to install a screen-sharing app or an APK file.
+  - With screen access the scammer sees OTPs and banking apps and makes transfers.
+red_flags:
+  - Request to install AnyDesk, TeamViewer, QuickSupport, or an APK file
+  - Customer-care number found in search results or comments instead of the official website
+  - Asked to open your banking app while sharing your screen
+legit_contrast:
+  - Banks and payment apps do not need remote access to your phone to resolve complaints.
+typical_signals: [app_install_request, credential_request, authority_impersonation]
+example_phrases_en:
+  - "To process your refund, please install AnyDesk and share the 9-digit code."
+  - "Download this APK to update your bank app."
+example_phrases_hinglish:
+  - "Refund ke liye AnyDesk app download karo aur code batao."
+  - "Yeh APK install karo, aapka problem solve ho jayega."
+recommended_actions:
+  - Do not install screen-sharing apps or APK files on request.
+  - If installed, uninstall immediately, disconnect from the internet, and call your bank.
+  - Get helpline numbers only from the official website or app.
+sources: [RBI_BEAWARE, NCRP]
+legal_refs: [LAW_IT_ACT s.43, LAW_IT_ACT s.66, LAW_IT_ACT s.66C]

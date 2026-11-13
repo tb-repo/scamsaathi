@@ -1,0 +1,9 @@
+kind,value,category,source,added_on
+phone,+919000000001,SC-01,synthetic,2026-11-11
+phone,+919000000002,SC-02,synthetic,2026-11-11
+phone,+919000000003,SC-05,synthetic,2026-11-11
+upi,refund.helpdesk@demo,SC-04,synthetic,2026-11-11
+upi,lottery.claim@demo,SC-08,synthetic,2026-11-11
+domain,sbi-kyc-update.example,SC-02,synthetic,2026-11-11
+domain,indiapost-redelivery.test,SC-07,synthetic,2026-11-11
+domain,parttime-task-earn.example,SC-05,synthetic,2026-11-11

@@ -1,0 +1,32 @@
+code: SC-06
+name: Fake or predatory loan app
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Instant-loan apps or websites offer quick loans with no paperwork, take broad phone permissions
+  (contacts, photos), charge hidden fees, and later harass or threaten borrowers and their
+  contacts, sometimes with morphed images, to extort repayment far above the loan.
+how_it_works:
+  - Ads or messages promise instant loans with no credit check.
+  - The app asks for access to contacts, gallery, and SMS.
+  - A small amount is disbursed after large deductions; repayment demands start within days.
+  - Threats and abusive messages are sent to the borrower's contacts.
+red_flags:
+  - Loan approved instantly with no documents, via an unknown app
+  - App asks for contacts and photo access
+  - Processing fee before disbursal, or threats to shame you to your contacts
+legit_contrast:
+  - Lenders must be regulated entities; check the lender name with your bank or the RBI website.
+typical_signals: [reward_promise, advance_fee, app_install_request, threat]
+example_phrases_en:
+  - "Instant loan of Rs 50,000 in 5 minutes. Download the app, no documents needed."
+  - "Pay today or we will send your photos to all your contacts."
+example_phrases_hinglish:
+  - "Bina documents ke turant loan, bas app install karo."
+  - "Aaj paise nahi diye toh sabko photo bhej denge."
+recommended_actions:
+  - Do not install unknown loan apps or pay advance fees.
+  - If harassed, keep screenshots, report on cybercrime.gov.in, and inform local police.
+  - Uninstall the app and revoke its permissions.
+sources: [RBI_BEAWARE, NCRP]
+legal_refs: [LAW_BNS s.308, LAW_BNS s.351, LAW_IT_ACT s.66E]

@@ -1,0 +1,34 @@
+code: SC-13
+name: Online money gaming / betting app scam
+version: 1
+last_reviewed: 2026-11-12
+summary: >
+  Ads, influencer posts, Telegram groups, or messages push online betting, casino, rummy-for-cash,
+  "colour prediction", or other real-money game apps with promises of easy winnings. Early small
+  wins build trust; deposits then grow and withdrawals are blocked. India's online gaming law
+  prohibits offering, advertising, and processing payments for online money games, so any such
+  offer is a warning sign in itself.
+how_it_works:
+  - A message or post shares a game or betting link, a referral code, or a "betting ID" for sale.
+  - Small first wins or a joining bonus encourage bigger deposits.
+  - Winnings show on screen but cannot be withdrawn without more deposits, "tax", or "verification".
+  - Payments often go to personal UPI IDs or changing bank accounts.
+red_flags:
+  - Real-money betting, casino, satta, or colour-prediction games offered online
+  - Guaranteed winnings, "sure-shot" tips, or a paid "betting ID"
+  - Deposit to personal UPI IDs; withdrawal blocked until you pay more
+legit_contrast:
+  - Offering, advertising, or processing payments for online money games is prohibited in India; free social games and recognised e-sports do not ask you to stake money.
+typical_signals: [money_game, reward_promise, payment_request, urgency]
+example_phrases_en:
+  - "Win Rs 10,000 daily on colour prediction. Deposit Rs 500 and play now."
+  - "Buy your cricket betting ID today, guaranteed profit."
+example_phrases_hinglish:
+  - "Aviator game khelo, roz 5000 jeeto, bas 300 deposit karo."
+  - "Satta app pe paisa double, withdrawal ke liye tax bharo."
+recommended_actions:
+  - Do not deposit money into online betting or real-money game apps.
+  - Do not pay any fee to unlock winnings; leave the group and uninstall the app.
+  - If you paid, call 1930 and report on the National Cyber Crime Reporting Portal.
+sources: [LAW_GAMING, NCRP]
+legal_refs: [LAW_GAMING s.5, LAW_GAMING s.6, LAW_GAMING s.7, LAW_GAMING s.9, LAW_BNS s.318(4)]

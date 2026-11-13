@@ -1,0 +1,16 @@
+# Knowledge base and retrieval configuration (ADR-004, docs/07 section 4).
+top_k: 4
+rrf_k: 60                 # reciprocal rank fusion constant
+min_lexical_score: 0.5    # below this, a lexical hit is ignored (avoids one-word matches)
+
+embedding:
+  enabled: true           # used only when GEMINI_API_KEY is set and mode is live (or cached)
+  provider: gemini
+  # Candidates from the official model list (2026-11-11): gemini-embedding-001 (text),
+  # gemini-embedding-2 (multimodal). Final choice after the ADR-004 comparison run.
+  model: gemini-embedding-001
+  output_dimensionality: null   # null = model default; set after checking the model page
+
+freshness:
+  contacts_max_age_days: 180
+  typology_max_age_days: 365

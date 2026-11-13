@@ -1,0 +1,32 @@
+code: SC-05
+name: Fake job / task-based part-time work
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Offers of easy part-time or work-from-home income for simple tasks (liking videos, rating hotels
+  or products). Small payouts build trust, then the victim is moved to a Telegram or WhatsApp
+  group and asked to "invest" or pay fees to unlock bigger tasks; earnings are never released.
+how_it_works:
+  - An unsolicited message offers daily income for a few minutes of work.
+  - The first few tasks pay small amounts to build trust.
+  - '"Prepaid" or "merchant" tasks then require deposits that grow each round.'
+  - Withdrawals are blocked until more fees or "tax" are paid.
+red_flags:
+  - Job offer you did not apply for, with high pay for very little work
+  - Moved to Telegram or WhatsApp groups by a "mentor" or "HR"
+  - Pay first to unlock tasks, earnings, or withdrawals
+legit_contrast:
+  - Genuine employers do not ask you to pay to work or to withdraw your salary.
+typical_signals: [reward_promise, advance_fee, payment_request, urgency]
+example_phrases_en:
+  - "Earn Rs 3000 daily by liking YouTube videos. No experience needed."
+  - "Complete this prepaid task by depositing Rs 2000 to unlock your commission."
+example_phrases_hinglish:
+  - "Ghar baithe roz 5000 kamao, bas videos like karne hain."
+  - "Withdrawal ke liye pehle tax bharna padega."
+recommended_actions:
+  - Do not pay any fee or deposit to get a job or release earnings.
+  - Leave the group and block the contact.
+  - If you paid, call 1930 and report on cybercrime.gov.in.
+sources: [I4C_TASK_FRAUD, NCRP]
+legal_refs: [LAW_BNS s.318(4), LAW_BNS s.111]

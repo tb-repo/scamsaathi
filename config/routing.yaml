@@ -1,0 +1,19 @@
+# Agent graph routing (docs/05 A0, ADR-006). Initial values; tune on the dev split only.
+version: 1
+
+# The LLM classifier is skipped only when pre-screen confidence is at or above this AND the
+# case is a verified genuine message or a child-safety case (fixed advice). Every scam case
+# goes to the classifier, because its typology picks the advice (ADR-001 addendum).
+prescreen_high_confidence: 0.85
+
+# Interview (docs/05 A5): rounds of follow-up questions and questions per round.
+max_followups: 2
+max_questions_per_turn: 3
+
+# LLM calls kept back for the explanation node, so earlier optional calls can never
+# use up the whole per-request budget (SCAMSAATHI_MAX_LLM_CALLS_PER_REQUEST).
+llm_reserve_for_explanation: 1
+
+# Input limits (FR-001) and a hard step limit for the graph (loop protection).
+max_input_chars: 4000
+recursion_limit: 40

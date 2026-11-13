@@ -1,0 +1,31 @@
+code: SC-10
+name: Utility bill / SIM disconnection scam
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Messages warn that electricity, gas, or mobile service will be cut tonight because a bill is
+  unpaid or KYC is pending, and ask the person to call an "officer" number, open a link, or install
+  an app. The goal is to steal payment details or gain remote access to the phone.
+how_it_works:
+  - SMS from a regular mobile number says power or SIM will be disconnected tonight.
+  - The victim calls the number; the "officer" asks for a small payment or an app install.
+  - Card details, UPI PIN, or remote access are used to empty the account.
+red_flags:
+  - Disconnection "tonight" sent from a personal mobile number
+  - Instruction to call a mobile number rather than the provider's official helpline
+  - Request to install an app to pay a small amount
+legit_contrast:
+  - Utilities and telecom operators send notices through official channels; pay only in their official app or website.
+typical_signals: [threat, urgency, payment_request, app_install_request, authority_impersonation]
+example_phrases_en:
+  - "Dear consumer, your electricity will be disconnected tonight at 9.30 pm. Call the officer immediately."
+  - "Your SIM will be blocked in 2 hours due to pending KYC."
+example_phrases_hinglish:
+  - "Aaj raat aapki bijli kat jayegi, turant officer ko call karein."
+  - "Aapka SIM 2 ghante mein band ho jayega, KYC update karo."
+recommended_actions:
+  - Do not call the number in the message; check your bill in the provider's official app.
+  - Do not install apps on request.
+  - Report the message on Chakshu (sancharsaathi.gov.in).
+sources: [CHAKSHU, RBI_BEAWARE]
+legal_refs: [LAW_IT_ACT s.66D, LAW_BNS s.318(4)]

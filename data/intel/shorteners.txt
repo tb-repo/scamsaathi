@@ -1,0 +1,16 @@
+# Public URL shortener domains (one per line). Lexical check only; links are never expanded.
+bit.ly
+bitly.com
+tinyurl.com
+t.co
+is.gd
+cutt.ly
+rb.gy
+shorturl.at
+tiny.cc
+ow.ly
+s.id
+t.ly
+rebrand.ly
+v.gd
+shorte.st

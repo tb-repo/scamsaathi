@@ -1,0 +1,33 @@
+code: SC-03
+name: OTP / credential theft (vishing)
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  A caller pretends to be from a bank, card team, telecom operator, or delivery company and asks
+  for an OTP, PIN, CVV, or password, often saying it is needed to stop a fraud, give a reward,
+  or upgrade a card. The code is used to approve a transaction from the victim's account.
+how_it_works:
+  - The caller already knows some personal details, which makes them sound genuine.
+  - "A reason is given: card blocked, reward points expiring, limit upgrade, SIM upgrade."
+  - The victim is asked to read out the OTP or code that arrives on their phone.
+  - The code authorises a payment, a new device login, or a SIM swap.
+red_flags:
+  - Anyone asking you to read out or forward an OTP
+  - Caller says the OTP is needed to "cancel" or "reverse" something
+  - Pressure to act during the call
+legit_contrast:
+  - An OTP message itself usually says "do not share" - that is a genuine safety notice.
+  - Bank staff never need your OTP, PIN, CVV, or password.
+typical_signals: [credential_request, authority_impersonation, urgency]
+example_phrases_en:
+  - "To stop the fraudulent transaction, please tell me the OTP you just received."
+  - "Your reward points expire today. Share the code to redeem them."
+example_phrases_hinglish:
+  - "Sir, aapke phone pe OTP aaya hoga, woh batao card block hone se bachane ke liye."
+  - "Verification code bhej do, warna card band ho jayega."
+recommended_actions:
+  - Never share an OTP, PIN, CVV, or password with anyone.
+  - Hang up and call your bank on the number printed on your card.
+  - If you shared a code, call your bank to block the card or account, then call 1930.
+sources: [RBI_BEAWARE, I4C_FAQ]
+legal_refs: [LAW_IT_ACT s.66C, LAW_IT_ACT s.66D, LAW_BNS s.318(4)]

@@ -1,0 +1,34 @@
+code: SC-14
+name: Sextortion / morphed-image blackmail
+version: 1
+last_reviewed: 2026-11-12
+summary: >
+  A stranger records a video call, obtains private photos, or creates fake "morphed" or AI-generated
+  images, then threatens to send them to the victim's family, contacts, or social media unless money
+  is paid. Paying rarely ends the demands. Platforms must act quickly on complaints about intimate or
+  morphed images of a person.
+how_it_works:
+  - A friendly contact or dating profile starts a video call and records the screen.
+  - The scammer, sometimes posing as police or a "YouTube officer", threatens to publish the recording.
+  - Morphed or AI-generated images of the victim may be shown as "proof".
+  - Demands for money repeat and increase after each payment.
+red_flags:
+  - Threat to share private, nude, or morphed images or videos unless you pay
+  - Unknown video call that suddenly shows explicit content
+  - A person claiming to be police asking for money to "delete" a video
+legit_contrast:
+  - Police do not ask for money to remove videos. Paying does not guarantee deletion.
+typical_signals: [sextortion_threat, payment_request, threat, urgency, authority_impersonation]
+example_phrases_en:
+  - "Pay Rs 20,000 or I will send your video call recording to all your contacts."
+  - "Your morphed photos will go viral unless you transfer the money today."
+example_phrases_hinglish:
+  - "Paise bhejo warna tumhara video sab contacts ko bhej dunga."
+  - "Tumhari photos viral kar denge, abhi payment karo."
+recommended_actions:
+  - Do not pay and do not keep negotiating. Stop replying to the blackmailer.
+  - Keep screenshots of the chat, profile, and payment demands; do not delete the conversation.
+  - Report the account and the content to the platform, and file a complaint on the National Cyber Crime Reporting Portal.
+  - If the person in the images is a child, report to the police immediately.
+sources: [LAW_BNS, LAW_IT_RULES, LAW_IT_RULES_2026, NCRP]
+legal_refs: [LAW_BNS s.308, LAW_BNS s.351, LAW_IT_ACT s.66E, LAW_IT_RULES r.3(2)(b), LAW_IT_RULES_2026 r.2(1)(wa), LAW_POCSO s.11, LAW_POCSO s.19]

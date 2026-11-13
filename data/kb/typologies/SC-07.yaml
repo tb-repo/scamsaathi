@@ -1,0 +1,31 @@
+code: SC-07
+name: Courier / parcel scam
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Messages or calls claim a parcel is held, undeliverable, or has an incomplete address, and ask
+  for a small "redelivery" or "customs" fee through a link. Some versions claim the parcel
+  contains illegal items and escalate into a fake law-enforcement call (see SC-01).
+how_it_works:
+  - SMS says delivery failed and links to a fake courier or postal page.
+  - A small fee is requested; the card details or UPI PIN entered are stolen.
+  - In the call version, an "executive" says the parcel has drugs or passports and transfers the call to "police".
+red_flags:
+  - Delivery message for a parcel you did not order
+  - Link not on the courier's or India Post's official domain (indiapost.gov.in)
+  - Customs or redelivery fee requested by link
+legit_contrast:
+  - Check tracking only on the courier's official website or app with your own tracking number.
+typical_signals: [advance_fee, payment_request, link_present, urgency, authority_impersonation]
+example_phrases_en:
+  - "Your package is on hold due to incomplete address. Pay Rs 25 redelivery fee at the link."
+  - "A parcel in your name contains illegal drugs. Press 9 to speak to the customs officer."
+example_phrases_hinglish:
+  - "Aapka parcel ruk gaya hai, address update karke 25 rupaye fee bharo."
+  - "Aapke naam ke parcel mein drugs mile hain, police se baat karo."
+recommended_actions:
+  - Do not pay through the link; check with the courier using its official app or website.
+  - If a call claims illegal items, hang up; it is likely a digital arrest scam.
+  - Report the message on Chakshu (sancharsaathi.gov.in).
+sources: [RBI_BEAWARE, CHAKSHU, I4C_DIGITAL_ARREST]
+legal_refs: [LAW_BNS s.318(4), LAW_IT_ACT s.66D]

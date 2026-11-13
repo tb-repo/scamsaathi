@@ -1,0 +1,32 @@
+code: SC-15
+name: Money mule / account and SIM renting
+version: 1
+last_reviewed: 2026-11-12
+summary: >
+  People are offered commission to "rent" or sell their bank account, UPI ID, debit card, or SIM card,
+  or to receive money in their account and forward it. The accounts are used to move money stolen from
+  scam victims. The account holder is the one traced by investigators, and obtaining SIMs through
+  fraud is itself an offence under telecom law.
+how_it_works:
+  - A job or easy-income offer asks for your account, UPI, card, or SIM details for a fee.
+  - Money arrives from strangers and you are told to withdraw it or forward it to other accounts.
+  - Your account is frozen once victims complain, and you may be contacted by the police.
+red_flags:
+  - Commission for letting someone use your bank account, UPI ID, or SIM
+  - Asked to receive money and forward it, or to open new accounts for someone else
+  - Asked to hand over your debit card, cheque book, or SIM ("account kit")
+legit_contrast:
+  - Genuine jobs never need your personal bank account, card, or SIM to move other people's money.
+typical_signals: [money_mule_request, reward_promise, payment_request, secrecy]
+example_phrases_en:
+  - "Earn Rs 2000 per transaction. Just let us use your bank account for payments."
+  - "Receive money in your account and transfer it to our account, keep 10% as commission."
+example_phrases_hinglish:
+  - "Apna account kiraye pe do, har transaction pe commission milega."
+  - "Paise aapke account mein aayenge, aage transfer kar dena, 5% aapka."
+recommended_actions:
+  - Never let anyone use your bank account, UPI ID, card, or SIM, whatever the payment offered.
+  - If you already shared them, inform your bank immediately and ask them to block access.
+  - Report the offer on the National Cyber Crime Reporting Portal or call 1930.
+sources: [LAW_TELECOM, NCRP]
+legal_refs: [LAW_TELECOM s.42(3)(e), LAW_BNS s.318(4), LAW_BNS s.111]

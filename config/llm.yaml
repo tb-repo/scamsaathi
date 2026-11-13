@@ -1,0 +1,37 @@
+# LLM gateway configuration (ADR-001, ADR-008).
+# Model IDs verified against the official Gemini model list and pricing pages on 2026-11-11:
+#   https://aistudio.google.com/docs/models   https://aistudio.google.com/docs/pricing
+# Both are stable (not preview) models. Environment variables (GEMINI_MODEL_FAST,
+# GEMINI_MODEL_REASONING) override these values. Re-check before each phase (ADR-008).
+tiers:
+  fast:
+    provider: gemini
+    model: gemini-3.5-flash-lite   # stable, cheapest current text model
+    temperature: 0.1
+    timeout_s: 20
+  reasoning:
+    provider: gemini
+    model: gemini-3.8-flash        # newest stable Flash model
+    temperature: 0.3
+    timeout_s: 30
+
+fallbacks:
+  fast: []          # e.g. [{provider: groq, model: ...}] when a second provider is enabled
+  reasoning:
+    - provider: gemini
+      model: gemini-3.6-flash      # previous-generation stable Flash, same provider
+
+retry:
+  max_attempts: 3
+  base_delay_s: 1.0
+  max_delay_s: 8.0
+
+# Budget tracking only. Paid-tier Standard prices per 1M tokens, converted to INR.
+# USD list prices (2026-11-11): 3.8 Flash $0.75 in / $3.75 out until 2026-12-31,
+# then $1.50 / $7.50; 3.5 Flash-Lite $0.30 / $2.50. The gateway uses one rate for both
+# tiers, so this is set to the dearer (reasoning) tier as a conservative estimate.
+# INR at 94 per USD (RBI reference rate shown on rbi.org.in, 2026-11-12: 93.765).
+# Update the rate and the 2027 prices when they apply.
+cost_per_million_tokens_inr:
+  input: 70.5
+  output: 352.5

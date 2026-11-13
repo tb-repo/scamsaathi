@@ -1,0 +1,87 @@
+# Deterministic risk scorer configuration (ADR-003, docs/06 section 3.9).
+# Initial, illustrative values. Calibrate on the dev split only (docs/09 section 7);
+# freeze before the test split is run. Every change is logged in docs/13.
+# v2: new signals, combos, and child-safety floor after the legal-source review.
+version: 2
+
+thresholds:          # lower bound of each level (score 0-100)
+  MEDIUM: 30
+  HIGH: 60
+  CRITICAL: 85
+
+# Points for a behavioural signal = weight x confidence. Each signal type counts once.
+signal_weights:
+  credential_request: 25
+  authority_impersonation: 15
+  urgency: 10
+  threat: 15
+  payment_request: 20
+  secrecy: 15
+  app_install_request: 20
+  reward_promise: 10
+  advance_fee: 15
+  emotional_pressure: 10
+  link_present: 5
+  unknown_sender_claim: 5
+  # v2 (2026-11-12, legal-source review, docs/16 section 10)
+  sextortion_threat: 25     # extortion by threat (BNS 308)
+  money_mule_request: 20    # renting accounts/SIMs (Telecom Act 42(3)(e), BNS 318)
+  money_game: 15            # real-money gaming is prohibited (Online Gaming Act 2025 ss.5-7)
+signal_cap: 70
+
+# Points per intel finding by severity; capped in total so many weak findings
+# cannot outweigh behaviour.
+intel_points:
+  high: 15
+  medium: 8
+  low: 3
+  info: 0
+intel_cap: 30
+
+# Extra points when dangerous signals appear together (typical scam scripts).
+combos:
+  - name: credential_under_pressure
+    signals: [credential_request, urgency]
+    points: 10
+  - name: digital_arrest_pattern
+    signals: [authority_impersonation, threat]
+    points: 10
+  - name: isolation_by_authority
+    signals: [authority_impersonation, secrecy]
+    points: 10
+  - name: pay_to_receive
+    signals: [payment_request, reward_promise]
+    points: 10
+  - name: phishing_link
+    signals: [link_present, credential_request]
+    points: 10
+  - name: remote_access_takeover
+    signals: [app_install_request, credential_request]
+    points: 10
+  - name: extortion_demand
+    signals: [sextortion_threat, payment_request]
+    points: 15
+  - name: easy_money_mule
+    signals: [money_mule_request, reward_promise]
+    points: 10
+  - name: money_game_lure
+    signals: [money_game, reward_promise]
+    points: 10
+combo_cap: 20
+
+# Classifier contribution = max typology confidence x weight (0 when no classification).
+classification_weight: 15
+
+# Reductions for evidence of legitimacy (applied as negative points, capped).
+mitigations:
+  official_domain: 10
+  allowlist: 15
+mitigation_cap: 20
+
+# Safety floors. The LLM adjustment can never push a score below an applied floor.
+overrides:
+  blocklist_floor: 60          # any high-severity blocklist hit => at least HIGH
+  money_or_credentials_lost_floor: 60   # user already paid or shared secrets => at least HIGH + urgent recovery
+  child_safety_floor: 85       # minor + sexual content => CRITICAL and the child-safety path
+
+llm_adjustment_limit: 10

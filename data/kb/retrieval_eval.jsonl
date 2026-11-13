@@ -1,0 +1,30 @@
+{"id": "R01", "lang": "en", "expected": "SC-01", "query": "Caller said he is from Mumbai police, my number is linked to a money laundering case and I must stay on Skype till verification is complete"}
+{"id": "R02", "lang": "hinglish", "expected": "SC-01", "query": "Video call pe ek officer uniform mein tha, bola FIR hai, account ke saare paise verification ke liye bhejo"}
+{"id": "R03", "lang": "en", "expected": "SC-02", "query": "Your netbanking will be deactivated within 24 hrs. Complete e-KYC here"}
+{"id": "R04", "lang": "hinglish", "expected": "SC-02", "query": "Bank ka message aaya PAN card update nahi hua toh account freeze ho jayega, link diya hai"}
+{"id": "R05", "lang": "en", "expected": "SC-03", "query": "A man from the card department called saying my credit limit is being increased and asked for the 6 digit code that came on SMS"}
+{"id": "R06", "lang": "hinglish", "expected": "SC-03", "query": "Bank wale ne bola reward points expire ho rahe hain, phone pe aaya code bata do"}
+{"id": "R07", "lang": "en", "expected": "SC-04", "query": "Buyer on OLX wants my bike, sent a QR code and says scan it and type my PIN to get the advance"}
+{"id": "R08", "lang": "hinglish", "expected": "SC-04", "query": "Kisi ne bola 2000 galti se aapke number pe aa gaye, wapas karo, screenshot bheja"}
+{"id": "R09", "lang": "en", "expected": "SC-05", "query": "WhatsApp offer to rate hotels on Google and earn 150 per review, then join Telegram for VIP tasks"}
+{"id": "R10", "lang": "hinglish", "expected": "SC-05", "query": "Part time kaam mila, pehle 3 task ke paise aaye, ab 5000 deposit karne bol rahe hain commission ke liye"}
+{"id": "R11", "lang": "en", "expected": "SC-06", "query": "Downloaded a quick cash app, they cut 40 percent fees and now agents are calling my relatives and threatening me"}
+{"id": "R12", "lang": "hinglish", "expected": "SC-06", "query": "Loan app wale meri photo edit karke contacts ko bhejne ki dhamki de rahe hain"}
+{"id": "R13", "lang": "en", "expected": "SC-07", "query": "Your shipment could not be delivered due to wrong address, update within 12 hours and pay Rs 30"}
+{"id": "R14", "lang": "hinglish", "expected": "SC-07", "query": "Courier company se call aaya ki parcel mein passport aur drugs hain, phir call police ko transfer kar diya"}
+{"id": "R15", "lang": "en", "expected": "SC-08", "query": "You are selected as winner of a Tata Safari in the anniversary lucky draw, pay registration charges"}
+{"id": "R16", "lang": "hinglish", "expected": "SC-08", "query": "Badhai ho aapka number 25 lakh ke inaam ke liye chuna gaya hai, GST jama karo"}
+{"id": "R17", "lang": "en", "expected": "SC-09", "query": "Joined a stock tips WhatsApp group, the app shows 300 percent profit but they want a service charge to withdraw"}
+{"id": "R18", "lang": "hinglish", "expected": "SC-09", "query": "Crypto mein double return guaranteed bol rahe hain, unka trading app install karwaya"}
+{"id": "R19", "lang": "en", "expected": "SC-10", "query": "Dear customer your electricity connection will be cut at 9 pm as last month bill not updated, contact officer"}
+{"id": "R20", "lang": "hinglish", "expected": "SC-10", "query": "Message aaya ki aaj raat bijli connection kat jayega, is number pe call karo"}
+{"id": "R21", "lang": "en", "expected": "SC-11", "query": "Called the customer care number from Google for a failed refund, they told me to install AnyDesk"}
+{"id": "R22", "lang": "hinglish", "expected": "SC-11", "query": "Support wale ne screen share app download karwaya aur bank app kholne ko bola"}
+{"id": "R23", "lang": "en", "expected": "SC-12", "query": "Message from unknown number: Hi dad, I dropped my phone in water, using a friend's phone, need money for rent today"}
+{"id": "R24", "lang": "hinglish", "expected": "SC-12", "query": "Facebook pe dost bani, ab bol rahi hai customs mein gift atka hai, paise bhejo"}
+{"id": "R25", "lang": "en", "expected": "SC-13", "query": "Telegram channel selling cricket betting IDs, they say deposit 1000 and win big every match"}
+{"id": "R26", "lang": "hinglish", "expected": "SC-13", "query": "Colour prediction app mein paisa lagaya, ab withdrawal nahi ho raha, aur deposit maang rahe"}
+{"id": "R27", "lang": "en", "expected": "SC-14", "query": "After a video call with a stranger they say they recorded me and will send it to my family unless I pay"}
+{"id": "R28", "lang": "hinglish", "expected": "SC-14", "query": "Ek ladki ne video call kiya, ab bol rahe hain recording viral kar denge, paise do"}
+{"id": "R29", "lang": "en", "expected": "SC-15", "query": "Someone on Instagram offered me 10 percent commission if I let them use my savings account for transfers"}
+{"id": "R30", "lang": "hinglish", "expected": "SC-15", "query": "Bol rahe hain apna SIM aur bank account de do, har mahine 15000 milenge"}

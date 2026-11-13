@@ -1,0 +1,31 @@
+code: SC-08
+name: Lottery / prize / gift scam
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  The person is told they won a lottery, lucky draw, car, or gift (often in the name of a well-known
+  brand, TV show, or bank) and must pay a processing fee, tax, or delivery charge to receive it.
+  The prize does not exist and the fees keep increasing.
+how_it_works:
+  - A message or call announces a large prize from a contest the victim never entered.
+  - 'Fees are requested to "release" the prize: processing, GST, RBI clearance, courier.'
+  - Fake certificates or official-looking letters are shared to build trust.
+red_flags:
+  - You won something you never entered
+  - Pay a fee or tax first to claim
+  - Payment to a personal UPI ID or account
+legit_contrast:
+  - Genuine prizes do not require you to pay to receive them, and RBI does not certify lotteries.
+typical_signals: [reward_promise, advance_fee, payment_request, urgency]
+example_phrases_en:
+  - "Congratulations! You won Rs 25 lakh in the lucky draw. Pay processing fee to claim."
+  - "Your KBC lottery is approved. Pay GST of Rs 12,500 to release the amount."
+example_phrases_hinglish:
+  - "Badhai ho, aapne 25 lakh ki lottery jeeti hai, fee bharke claim karo."
+  - "Inaam paane ke liye pehle tax jama karein."
+recommended_actions:
+  - Do not pay any fee to claim a prize.
+  - Block the sender and report on Chakshu (sancharsaathi.gov.in).
+  - If you paid, call 1930 and report on cybercrime.gov.in.
+sources: [RBI_BEAWARE, CHAKSHU, NCRP]
+legal_refs: [LAW_BNS s.318(4)]

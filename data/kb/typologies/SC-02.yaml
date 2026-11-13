@@ -1,0 +1,34 @@
+code: SC-02
+name: KYC / account block phishing
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Messages claim the person's bank account, card, or wallet will be blocked unless KYC or PAN
+  details are updated through a link, app, or phone number. The link leads to a fake page that
+  steals login details, card numbers, or OTPs.
+how_it_works:
+  - SMS, WhatsApp, or email impersonates a bank or wallet and sets a short deadline.
+  - A link or number is provided; the page copies the bank's look and asks for login, card, or OTP.
+  - The captured details are used immediately to move money out.
+red_flags:
+  - Account "will be blocked today" or "KYC expired"
+  - Link that is not on the bank's official domain (Indian banks use .bank.in)
+  - Shortened links (bit.ly and similar) in a bank message
+  - Request for OTP, PIN, CVV, card number, or net banking password
+legit_contrast:
+  - Banks do not ask for OTP, PIN, CVV, or passwords by call, SMS, email, or link.
+  - Indian bank websites have moved to the exclusive .bank.in domain; check the address.
+  - You can update KYC in the bank's official app or at a branch.
+typical_signals: [urgency, threat, authority_impersonation, credential_request, link_present]
+example_phrases_en:
+  - "Dear customer, your account will be suspended today. Update your KYC at the link below."
+  - "Your PAN is not linked. Verify now to avoid blocking of net banking."
+example_phrases_hinglish:
+  - "Aapka khata aaj band ho jayega, turant KYC update karein."
+  - "PAN link nahi hai, neeche link pe verify kijiye."
+recommended_actions:
+  - Do not click the link or share any code.
+  - Open your bank's official app or call the number printed on your card to check.
+  - Report the message on Chakshu (sancharsaathi.gov.in) if no money was lost.
+sources: [RBI_BEAWARE, RBI_BANK_IN, CHAKSHU]
+legal_refs: [LAW_IT_ACT s.66C, LAW_IT_ACT s.66D, LAW_BNS s.318(4), LAW_BNS s.319]

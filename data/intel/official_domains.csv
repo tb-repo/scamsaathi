@@ -1,0 +1,15 @@
+org,org_type,domain,status,verified_on,source_url,brand_tokens
+State Bank of India,bank,sbi.bank.in,verified,2026-11-11,https://sbi.bank.in,sbi|state bank|yono
+State Bank of India,bank,sbi.co.in,legacy,2026-11-11,https://sbi.co.in,sbi|state bank|yono
+HDFC Bank,bank,hdfc.bank.in,verified,2026-11-11,https://www.hdfc.bank.in,hdfc
+HDFC Bank,bank,hdfcbank.com,legacy,2026-11-11,https://www.hdfcbank.com,hdfc
+ICICI Bank,bank,icici.bank.in,verified,2026-11-11,https://www.icici.bank.in,icici
+ICICI Bank,bank,icicibank.com,legacy,2026-11-11,https://www.icicibank.com,icici
+India Post,government,indiapost.gov.in,verified,2026-11-11,https://www.indiapost.gov.in,india post|indiapost|speed post
+UIDAI (Aadhaar),government,uidai.gov.in,verified,2026-11-11,https://uidai.gov.in,uidai|aadhaar
+Reserve Bank of India,regulator,rbi.org.in,verified,2026-11-11,https://www.rbi.org.in,rbi|reserve bank
+DoT Sanchar Saathi,government,sancharsaathi.gov.in,verified,2026-11-11,https://sancharsaathi.gov.in,sanchar saathi|sancharsaathi
+Income Tax Department,government,incometax.gov.in,verified,2026-11-11,https://www.incometax.gov.in,income tax|incometax
+NPCI,payments,npci.org.in,unverified,,https://www.npci.org.in,npci|bhim
+National Cyber Crime Reporting Portal,government,cybercrime.gov.in,verified,2026-11-11,https://cybercrime.gov.in/Webform/crmcondi.aspx,cybercrime portal
+Ministry of Home Affairs (incl. I4C),government,mha.gov.in,verified,2026-11-11,https://i4c.mha.gov.in/FAQ.aspx,i4c|home affairs

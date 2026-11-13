@@ -1,0 +1,35 @@
+code: SC-01
+name: Digital arrest / fake law enforcement
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Callers pose as police, CBI, customs, ED, narcotics officers, or judges, accuse the person of a
+  crime (often a parcel with drugs or a bank account used for money laundering), keep them on a
+  video call, and demand money to "verify" or "clear" their name. No Indian agency arrests anyone
+  over a video call.
+how_it_works:
+  - A call or WhatsApp video call claims a parcel, SIM, or Aadhaar in the victim's name is linked to a crime.
+  - The caller transfers the victim to a fake "officer"; uniforms, logos, and fake documents are shown.
+  - The victim is told they are under "digital arrest" and must stay on camera and tell no one.
+  - Money is demanded for "verification", "security deposit", or "fund regularisation", with promises of a refund.
+red_flags:
+  - Threat of arrest over a phone or video call
+  - Instruction to stay on the call and not tell family
+  - Demand to transfer money to "verify" savings or clear your name
+  - Official-looking letters or warrants sent on WhatsApp
+legit_contrast:
+  - Police and investigating agencies do not arrest people or collect money over video calls.
+  - Real legal notices come through proper channels and you can verify them at a police station.
+typical_signals: [authority_impersonation, threat, secrecy, urgency, payment_request]
+example_phrases_en:
+  - "This is the cyber crime branch. A parcel with illegal items was booked in your name."
+  - "You are under digital arrest. Do not disconnect the video call or inform anyone."
+example_phrases_hinglish:
+  - "Aapke Aadhaar se money laundering hui hai, aap digital arrest mein ho."
+  - "Kisi ko mat batana, verification ke liye paise transfer karo."
+recommended_actions:
+  - End the call. Do not transfer any money.
+  - Talk to a family member or visit the nearest police station in person.
+  - If you already paid, call 1930 immediately and report on cybercrime.gov.in.
+sources: [I4C_DIGITAL_ARREST, I4C_FAQ, NCRP, LAW_BNS, LAW_IT_ACT]
+legal_refs: [LAW_BNS s.204, LAW_BNS s.308, LAW_BNS s.318(4), LAW_BNS s.319, LAW_BNS s.336(3), LAW_BNS s.351, LAW_IT_ACT s.66D]

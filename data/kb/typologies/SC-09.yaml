@@ -1,0 +1,32 @@
+code: SC-09
+name: Investment / trading / crypto scam
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  Social media ads, WhatsApp or Telegram "stock tips" groups, or new online contacts promise
+  guaranteed or very high returns from stocks, IPO allotments, forex, or crypto through an app or
+  website controlled by the scammers. Profits shown on screen are fake and withdrawals are blocked.
+how_it_works:
+  - The victim joins a group with fake success stories and "experts".
+  - They install an app or open a site that shows rising profits.
+  - Withdrawal requires more deposits, "tax", or "unlock" fees.
+red_flags:
+  - Guaranteed or unusually high returns
+  - Trading through an app or link shared in a chat group, not a registered broker
+  - Pressure to invest more before you can withdraw
+legit_contrast:
+  - Real investments carry risk and nobody can guarantee returns.
+  - Use only registered brokers and official apps from known institutions.
+typical_signals: [reward_promise, payment_request, app_install_request, urgency]
+example_phrases_en:
+  - "Join our VIP group for guaranteed 30% monthly returns on stocks."
+  - "Your profit is Rs 4 lakh. Pay 10% tax to withdraw."
+example_phrases_hinglish:
+  - "Guaranteed returns, bas is app mein invest karo."
+  - "Withdraw karne se pehle 10% fee bharni hogi."
+recommended_actions:
+  - Do not invest through links or apps shared in chat groups.
+  - Do not pay to withdraw "profits".
+  - If you invested, call 1930 and report on cybercrime.gov.in.
+sources: [NCRP, I4C_TASK_FRAUD]
+legal_refs: [LAW_BNS s.318(4), LAW_BNS s.111]

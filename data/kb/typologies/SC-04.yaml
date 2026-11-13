@@ -1,0 +1,33 @@
+code: SC-04
+name: UPI QR / payment-link / "receive money" scam
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  The scammer says they are sending money (a refund, an advance for an item you are selling, or a
+  prize) and asks you to scan a QR code, open a payment link, or approve a request and enter your
+  UPI PIN "to receive it". Entering the PIN sends money out of your account instead.
+how_it_works:
+  - Common on online marketplaces, with fake buyers, and in "refund" or "excess payment" stories.
+  - The victim gets a QR code or link and is told to enter the UPI PIN to accept the money.
+  - Since 1 October 2025, NPCI has stopped person-to-person collect requests; any approval request
+    that appears to come from an individual rather than a known merchant is a warning sign.
+red_flags:
+  - "Enter your UPI PIN to receive the money"
+  - '"I sent extra by mistake, please refund" with a screenshot instead of a real credit'
+  - A QR code or payment link sent by a buyer or a stranger
+legit_contrast:
+  - The UPI PIN is only needed to pay, never to receive money.
+  - Check your bank balance or app, not a screenshot, to confirm a payment arrived.
+typical_signals: [payment_request, reward_promise, urgency]
+example_phrases_en:
+  - "I am paying the advance for your sofa. Scan this QR and enter PIN to receive."
+  - "I transferred Rs 5000 by mistake instead of 500. Please return the extra."
+example_phrases_hinglish:
+  - "QR scan karke PIN daalo, paise aapke account mein aa jayenge."
+  - "Galti se zyada paise bhej diye, wapas bhej do please."
+recommended_actions:
+  - Never enter your UPI PIN to receive money.
+  - Check your bank app for the actual credit before doing anything.
+  - If money left your account, call 1930 and report on cybercrime.gov.in with the UTR number.
+sources: [NPCI_UPI_PIN, NPCI_UPI_P2P_COLLECT, NCRP]
+legal_refs: [LAW_BNS s.318(4)]

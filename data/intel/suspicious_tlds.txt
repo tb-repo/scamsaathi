@@ -1,0 +1,23 @@
+# Low-cost TLDs frequently seen in phishing. A weak signal on its own (severity low);
+# legitimate sites also use these. Tune with the dev set (docs/09).
+xyz
+top
+icu
+buzz
+cyou
+sbs
+cfd
+rest
+bond
+click
+link
+live
+online
+site
+shop
+vip
+tk
+ml
+ga
+cf
+gq

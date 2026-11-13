@@ -1,0 +1,162 @@
+# Source register for the knowledge base (docs/07, R-009). Typology files cite these IDs.
+# type: primary = government / regulator; secondary = press report of an official statement.
+# check: how the source was confirmed on `accessed`.
+#   page_loaded     - the page was fetched and read
+#   official_index  - official page seen via web search results (site blocks automated fetch)
+#   snippet_only    - located and summarised from a search snippet; read in full before release
+sources:
+  RBI_BEAWARE:
+    title: "RBI - BE(A)WARE: A booklet on modus operandi of financial fraudsters"
+    url: https://rbi.org.in/commonman/Upload/english/Content/PDFs/English%20BEAWARE.pdf
+    type: primary
+    accessed: 2026-11-11
+    check: snippet_only
+  I4C_FAQ:
+    title: "Indian Cybercrime Coordination Centre (MHA) - FAQ"
+    url: https://i4c.mha.gov.in/FAQ.aspx
+    type: primary
+    accessed: 2026-11-11
+    check: official_index
+  NCRP:
+    title: "National Cyber Crime Reporting Portal"
+    url: https://cybercrime.gov.in
+    type: primary
+    accessed: 2026-11-11
+    check: official_index
+  CHAKSHU:
+    title: "DoT Sanchar Saathi - Chakshu (report suspected fraud communication)"
+    url: https://sancharsaathi.gov.in/sfc
+    type: primary
+    accessed: 2026-11-11
+    check: official_index
+  I4C_DIGITAL_ARREST:
+    title: "Economic Times - I4C advisory: CBI, ED, police don't arrest people through video calls"
+    url: https://economictimes.indiatimes.com/news/india/cbi-ed-police-dont-arrest-people-through-video-calls-indian-cyber-crime-coordination-centre/articleshow/113984654.cms
+    type: secondary
+    accessed: 2026-11-11
+    check: snippet_only
+  NPCI_UPI_P2P_COLLECT:
+    title: "Moneycontrol - UPI safety facts (NPCI stopped P2P collect requests from 1 Oct 2025)"
+    url: https://www.moneycontrol.com/news/business/personal-finance/upi-made-payments-easy-these-7-facts-keep-them-safe-14052852.html
+    type: secondary
+    accessed: 2026-11-11
+    check: snippet_only
+  NPCI_UPI_PIN:
+    title: "Moneycontrol - UPI checks (NPCI: PIN and QR scan are for paying, not receiving)"
+    url: https://www.moneycontrol.com/news/business/personal-finance/using-upi-every-day-these-simple-checks-can-help-keep-your-money-safe-14027032.html
+    type: secondary
+    accessed: 2026-11-11
+    check: snippet_only
+  I4C_TASK_FRAUD:
+    title: "News18 - I4C/NCTAU identified websites behind task-based part-time job frauds"
+    url: https://www.news18.com/business/part-time-job-frauds-amid-govt-crackdown-know-how-these-scams-work-how-to-protect-yourself-8693021.html
+    type: secondary
+    accessed: 2026-11-11
+    check: snippet_only
+  RBI_BANK_IN:
+    title: "ET Government - RBI directs banks to migrate to the .bank.in domain"
+    url: https://government.economictimes.indiatimes.com/news/economy/rbi-directs-banks-to-migrate-to-bank-in-domain-by-oct/120536413
+    type: secondary
+    accessed: 2026-11-11
+    check: snippet_only
+
+  # --- Official Act texts added to the repo by the author (docs/IndianOfficialDocs) ---
+  # Read with scripts/extract_legal_texts.py and scripts/find_in_acts.py (docs/16 section 10).
+  LAW_BNS:
+    title: "Bharatiya Nyaya Sanhita, 2023"
+    path: docs/IndianOfficialDocs/BNS 2023.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_BNSS:
+    title: "Bharatiya Nagarik Suraksha Sanhita, 2023"
+    path: docs/IndianOfficialDocs/BNSS 2023.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_BSA:
+    title: "Bharatiya Sakshya Adhiniyam, 2023"
+    path: docs/IndianOfficialDocs/BSA 2023.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_IT_ACT:
+    title: "Information Technology Act, 2000 (as amended)"
+    path: docs/IndianOfficialDocs/The Information Technology Act, 2000.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_IT_RULES:
+    title: "IT (Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021"
+    path: docs/IndianOfficialDocs/IT(Intermediary Guidelines and Digital Media Ethics Code) Rules, 2021 English.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_IT_RULES_2026:
+    title: "IT (Intermediary Guidelines and Digital Media Ethics Code) Amendment Rules, 2026 (G.S.R. 120(E))"
+    path: docs/IndianOfficialDocs/Information Technology (Intermediary Guidelines and Digital Media Ethics Code) Amen.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_TELECOM:
+    title: "Telecommunications Act, 2023"
+    path: docs/IndianOfficialDocs/Telecommunication Act 2023.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_POCSO:
+    title: "Protection of Children from Sexual Offences Act, 2012"
+    path: docs/IndianOfficialDocs/POCSO ACT 2012.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_GAMING:
+    title: "Promotion and Regulation of Online Gaming Act, 2025"
+    path: docs/IndianOfficialDocs/Promotion and Regulation of Online Gaming Act 2025.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_DPDP:
+    title: "Digital Personal Data Protection Act, 2023"
+    path: docs/IndianOfficialDocs/DPDP ACT 2023.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+  LAW_PMLA:
+    title: "Prevention of Money-laundering Act, 2002"
+    path: docs/IndianOfficialDocs/The Prevention of Money Laundering Act 2002.pdf
+    type: primary
+    accessed: 2026-11-12
+    check: document_read
+
+  # --- TRAI sources added by the author (docs/16 section 12) ---
+  LAW_TCCCPR_2025:
+    title: "TRAI - Telecom Commercial Communications Customer Preference (Second Amendment) Regulations, 2025 (incl. Regulation 34A)"
+    path: docs/IndianOfficialDocs/Regulation_12022025.pdf
+    type: primary
+    accessed: 2026-11-13
+    check: document_read
+  TRAI_TCCCPR_2026_PIB:
+    title: "PIB release 2311989 - TCCCPR (Third Amendment) Regulations, 2026, salient features"
+    path: docs/IndianOfficialDocs/Press Release Page _ Press Information Bureau.pdf
+    type: primary
+    accessed: 2026-11-13
+    check: document_read
+  LAW_TCCCPR_2026:
+    title: "TRAI - Telecom Commercial Communications Customer Preference (Third Amendment) Regulations, 2026 (05 of 2026), with Explanatory Memorandum"
+    path: docs/IndianOfficialDocs/Regulation_18092026.pdf
+    type: primary
+    accessed: 2026-11-13
+    check: document_read
+  INDIALAW_TCCCPR_2026:
+    title: "IndiaLaw - TRAI anti-spam rules (summary of the TCCCPR Third Amendment 2026, incl. phased commencement)"
+    url: https://www.indialaw.in/blog/food/trai-anti-spam-rules/
+    type: secondary
+    accessed: 2026-11-13
+    check: page_loaded
+  TRAI_PR_88_2024:
+    title: "TRAI press release 88/2024 - measures to combat spam calls and SMS"
+    path: docs/IndianOfficialDocs/PR_No.88of2024.pdf
+    type: primary
+    accessed: 2026-11-13
+    check: document_read

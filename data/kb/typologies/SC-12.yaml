@@ -1,0 +1,31 @@
+code: SC-12
+name: Impersonation of family or friends / romance scam
+version: 1
+last_reviewed: 2026-11-11
+summary: >
+  The scammer pretends to be a relative, friend, colleague, or senior officer using a new number or
+  a copied social-media profile, or builds an online relationship, and then asks for urgent money
+  for an emergency, hospital bill, or travel problem.
+how_it_works:
+  - 'Message from a new number: "Hi, this is me, my phone is lost, this is my new number."'
+  - A sudden emergency follows, with a request to send money to someone else's account.
+  - Romance versions build trust over weeks, then ask for money for customs, tickets, or a gift.
+red_flags:
+  - New number claiming to be someone you know
+  - Emergency money request with pressure not to call back
+  - Payment to a third person's account or UPI ID
+legit_contrast:
+  - Call the person on their old, known number or ask a question only they can answer.
+typical_signals: [unknown_sender_claim, emotional_pressure, payment_request, urgency, secrecy]
+example_phrases_en:
+  - "Hi Mum, this is my new number. I'm in trouble, please send Rs 20,000 urgently."
+  - "I'm stuck at the airport, customs is holding my bag, please help me pay."
+example_phrases_hinglish:
+  - "Mera phone kho gaya, yeh naya number hai, jaldi 10000 bhej do."
+  - "Main hospital mein hoon, abhi paise bhejo, kisi ko mat batana."
+recommended_actions:
+  - Call the person on their known number before sending anything.
+  - Do not send money to a new number or a third-party account.
+  - If you paid, call 1930 and report on cybercrime.gov.in.
+sources: [NCRP, I4C_FAQ]
+legal_refs: [LAW_BNS s.319, LAW_IT_ACT s.66D]
