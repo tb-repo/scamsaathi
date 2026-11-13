@@ -1,0 +1,6 @@
+-r requirements.txt
+pytest==9.2.0
+ruff==0.17.4
+mypy==2.4.1
+types-PyYAML==6.0.12.20261111
+pypdf==7.0.1  # legal-text extraction only (scripts/extract_legal_texts.py); installed 2026-11-12
