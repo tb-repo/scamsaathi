@@ -415,7 +415,7 @@ def main() -> int:
     print(f"  - Cyber Crime Portal:         {agentic_metrics['reporting_cybercrime_rate']*100:.1f}%")
     print(f"  - 1930 Financial Helpline:    {agentic_metrics['reporting_1930_rate']*100:.1f}%")
     print(f"Evidence-ID Grounding Rate:     {agentic_metrics['groundedness']*100:.1f}%")
-    print(f"Non-Devanagari Script Audit:    {agentic_metrics['language_compliance_rate']*100:.1f}%")
+    print(f"Non-Devanagari Script Compliance: {agentic_metrics['language_compliance_rate']*100:.1f}%")
     print("=" * 60)
 
     # 4. Generate Reports

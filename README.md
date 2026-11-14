@@ -191,7 +191,7 @@ python scripts/run_benchmarks.py
 
 ## 🧪 Testing & Verification
 
-Run the full pytest suite (249 unit and integration tests):
+Run the full pytest suite (253 unit and integration tests):
 
 ```bash
 pytest -v
@@ -239,7 +239,7 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
-├── tests/                  # 249 unit and integration tests
+├── tests/                  # 253 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies
 ├── requirements-dev.txt    # Development and test dependencies

@@ -97,6 +97,12 @@ def cleanup_expired_sessions(conn: sqlite3.Connection, ttl_seconds: float = 8640
             cur.execute("DELETE FROM checkpoints WHERE thread_id = ?", (tid,))
             cur.execute("DELETE FROM writes WHERE thread_id = ?", (tid,))
             cur.execute("DELETE FROM session_meta WHERE thread_id = ?", (tid,))
+        # Prune any orphaned checkpoints/writes not tracked in session_meta (trusted maintenance path)
+        try:
+            cur.execute("DELETE FROM checkpoints WHERE thread_id NOT IN (SELECT thread_id FROM session_meta)")
+            cur.execute("DELETE FROM writes WHERE thread_id NOT IN (SELECT thread_id FROM session_meta)")
+        except sqlite3.OperationalError:
+            pass
         conn.commit()
         if expired:
             logger.info(f"purged_{len(expired)}_expired_sessions")
@@ -229,22 +235,50 @@ def create_app() -> FastAPI:
                     (thread_id, session_token, now, now),
                 )
                 state.sqlite_conn.commit()
-            except sqlite3.IntegrityError:
+            except sqlite3.IntegrityError as exc:
+                if "UNIQUE" in str(exc) or "PRIMARY KEY" in str(exc):
+                    raise HTTPException(
+                        status_code=status.HTTP_409_CONFLICT,
+                        detail="Session ID already exists; cannot overwrite an existing session.",
+                    ) from exc
+                logger.error(f"session_meta_insert_failed: {exc}", exc_info=True)
                 raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Session ID already exists; cannot overwrite an existing session.",
-                )
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to initialize session record.",
+                ) from exc
             except Exception as exc:
-                logger.warning(f"session_meta_insert_failed: {exc}")
+                logger.error(f"session_meta_insert_failed: {exc}", exc_info=True)
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to initialize session record.",
+                ) from exc
 
         try:
             outcome = state.runner.assess(req.text, thread_id=thread_id)
             return outcome_to_response(outcome, session_token=session_token)
         except ValueError as exc:
+            if state.sqlite_conn is not None:
+                try:
+                    state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
+                    state.sqlite_conn.commit()
+                except Exception:
+                    pass
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
         except HTTPException:
+            if state.sqlite_conn is not None:
+                try:
+                    state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
+                    state.sqlite_conn.commit()
+                except Exception:
+                    pass
             raise
         except Exception as exc:
+            if state.sqlite_conn is not None:
+                try:
+                    state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
+                    state.sqlite_conn.commit()
+                except Exception:
+                    pass
             logger.exception("api_assess_error", extra={"error": str(exc)})
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -268,7 +302,6 @@ def create_app() -> FastAPI:
 
         token_to_verify = req.session_token or x_session_token
         if state.sqlite_conn is not None:
-            cleanup_expired_sessions(state.sqlite_conn)
             cur = state.sqlite_conn.cursor()
             cur.execute(
                 "SELECT session_token, last_accessed FROM session_meta WHERE thread_id = ?",
@@ -278,7 +311,7 @@ def create_app() -> FastAPI:
             if row is None:
                 raise HTTPException(
                     status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Session not found or has expired (24-hour TTL).",
+                    detail="Session not found or has expired.",
                 )
             stored_token, last_accessed = row
             if time.time() - last_accessed > 86400.0:
@@ -331,15 +364,18 @@ def create_app() -> FastAPI:
             cur = state.sqlite_conn.cursor()
             cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
             row = cur.fetchone()
-            if row is not None:
-                stored_token = row[0]
-                if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
-                    raise HTTPException(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        detail="Session ownership verification failed: invalid or missing session token",
-                    )
-                state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
-
+            if row is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Session not found or has expired.",
+                )
+            stored_token = row[0]
+            if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Session ownership verification failed: invalid or missing session token",
+                )
+            state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
             try:
                 state.sqlite_conn.execute(
                     "DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,)

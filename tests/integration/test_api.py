@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import sqlite3
+import time
+
 import pytest
 from fastapi.testclient import TestClient
 
-from scamsaathi.api.app import app
+from scamsaathi.api.app import app, state
 
 
 @pytest.fixture(scope="module")
@@ -104,4 +107,71 @@ def test_assess_rejects_duplicate_session_id(client: TestClient) -> None:
 
     # Clean up session
     client.delete(f"/session/{custom_thread_id}?token={token}")
+
+
+def test_delete_missing_or_nonexistent_session_returns_404(client: TestClient) -> None:
+    resp = client.delete("/session/nonexistent_session_9999?token=some_token_123")
+    assert resp.status_code == 404
+    assert "not found or has expired" in resp.json()["detail"].lower()
+
+
+def test_resume_expired_session_returns_410(client: TestClient) -> None:
+    custom_thread_id = "test_expired_thread_99999"
+    resp = client.post(
+        "/assess",
+        json={"text": "They called about my parcel from courier.", "thread_id": custom_thread_id},
+    )
+    assert resp.status_code == 200
+    token = resp.json()["session_token"]
+
+    # Age the session past 24 hours (86,400s)
+    assert state.sqlite_conn is not None
+    state.sqlite_conn.execute(
+        "UPDATE session_meta SET last_accessed = ? WHERE thread_id = ?",
+        (time.time() - 90000.0, custom_thread_id),
+    )
+    state.sqlite_conn.commit()
+
+    # Attempt to resume expired session -> returns 410 Gone
+    resume_resp = client.post(
+        "/resume",
+        json={"thread_id": custom_thread_id, "answer": "skip", "session_token": token},
+    )
+    assert resume_resp.status_code == 410
+    assert "expired" in resume_resp.json()["detail"].lower()
+
+    # Verify session_meta and checkpoints are pruned
+    cur = state.sqlite_conn.cursor()
+    cur.execute("SELECT thread_id FROM session_meta WHERE thread_id = ?", (custom_thread_id,))
+    assert cur.fetchone() is None
+
+
+def test_assess_metadata_write_failure_fails_closed(client: TestClient) -> None:
+    assert state.sqlite_conn is not None
+
+    custom_thread_id = "test_fail_closed_thread_12345"
+    state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_insert_test;")
+    state.sqlite_conn.commit()
+    # Create SQLite trigger specifically scoped to fail_closed test thread_id
+    state.sqlite_conn.execute(
+        "CREATE TRIGGER fail_insert_test BEFORE INSERT ON session_meta "
+        "FOR EACH ROW WHEN NEW.thread_id = 'test_fail_closed_thread_12345' "
+        "BEGIN SELECT RAISE(ABORT, 'simulated disk failure'); END;"
+    )
+    state.sqlite_conn.commit()
+    try:
+        resp = client.post(
+            "/assess",
+            json={"text": "Hello verification needed", "thread_id": custom_thread_id},
+        )
+        assert resp.status_code == 500
+        assert "Failed to initialize session record" in resp.json()["detail"]
+
+        # Verify that NO checkpoint was persisted for custom_thread_id
+        cur = state.sqlite_conn.cursor()
+        cur.execute("SELECT thread_id FROM checkpoints WHERE thread_id = ?", (custom_thread_id,))
+        assert cur.fetchone() is None
+    finally:
+        state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_insert_test;")
+        state.sqlite_conn.commit()
 
