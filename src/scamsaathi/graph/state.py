@@ -44,6 +44,7 @@ class ScamState(TypedDict, total=False):
     score: dict[str, Any]  # RiskScore
     explanation: dict[str, Any]  # Explanation
     explanation_source: str  # "llm" or "template"
+    evidence_catalogue: dict[str, str]  # Keyed evidence catalogue (S1, I1, K1, C1...)
     advice: dict[str, Any]  # AdviceBundle
     typologies: list[str]  # final typology codes, best first
     llm_calls: int

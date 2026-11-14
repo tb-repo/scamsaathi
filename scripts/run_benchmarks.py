@@ -179,38 +179,25 @@ def evaluate_pipeline(
             if not beh_failures:
                 behaviour_ok += 1
 
-        # Verified Evidence Groundedness (Deterministic Graph State Validation)
+        # Verified Evidence Groundedness against the actual per-case evidence catalogue
         if is_agentic and explanation is not None:
-            signal_eids = {s.evidence_id for s in outcome.signals}
-            intel_eids = {f.evidence_id for f in outcome.intel.findings} if outcome.intel else set()
-            valid_c_ids = (
-                {f"C{i+1}" for i in range(len(risk.overrides))} if risk.overrides else {"C1"}
+            catalogue_eids = (
+                set(outcome.catalogue.keys())
+                if hasattr(outcome, "catalogue") and outcome.catalogue
+                else set()
             )
-            # Retrieved KB chunk IDs in state catalogue
-            valid_k_ids = {f"K{i+1}" for i in range(max(1, min(6, len(typologies) * 2 or 3)))}
+            # Fallback to signals/intel/overrides if catalogue not exposed
+            if not catalogue_eids:
+                catalogue_eids = {s.evidence_id for s in outcome.signals}
+                if outcome.intel:
+                    catalogue_eids |= {f.evidence_id for f in outcome.intel.findings}
+                catalogue_eids |= (
+                    {f"C{i+1}" for i in range(len(risk.overrides))} if risk.overrides else {"C1"}
+                )
 
             for r in explanation.reasons:
                 total_reasons += 1
-                if not r.evidence_ids:
-                    continue
-                # Grounded verification against actual state:
-                # - S# must exist in signals extracted for this specific message
-                # - I# must exist in threat intel findings for this message
-                # - C# must exist in overrides/context catalogue for this state
-                # - K# must exist in retrieved KB chunks for this state
-                is_grounded = True
-                for eid in r.evidence_ids:
-                    if eid.startswith("S") and eid not in signal_eids:
-                        is_grounded = False
-                    elif eid.startswith("I") and eid not in intel_eids:
-                        is_grounded = False
-                    elif eid.startswith("C") and eid not in valid_c_ids:
-                        is_grounded = False
-                    elif eid.startswith("K") and eid not in valid_k_ids:
-                        is_grounded = False
-                    elif not re.match(r"^[SIKC]\d+$", eid):
-                        is_grounded = False
-                if is_grounded:
+                if r.evidence_ids and set(r.evidence_ids) <= catalogue_eids:
                     grounded_reasons += 1
 
         # Language compliance: verify output is 100% English (no Devanagari script)
@@ -377,7 +364,7 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         "",
         "1. **Near-Zero False Alarm Rate:** Legitimate banking notifications (debit notices, e-statements on `.bank.in`) and TRAI designated numbers (1600 service, 1601 courier) achieved 0% false alarms.",
         "2. **100% Non-Devanagari Script Compliance:** All Hinglish inputs were understood accurately while replies remained strictly 100% English without Devanagari script leakage.",
-        "3. **Verified Evidence Grounding:** 79.4% of generated explanation reasons strictly cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic graph state.",
+        f"3. **Verified Evidence Grounding:** {pct(m_ag['groundedness'])} of generated explanation reasons strictly cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue.",
         "4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with immediate 1930 helpline routing on financial loss.",
         "5. **Human-in-the-Loop Value:** Ambiguous messages triggered targeted clarifying questions, providing accurate outcomes upon user resume.",
     ])
@@ -427,8 +414,8 @@ def main() -> int:
     print(f"  - Chakshu Facility:           {agentic_metrics['reporting_chakshu_rate']*100:.1f}%")
     print(f"  - Cyber Crime Portal:         {agentic_metrics['reporting_cybercrime_rate']*100:.1f}%")
     print(f"  - 1930 Financial Helpline:    {agentic_metrics['reporting_1930_rate']*100:.1f}%")
-    print(f"Reason Groundedness:            {agentic_metrics['groundedness']*100:.1f}%")
-    print(f"English Language Compliance:    {agentic_metrics['language_compliance_rate']*100:.1f}%")
+    print(f"Evidence-ID Grounding Rate:     {agentic_metrics['groundedness']*100:.1f}%")
+    print(f"Non-Devanagari Script Audit:    {agentic_metrics['language_compliance_rate']*100:.1f}%")
     print("=" * 60)
 
     # 4. Generate Reports

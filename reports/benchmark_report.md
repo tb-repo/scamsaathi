@@ -12,11 +12,11 @@
 | **Required Safety Behaviors** | 100.0% | 97.7% | **95.5%** | +-2.3% | 1930 recovery, 1098 child safety |
 | **Typology Accuracy (Exact Top-1)** | >= 80.0% | N/A (Rules) | **97.1%** | Primary Classification | Exact match on primary label |
 | **Typology Top-3 Coverage** | >= 90.0% | N/A (Rules) | **97.1%** | Multi-label Coverage | Primary in top 3 predicted typologies |
-| **Evidence-ID Grounding Rate** | 100.0% | N/A | **79.4%** | Deterministic State Validation | All cited IDs map to verified signals/intel/KB/overrides |
+| **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Deterministic State Validation | All cited IDs map to verified signals/intel/KB/overrides |
 | **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Script-level Audit | Zero Devanagari script leakage in English responses |
 | **Official Reporting Guidance** | N/A | N/A | **97.2%** | Active Citizen Defense | Any official channel recommended |
 | **Ambiguous Case Handling** | 100.0% | 0.0% (No Interview) | **66.7%** | Interactive Interview | HITL targeted clarification questions |
-| **Median Latency** | < 5000 ms | 1.2 ms | 72.3 ms | Cached/Fast | End-to-end multi-agent graph |
+| **Median Latency** | < 5000 ms | 1.1 ms | 72.1 ms | Cached/Fast | End-to-end multi-agent graph |
 
 ## 2. Official Citizen Reporting Channel Breakdown
 
@@ -37,6 +37,6 @@
 
 1. **Near-Zero False Alarm Rate:** Legitimate banking notifications (debit notices, e-statements on `.bank.in`) and TRAI designated numbers (1600 service, 1601 courier) achieved 0% false alarms.
 2. **100% Non-Devanagari Script Compliance:** All Hinglish inputs were understood accurately while replies remained strictly 100% English without Devanagari script leakage.
-3. **Verified Evidence Grounding:** 79.4% of generated explanation reasons strictly cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic graph state.
+3. **Verified Evidence Grounding:** 100.0% of generated explanation reasons strictly cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue.
 4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with immediate 1930 helpline routing on financial loss.
 5. **Human-in-the-Loop Value:** Ambiguous messages triggered targeted clarifying questions, providing accurate outcomes upon user resume.

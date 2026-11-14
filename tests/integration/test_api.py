@@ -90,3 +90,18 @@ def test_assess_and_resume_ambiguous_case(client: TestClient) -> None:
     else:
         assert data["status"] == "complete"
 
+
+def test_assess_rejects_duplicate_session_id(client: TestClient) -> None:
+    custom_thread_id = "test_custom_thread_123456"
+    resp1 = client.post("/assess", json={"text": "Hello, please verify your account", "thread_id": custom_thread_id})
+    assert resp1.status_code == 200
+    token = resp1.json()["session_token"]
+
+    # Second attempt with same thread_id is rejected with 409 Conflict
+    resp2 = client.post("/assess", json={"text": "Different message attempt", "thread_id": custom_thread_id})
+    assert resp2.status_code == 409
+    assert "already exists" in resp2.json()["detail"].lower()
+
+    # Clean up session
+    client.delete(f"/session/{custom_thread_id}?token={token}")
+

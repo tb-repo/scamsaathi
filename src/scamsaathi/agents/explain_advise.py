@@ -267,6 +267,10 @@ def explain_advise(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
         if rejected:
             update["errors"] = [*update.get("errors", []),
                                 f"explain: rejected LLM {', '.join(rejected)}"]
-    update.update({"explanation": dump(explanation), "advice": dump(advice),
-                   "explanation_source": source})
+    update.update({
+        "explanation": dump(explanation),
+        "advice": dump(advice),
+        "explanation_source": source,
+        "evidence_catalogue": catalogue,
+    })
     return update

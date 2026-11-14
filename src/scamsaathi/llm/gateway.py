@@ -304,9 +304,15 @@ def build_gateway(settings: Settings) -> LLMGateway:
     """Construct the gateway from settings. Providers are registered when their keys are set."""
     providers: dict[str, Provider] = {}
     if settings.gemini_api_key is not None and settings.mode is Mode.LIVE:
-        providers["gemini"] = GeminiProvider(settings.gemini_api_key)
+        try:
+            providers["gemini"] = GeminiProvider(settings.gemini_api_key)
+        except ImportError:
+            logger.warning("gemini_provider_import_failed", exc_info=True)
     if settings.groq_api_key is not None and settings.mode is Mode.LIVE:
-        providers["groq"] = GroqProvider(settings.groq_api_key)
+        try:
+            providers["groq"] = GroqProvider(settings.groq_api_key)
+        except ImportError:
+            logger.warning("groq_provider_import_failed", exc_info=True)
     return LLMGateway(
         config=load_llm_config(settings),
         mode=settings.mode,

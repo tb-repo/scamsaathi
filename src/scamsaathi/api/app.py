@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 import secrets
@@ -131,7 +132,26 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     state.ctx = ctx
     state.runner = runner
     state.sqlite_conn = conn
+
+    # Periodic background cleanup task for idle server retention (runs hourly)
+    async def _periodic_cleanup(c: sqlite3.Connection, interval_s: float = 3600.0) -> None:
+        while True:
+            try:
+                await asyncio.sleep(interval_s)
+                cleanup_expired_sessions(c)
+            except asyncio.CancelledError:
+                break
+            except Exception as exc:
+                logger.warning(f"periodic_cleanup_error: {exc}")
+
+    cleanup_task = asyncio.create_task(_periodic_cleanup(conn))
     yield
+
+    cleanup_task.cancel()
+    try:
+        await cleanup_task
+    except asyncio.CancelledError:
+        pass
 
     if state.sqlite_conn is not None:
         state.sqlite_conn.close()
@@ -194,13 +214,26 @@ def create_app() -> FastAPI:
         session_token = secrets.token_urlsafe(32)
         now = time.time()
         if state.sqlite_conn is not None:
+            # Prevent session takeover: reject duplicate thread_id if already exists
+            cur = state.sqlite_conn.cursor()
+            cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
+            if cur.fetchone() is not None:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Session ID already exists; cannot overwrite an existing session.",
+                )
             try:
                 state.sqlite_conn.execute(
-                    "INSERT OR REPLACE INTO session_meta (thread_id, session_token, created_at, last_accessed) "
+                    "INSERT INTO session_meta (thread_id, session_token, created_at, last_accessed) "
                     "VALUES (?, ?, ?, ?)",
                     (thread_id, session_token, now, now),
                 )
                 state.sqlite_conn.commit()
+            except sqlite3.IntegrityError:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="Session ID already exists; cannot overwrite an existing session.",
+                )
             except Exception as exc:
                 logger.warning(f"session_meta_insert_failed: {exc}")
 
@@ -235,21 +268,39 @@ def create_app() -> FastAPI:
 
         token_to_verify = req.session_token or x_session_token
         if state.sqlite_conn is not None:
+            cleanup_expired_sessions(state.sqlite_conn)
             cur = state.sqlite_conn.cursor()
-            cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (req.thread_id,))
+            cur.execute(
+                "SELECT session_token, last_accessed FROM session_meta WHERE thread_id = ?",
+                (req.thread_id,),
+            )
             row = cur.fetchone()
-            if row is not None:
-                stored_token = row[0]
-                if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
-                    raise HTTPException(
-                        status_code=status.HTTP_403_FORBIDDEN,
-                        detail="Session ownership verification failed: invalid or missing session token",
-                    )
-                state.sqlite_conn.execute(
-                    "UPDATE session_meta SET last_accessed = ? WHERE thread_id = ?",
-                    (time.time(), req.thread_id),
+            if row is None:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Session not found or has expired (24-hour TTL).",
                 )
+            stored_token, last_accessed = row
+            if time.time() - last_accessed > 86400.0:
+                state.sqlite_conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (req.thread_id,))
+                state.sqlite_conn.execute("DELETE FROM writes WHERE thread_id = ?", (req.thread_id,))
+                state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (req.thread_id,))
                 state.sqlite_conn.commit()
+                raise HTTPException(
+                    status_code=status.HTTP_410_GONE,
+                    detail="Session has expired (24-hour TTL) and has been pruned.",
+                )
+
+            if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="Session ownership verification failed: invalid or missing session token",
+                )
+            state.sqlite_conn.execute(
+                "UPDATE session_meta SET last_accessed = ? WHERE thread_id = ?",
+                (time.time(), req.thread_id),
+            )
+            state.sqlite_conn.commit()
 
         try:
             outcome = state.runner.resume(req.thread_id, req.answer)

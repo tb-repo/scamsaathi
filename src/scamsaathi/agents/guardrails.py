@@ -302,4 +302,5 @@ class GuardrailAgent:
             degraded=True,
             errors=all_errors,
             masked_text=outcome.masked_text,
+            catalogue=catalogue,
         )

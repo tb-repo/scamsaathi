@@ -42,6 +42,7 @@ class AssessmentOutcome:
     degraded: bool = False
     errors: list[str] = field(default_factory=list)
     masked_text: str = ""
+    catalogue: dict[str, str] = field(default_factory=dict)
 
 
 class AgentRunner:
@@ -121,6 +122,7 @@ class AgentRunner:
             advice=AdviceBundle.model_validate(values["advice"]),
             typologies=list(values.get("typologies", [])),
             explanation_source=values.get("explanation_source", ""),
+            catalogue=dict(values.get("evidence_catalogue", {})),
             **common,
         )
         return self.guardrail.sanitize(complete)

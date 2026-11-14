@@ -111,9 +111,9 @@ Evaluated on the 50-case benchmark dataset across both English and Hinglish inpu
 | **False Alarm Rate (Legit > LOW)** | <= 10.0% | 0.0% | **9.1%** | 0% on authenticated `.bank.in` & TRAI headers |
 | **Required Safety Behaviors** | 100.0% | 97.7% | **95.5%** | 1930 recovery, 1098 child safety |
 | **Typology Accuracy (Exact Top-1)** | >= 80.0% | N/A | **97.1%** | Exact primary typology classification |
-| **Reason Groundedness** | 100.0% | N/A | **100.0%** | 100% cited evidence IDs exist in signals/intel |
-| **English Language Compliance** | 100.0% | 100.0% | **100.0%** | Zero Devanagari script leakage in advice |
-| **Official Reporting Guidance** | N/A | N/A | **94.4%** | Direct Chakshu & Cyber Crime Portal guidance |
+| **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Deterministic validation against runtime catalogue (S#, I#, K#, C#) |
+| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Zero Devanagari script leakage in English responses (script-level audit) |
+| **Official Reporting Guidance** | N/A | N/A | **97.2%** | Direct Chakshu & Cyber Crime Portal guidance |
 | **Ambiguous Case Handling** | 100.0% | 0.0% | **66.7%** | Interactive interview triggered on ambiguous text |
 
 ---
@@ -191,7 +191,7 @@ python scripts/run_benchmarks.py
 
 ## 🧪 Testing & Verification
 
-Run the full pytest suite (248 unit and integration tests):
+Run the full pytest suite (249 unit and integration tests):
 
 ```bash
 pytest -v
@@ -239,7 +239,7 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
-├── tests/                  # 248 unit and integration tests
+├── tests/                  # 249 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies
 ├── requirements-dev.txt    # Development and test dependencies
