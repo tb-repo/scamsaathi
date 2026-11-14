@@ -47,8 +47,8 @@ by_level:
 # Typology-specific advice, added after the level advice.
 by_typology:
   SC-01:
-    - Official authorities (Police, CBI, Courts, Transport or VAHAN) never demand payments or arrest citizens over calls, SMS, or WhatsApp. Real legal notices are sent via registered post or official government portals.
-    - To check if you genuinely have a pending challan or notice, verify directly on the official government portal (such as echallan.parivahan.gov.in) or visit the department in person.
+    - Official authorities (Police, CBI, ED, Courts, or Government bodies) never demand payments, threaten immediate arrest, or conduct interrogations over video calls, SMS, or WhatsApp.
+    - Real legal notices, summons, or warrants are served through registered post or official government portals, never informal messaging links.
     - Discuss the situation with a family member or visit your local police station in person before taking any action.
   SC-02:
     - Banks never ask for OTP, PIN, CVV, or passwords. Update KYC only in the official app or at a branch.
