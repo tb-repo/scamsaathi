@@ -86,6 +86,19 @@ class AppState:
 state = AppState()
 
 
+def _purge_session_records(conn: sqlite3.Connection | None, thread_id: str) -> None:
+    """Atomic rollback of all session artifacts (metadata, checkpoints, writes) on failure."""
+    if conn is None:
+        return
+    try:
+        with conn:
+            conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
+            conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
+            conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
+    except Exception as exc:
+        logger.warning(f"session_purge_failed for {thread_id}: {exc}")
+
+
 def cleanup_expired_sessions(conn: sqlite3.Connection, ttl_seconds: float = 86400.0) -> int:
     """Enforces 24-hour storage limitation (DPDP Principle 4 / FR-084) by pruning expired checkpoints."""
     cutoff = time.time() - ttl_seconds
@@ -257,28 +270,13 @@ def create_app() -> FastAPI:
             outcome = state.runner.assess(req.text, thread_id=thread_id)
             return outcome_to_response(outcome, session_token=session_token)
         except ValueError as exc:
-            if state.sqlite_conn is not None:
-                try:
-                    state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
-                    state.sqlite_conn.commit()
-                except Exception:
-                    pass
+            _purge_session_records(state.sqlite_conn, thread_id)
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
         except HTTPException:
-            if state.sqlite_conn is not None:
-                try:
-                    state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
-                    state.sqlite_conn.commit()
-                except Exception:
-                    pass
+            _purge_session_records(state.sqlite_conn, thread_id)
             raise
         except Exception as exc:
-            if state.sqlite_conn is not None:
-                try:
-                    state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
-                    state.sqlite_conn.commit()
-                except Exception:
-                    pass
+            _purge_session_records(state.sqlite_conn, thread_id)
             logger.exception("api_assess_error", extra={"error": str(exc)})
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -375,17 +373,17 @@ def create_app() -> FastAPI:
                     status_code=status.HTTP_403_FORBIDDEN,
                     detail="Session ownership verification failed: invalid or missing session token",
                 )
-            state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
             try:
-                state.sqlite_conn.execute(
-                    "DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,)
-                )
-                state.sqlite_conn.execute(
-                    "DELETE FROM writes WHERE thread_id = ?", (thread_id,)
-                )
-                state.sqlite_conn.commit()
+                with state.sqlite_conn:
+                    state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
+                    state.sqlite_conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
+                    state.sqlite_conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
             except Exception as exc:
-                logger.warning(f"session_db_clear_failed: {exc}")
+                logger.exception("session_db_clear_failed", extra={"error": str(exc)})
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="Failed to clear session data from storage.",
+                ) from exc
 
         if state.runner is not None:
             state.runner.clear_session(thread_id)

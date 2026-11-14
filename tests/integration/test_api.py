@@ -175,3 +175,37 @@ def test_assess_metadata_write_failure_fails_closed(client: TestClient) -> None:
         state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_insert_test;")
         state.sqlite_conn.commit()
 
+
+def test_delete_session_database_failure_fails_closed(client: TestClient) -> None:
+    assert state.sqlite_conn is not None
+
+    custom_thread_id = "test_atomic_del_thread_123"
+    resp = client.post(
+        "/assess",
+        json={"text": "Hello verification needed", "thread_id": custom_thread_id},
+    )
+    assert resp.status_code == 200
+    token = resp.json()["session_token"]
+
+    state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_delete_test;")
+    state.sqlite_conn.commit()
+    state.sqlite_conn.execute(
+        "CREATE TRIGGER fail_delete_test BEFORE DELETE ON checkpoints "
+        "FOR EACH ROW WHEN OLD.thread_id = 'test_atomic_del_thread_123' "
+        "BEGIN SELECT RAISE(ABORT, 'simulated checkpoint delete failure'); END;"
+    )
+    state.sqlite_conn.commit()
+    try:
+        del_resp = client.delete(f"/session/{custom_thread_id}?token={token}")
+        assert del_resp.status_code == 500
+        assert "Failed to clear session data" in del_resp.json()["detail"]
+
+        # Transaction atomicity: session_meta was rolled back and still exists
+        cur = state.sqlite_conn.cursor()
+        cur.execute("SELECT thread_id FROM session_meta WHERE thread_id = ?", (custom_thread_id,))
+        assert cur.fetchone() is not None
+    finally:
+        state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_delete_test;")
+        state.sqlite_conn.commit()
+        client.delete(f"/session/{custom_thread_id}?token={token}")
+
