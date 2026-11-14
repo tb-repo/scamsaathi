@@ -150,11 +150,13 @@ Copy `.env.example` to `.env` and provide your API keys:
 cp .env.example .env
 ```
 
-Key configuration options:
-- `SCAMSAATHI_GEMINI_API_KEY`: Google Gemini API key.
-- `SCAMSAATHI_GROQ_API_KEY`: Groq fallback key (optional).
-- `SCAMSAATHI_MODE`: `development`, `production`, or `offline_demo`.
-- `SCAMSAATHI_PRIMARY_MODEL_FAST`: `gemini-2.5-flash`
+Key configuration options (configured via `.env` or environment):
+- `GEMINI_API_KEY`: Google Gemini API key (paid tier recommended).
+- `GROQ_API_KEY`: Optional Groq API key for multi-provider fallback.
+- `SCAMSAATHI_MODE`: Operating mode — `live` (calls model and caches), `cached` (reads cache only), or `offline` (deterministic fallback on cache miss).
+- `GEMINI_MODEL_FAST`: Fast classification model (default: `TBD` -> `gemini-3.5-flash-lite` from `config/llm.yaml`).
+- `GEMINI_MODEL_REASONING`: Reasoning/explanation model (default: `TBD` -> `gemini-3.8-flash` from `config/llm.yaml`).
+- `SCAMSAATHI_MAX_LLM_CALLS_PER_REQUEST`: Per-request call budget cap (default: 6).
 
 ### 3. Running the Streamlit Web Application
 
@@ -169,6 +171,7 @@ Open your browser at `http://localhost:8501`.
 uvicorn scamsaathi.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 Interactive API docs available at `http://localhost:8000/docs`.
+- Features cryptographic session token ownership verification and automated 24-hour checkpoint TTL cleanup.
 
 ### 5. Running the Air-Gapped Offline Demo
 
@@ -199,7 +202,7 @@ All tests run completely offline and verify:
 - PII masking and raw vault clearing
 - State graph routing and interrupt-resume cycles
 - LLM Gateway caching, retries, and fallback circuit-breakers
-- FastAPI endpoints, CORS restrictions, and session deletion
+- FastAPI endpoints, session ownership tokens, 24h TTL cleanup, CORS restrictions, and session deletion
 - Advice engine contact allowlists and URL validation
 
 ---
@@ -208,28 +211,39 @@ All tests run completely offline and verify:
 
 ```
 scamsaathi/
+├── config/                 # Gateway model tiers, fallbacks & costs (llm.yaml)
 ├── data/
 │   ├── advice/             # Canonical advice templates (advice.yaml)
-│   ├── blocklists/         # Malicious domains, hashes, and handles
-│   ├── contacts/           # Verified official Indian reporting channels
-│   ├── evaluation/         # 50-case benchmark evaluation dataset
-│   └── knowledge_base/     # Indian cyber fraud typologies (SC-01 to SC-10)
+│   ├── contacts/           # Verified official Indian reporting channels (contacts.yaml)
+│   ├── demo/               # Air-gapped offline gold demo cache
+│   ├── evaluation/         # 50-case benchmark evaluation dataset (eval_dataset.jsonl)
+│   ├── intel/              # Threat intel blocklists and designated numbers
+│   └── kb/                 # Indian cyber fraud typologies (SC-01 to SC-15) & embeddings
 ├── docs/                   # Full project documentation & architectural decisions
 ├── reports/                # Benchmark evaluation reports & execution metadata
 ├── scripts/
+│   ├── build_kb.py         # Knowledge base builder
 │   ├── run_agentic.py      # Air-gapped offline interactive demo
 │   └── run_benchmarks.py   # Comprehensive benchmarking harness
 ├── src/scamsaathi/
 │   ├── agents/             # 9 specialized LangGraph agents
-│   ├── api/                # FastAPI application & Pydantic schemas
-│   ├── core/               # PII vault, masking, gateway & circuit breaker
+│   ├── api/                # FastAPI application, security & Pydantic schemas
+│   ├── evaluation/         # Benchmark evaluation metrics & ground truth labels
+│   ├── graph/              # LangGraph state graph wiring and node transitions
+│   ├── kb/                 # Curated knowledge base store and advice builder
+│   ├── llm/                # LLM gateway, disk cache, budget & model providers
 │   ├── pipeline/           # AgentRunner & Baseline B0 pipeline
-│   ├── tools/              # Threat intel DB & blocklist engines
-│   └── ui/                 # Streamlit web user interface
+│   ├── prompts/            # Agent prompt templates
+│   ├── tools/              # PII masker, threat intel DB, rule signals & risk scorer
+│   ├── ui/                 # Streamlit web user interface
+│   ├── config.py           # Pydantic Settings & environment loader
+│   ├── logging_setup.py    # Structured logging configuration
+│   └── schemas.py          # Core Pydantic domain schemas
 ├── tests/                  # 248 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
-├── requirements.txt        # Package requirements
-└── requirements.lock       # Authoritative locked dependencies
+├── requirements.txt        # Pinned direct dependencies
+├── requirements-dev.txt    # Development and test dependencies
+└── requirements.lock       # Authoritative full environment lock
 ```
 
 ---

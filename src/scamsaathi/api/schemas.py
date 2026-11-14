@@ -21,6 +21,9 @@ class AssessRequest(BaseModel):
 class ResumeRequest(BaseModel):
     thread_id: str = Field(min_length=1, description="Existing thread/session ID")
     answer: str | dict[str, Any] = Field(description="User answer ('yes', 'no', 'skip', or dict with details)")
+    session_token: str | None = Field(
+        default=None, description="Optional session token for ownership verification"
+    )
 
 
 class ActionOut(BaseModel):
@@ -48,6 +51,9 @@ class ExplanationOut(BaseModel):
 
 class AssessResponse(BaseModel):
     thread_id: str
+    session_token: str | None = Field(
+        default=None, description="Secret token granting ownership to resume or delete this session"
+    )
     status: Literal["needs_followup", "complete"]
     risk_level: str | None = None
     risk_score: int | None = None

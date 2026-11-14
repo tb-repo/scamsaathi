@@ -4,11 +4,14 @@ from __future__ import annotations
 
 import logging
 import re
+import secrets
 import sqlite3
+import time
+import uuid
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import FastAPI, Header, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from langgraph.checkpoint.sqlite import SqliteSaver
 
@@ -29,7 +32,9 @@ from scamsaathi.config import PROJECT_ROOT, get_settings
 from scamsaathi.pipeline.agentic import AgentRunner, AssessmentOutcome
 
 
-def outcome_to_response(outcome: AssessmentOutcome) -> AssessResponse:
+def outcome_to_response(
+    outcome: AssessmentOutcome, session_token: str | None = None
+) -> AssessResponse:
     headline = outcome.explanation.headline if outcome.explanation else None
     reasons = (
         [ReasonOut(text=r.text, evidence_ids=r.evidence_ids) for r in outcome.explanation.reasons]
@@ -54,6 +59,7 @@ def outcome_to_response(outcome: AssessmentOutcome) -> AssessResponse:
 
     return AssessResponse(
         thread_id=outcome.thread_id,
+        session_token=session_token,
         status=outcome.status,
         risk_level=outcome.risk.level if outcome.risk else None,
         risk_score=outcome.risk.value if outcome.risk else None,
@@ -79,6 +85,26 @@ class AppState:
 state = AppState()
 
 
+def cleanup_expired_sessions(conn: sqlite3.Connection, ttl_seconds: float = 86400.0) -> int:
+    """Enforces 24-hour storage limitation (DPDP Principle 4 / FR-084) by pruning expired checkpoints."""
+    cutoff = time.time() - ttl_seconds
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT thread_id FROM session_meta WHERE last_accessed < ?", (cutoff,))
+        expired = [row[0] for row in cur.fetchall()]
+        for tid in expired:
+            cur.execute("DELETE FROM checkpoints WHERE thread_id = ?", (tid,))
+            cur.execute("DELETE FROM writes WHERE thread_id = ?", (tid,))
+            cur.execute("DELETE FROM session_meta WHERE thread_id = ?", (tid,))
+        conn.commit()
+        if expired:
+            logger.info(f"purged_{len(expired)}_expired_sessions")
+        return len(expired)
+    except Exception as exc:
+        logger.warning(f"session_ttl_cleanup_failed: {exc}")
+        return 0
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     settings = get_settings()
@@ -87,6 +113,17 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     cache_dir.mkdir(parents=True, exist_ok=True)
     db_path = cache_dir / "sessions.db"
     conn = sqlite3.connect(str(db_path), check_same_thread=False)
+    conn.execute("""
+        CREATE TABLE IF NOT EXISTS session_meta (
+            thread_id TEXT PRIMARY KEY,
+            session_token TEXT NOT NULL,
+            created_at REAL NOT NULL,
+            last_accessed REAL NOT NULL
+        )
+    """)
+    conn.commit()
+    cleanup_expired_sessions(conn)
+
     saver = SqliteSaver(conn)
     saver.setup()
     runner = AgentRunner(ctx, checkpointer=saver)
@@ -145,9 +182,31 @@ def create_app() -> FastAPI:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Pipeline runner is not initialized",
             )
+        if state.sqlite_conn is not None:
+            cleanup_expired_sessions(state.sqlite_conn)
+
+        thread_id = req.thread_id or uuid.uuid4().hex
+        if not re.match(r"^[A-Za-z0-9_-]{8,64}$", thread_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid thread_id format (must be 8-64 alphanumeric characters)"
+            )
+
+        session_token = secrets.token_urlsafe(32)
+        now = time.time()
+        if state.sqlite_conn is not None:
+            try:
+                state.sqlite_conn.execute(
+                    "INSERT OR REPLACE INTO session_meta (thread_id, session_token, created_at, last_accessed) "
+                    "VALUES (?, ?, ?, ?)",
+                    (thread_id, session_token, now, now),
+                )
+                state.sqlite_conn.commit()
+            except Exception as exc:
+                logger.warning(f"session_meta_insert_failed: {exc}")
+
         try:
-            outcome = state.runner.assess(req.text, thread_id=req.thread_id)
-            return outcome_to_response(outcome)
+            outcome = state.runner.assess(req.text, thread_id=thread_id)
+            return outcome_to_response(outcome, session_token=session_token)
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
         except HTTPException:
@@ -160,15 +219,41 @@ def create_app() -> FastAPI:
             ) from exc
 
     @app.post("/resume", response_model=AssessResponse)
-    def resume_thread(req: ResumeRequest) -> AssessResponse:
+    def resume_thread(
+        req: ResumeRequest,
+        x_session_token: str | None = Header(None, alias="X-Session-Token"),
+    ) -> AssessResponse:
         if state.runner is None:
             raise HTTPException(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Pipeline runner is not initialized",
             )
+        if not re.match(r"^[A-Za-z0-9_-]{8,64}$", req.thread_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid thread_id format"
+            )
+
+        token_to_verify = req.session_token or x_session_token
+        if state.sqlite_conn is not None:
+            cur = state.sqlite_conn.cursor()
+            cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (req.thread_id,))
+            row = cur.fetchone()
+            if row is not None:
+                stored_token = row[0]
+                if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Session ownership verification failed: invalid or missing session token",
+                    )
+                state.sqlite_conn.execute(
+                    "UPDATE session_meta SET last_accessed = ? WHERE thread_id = ?",
+                    (time.time(), req.thread_id),
+                )
+                state.sqlite_conn.commit()
+
         try:
             outcome = state.runner.resume(req.thread_id, req.answer)
-            return outcome_to_response(outcome)
+            return outcome_to_response(outcome, session_token=token_to_verify)
         except HTTPException:
             raise
         except Exception as exc:
@@ -179,19 +264,35 @@ def create_app() -> FastAPI:
             ) from exc
 
     @app.delete("/session/{thread_id}")
-    def clear_session(thread_id: str) -> dict[str, str]:
+    def clear_session(
+        thread_id: str,
+        token: str | None = None,
+        x_session_token: str | None = Header(None, alias="X-Session-Token"),
+    ) -> dict[str, str]:
         """User control: deletes session checkpoints and in-memory PII maps (DPDP principle 6)."""
-        if not re.match(r"^[A-Za-z0-9_-]{1,64}$", thread_id):
+        if not re.match(r"^[A-Za-z0-9_-]{8,64}$", thread_id):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid thread_id format"
             )
 
+        token_to_verify = token or x_session_token
         if state.sqlite_conn is not None:
+            cur = state.sqlite_conn.cursor()
+            cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
+            row = cur.fetchone()
+            if row is not None:
+                stored_token = row[0]
+                if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Session ownership verification failed: invalid or missing session token",
+                    )
+                state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
+
             try:
                 state.sqlite_conn.execute(
                     "DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,)
                 )
-                # LangGraph SqliteSaver writes table
                 state.sqlite_conn.execute(
                     "DELETE FROM writes WHERE thread_id = ?", (thread_id,)
                 )

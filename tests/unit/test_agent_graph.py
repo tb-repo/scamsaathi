@@ -444,6 +444,26 @@ def test_multi_question_interview_answer_mapping() -> None:
     assert "They asked me to pay money." in lines
 
 
+def test_multi_question_resume_end_to_end(make_runner: Callable[..., Any]) -> None:
+    runner, llm = make_runner({
+        "extract": ['{"signals": []}'],
+        "classify": [_ask(["asked_for_secret", "asked_to_pay"])],
+    })
+    first = runner.assess("Someone called me about my parcel")
+    assert first.status == "needs_followup"
+    assert len(first.questions) >= 2
+
+    # Resume with structured answers dict keyed by fact
+    final = runner.resume(
+        first.thread_id,
+        {"answers": {first.questions[0]["fact"]: False, first.questions[1]["fact"]: True}},
+    )
+    assert final.status == "complete"
+    # Second question answered yes, adding that signal to state
+    sig_names = {s.name.value for s in final.signals}
+    assert "payment_request" in sig_names
+
+
 
 # --- Prompts and injection -------------------------------------------------------------
 

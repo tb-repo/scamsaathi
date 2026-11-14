@@ -207,19 +207,25 @@ if outcome is not None:
         st.warning("⚠️ **ScamSaathi needs a little more information to be sure:**")
         st.markdown("Please answer these quick clarifying questions:")
 
-        answers: dict[str, bool] = {}
-        for q in outcome.questions:
-            q_id = q.get("id", "Q")
+        user_selections: dict[str, bool] = {}
+        for idx, q in enumerate(outcome.questions, 1):
+            fact_key = q.get("fact") or q.get("id") or f"q_{idx}"
             q_text = q.get("text", "")
-            answers[q_id] = st.checkbox(q_text, key=f"q_{q_id}")
+            user_selections[fact_key] = st.checkbox(
+                q_text,
+                key=f"interview_check_{idx}_{fact_key}",
+            )
 
         col_sub1, col_sub2 = st.columns(2)
         with col_sub1:
             if st.button("Submit Answers", type="primary", use_container_width=True):
                 with st.spinner("Refining assessment with your answers..."):
+                    # Map each question's fact directly to its checkbox value
                     structured_answers = {
-                        q.get("fact", q_id): answers.get(q_id, False)
-                        for q_id, q in zip(answers.keys(), outcome.questions)
+                        q.get("fact", f"q_{idx}"): user_selections.get(
+                            q.get("fact") or q.get("id") or f"q_{idx}", False
+                        )
+                        for idx, q in enumerate(outcome.questions, 1)
                     }
                     resumed = runner.resume(outcome.thread_id, {"answers": structured_answers})
                     st.session_state.outcome = resumed
