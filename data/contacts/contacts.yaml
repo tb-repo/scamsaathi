@@ -22,10 +22,10 @@ contacts:
   - id: ncrp_suspect
     name: Report a suspect number, UPI ID, or website (Cyber Crime Portal)
     channel: url
-    value: https://cybercrime.gov.in/Webform/cyber_suspect.aspx
+    value: https://cybercrime.gov.in
     use_when: suspected
-    verified_on: 2026-11-11
-    source_url: https://cybercrime.gov.in/Default.aspx
+    verified_on: 2026-11-14
+    source_url: https://cybercrime.gov.in
   - id: chakshu
     name: Chakshu - report suspected fraud call, SMS, or WhatsApp (DoT Sanchar Saathi)
     channel: url

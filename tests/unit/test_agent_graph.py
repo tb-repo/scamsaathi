@@ -151,7 +151,7 @@ def test_clear_scam_gets_classified_and_reporting_comes_second(
     assert all(a.text.startswith("Please: ") for a in outcome.advice.actions)
     # Reporting protects others: it comes right after "stop contact", with the site inline.
     assert "https://sancharsaathi.gov.in/sfc" in outcome.advice.actions[2].text
-    assert "https://cybercrime.gov.in/Webform/cyber_suspect.aspx" in [
+    assert "https://cybercrime.gov.in" in [
         c.value for c in outcome.advice.contacts]
 
 
@@ -415,6 +415,33 @@ def test_contextual_llm_interview_questions(make_runner: Callable[..., Any]) -> 
     first = runner.assess("Someone called me about a parcel from customs")
     assert first.status == "needs_followup"
     assert first.questions[0]["text"] == custom_question
+
+
+def test_multi_question_interview_answer_mapping() -> None:
+    from scamsaathi.agents.interview import _interpret
+    pending = [
+        {"fact": "asked_for_secret", "text": "Did they ask for an OTP?"},
+        {"fact": "asked_to_pay", "text": "Did they ask for money?"},
+    ]
+    # Test 1: Dict format with Q1 / Q2 or fact names
+    lines, skipped = _interpret({"answers": {"Q1": True, "Q2": False}}, pending)
+    assert not skipped
+    assert lines == ["They asked me to share my OTP or PIN."]
+
+    lines, skipped = _interpret({"answers": {"asked_to_pay": True}}, pending)
+    assert not skipped
+    assert lines == ["They asked me to pay money."]
+
+    # Test 2: Multi-line string format
+    lines, skipped = _interpret("Q1: yes\nQ2: no", pending)
+    assert not skipped
+    assert lines == ["They asked me to share my OTP or PIN."]
+
+    # Test 3: Both yes
+    lines, skipped = _interpret("Q1: yes, Q2: yes", pending)
+    assert not skipped
+    assert "They asked me to share my OTP or PIN." in lines
+    assert "They asked me to pay money." in lines
 
 
 

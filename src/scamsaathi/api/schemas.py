@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 
 STANDARD_DISCLAIMER = (
     "ScamSaathi provides risk assessments for guidance only. It is not a legal or definitive "
-    "determination. Always verify independently through official channels."
+    "determination. Automated masking protects phone numbers, accounts, UPI IDs, and OTPs, "
+    "but cannot reliably redact personal names or street addresses. Always verify independently through official channels."
 )
 
 

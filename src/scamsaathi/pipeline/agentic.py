@@ -124,3 +124,9 @@ class AgentRunner:
             **common,
         )
         return self.guardrail.sanitize(complete)
+
+    def clear_session(self, thread_id: str) -> bool:
+        """Purge in-memory PII mappings and vault entries for the session (DPDP principle 6)."""
+        popped = self._session_mappings.pop(thread_id, None) is not None
+        self.ctx.vault.pop(thread_id)
+        return popped

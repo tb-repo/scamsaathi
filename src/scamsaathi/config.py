@@ -138,9 +138,19 @@ def load_llm_config(settings: Settings, path: Path | None = None) -> LLMConfig:
             config.tiers[tier_name] = tier.model_copy(update={"model": model})
 
     if settings.groq_api_key is not None:
+        fast_m = (
+            settings.groq_model_fast
+            if settings.groq_model_fast != PLACEHOLDER_MODEL
+            else "openai/gpt-oss-20b"
+        )
+        reasoning_m = (
+            settings.groq_model_reasoning
+            if settings.groq_model_reasoning != PLACEHOLDER_MODEL
+            else "openai/gpt-oss-120b"
+        )
         groq_fallbacks = {
-            "fast": FallbackConfig(provider="groq", model=settings.groq_model_fast),
-            "reasoning": FallbackConfig(provider="groq", model=settings.groq_model_reasoning),
+            "fast": FallbackConfig(provider="groq", model=fast_m),
+            "reasoning": FallbackConfig(provider="groq", model=reasoning_m),
         }
         for tier_name, fb in groq_fallbacks.items():
             existing = config.fallbacks.get(tier_name, [])

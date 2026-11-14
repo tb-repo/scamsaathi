@@ -14,9 +14,8 @@ child_safety:
 
 # What to keep for a complaint (electronic records are admissible evidence: BSA 2023 s.61-63).
 evidence:
-  - Do not delete the chats, call logs, or messages. Take screenshots that show the number or ID, the date, and the time.
-  - Keep the phone or device you used; the original electronic record may be needed as evidence.
-  - Ask your bank for a statement of the transactions and note each transaction ID (UTR).
+  - Do not delete the chats, call logs, or messages. Take screenshots that show the number or link, the date, and the time.
+  - Keep the phone or device you received the message on, as the original electronic record may be needed as evidence.
 
 # How to approach the police (BNSS 2023 s.173(1), (2)).
 police_reporting:
@@ -27,14 +26,15 @@ police_reporting:
 urgent_recovery:
   - Call 1930 (National Cyber Crime Helpline) now. Reporting quickly gives the best chance to freeze the money.
   - Call your bank on the number printed on your card or in its official app and ask them to block the card, UPI, or account.
+  - Ask your bank for a statement of the transactions and note each transaction ID (UTR).
   - Change your net banking and UPI PINs and passwords from a safe device.
   - Note the transaction ID (UTR), amount, date and time, and keep screenshots of the chat and caller number.
-  - Complete the complaint on the National Cyber Crime Reporting Portal.
+  - Complete the complaint on the National Cyber Crime Reporting Portal at https://cybercrime.gov.in
 
 by_level:
   CRITICAL:
-    - Stop all contact now. Do not pay, share any code, or install any app.
-    - Do not follow any instruction from this caller or message.
+    - Stop all contact immediately. Do not make payments, click links, share passwords or OTPs, or install apps.
+    - Block the sender number or contact immediately.
   HIGH:
     - Do not pay, click links, or share OTP, PIN, CVV, or passwords.
     - Block the number or sender.
@@ -47,9 +47,9 @@ by_level:
 # Typology-specific advice, added after the level advice.
 by_typology:
   SC-01:
-    - Police, CBI, customs, or courts do not arrest people or collect money over video calls. End the call.
-    - Talk to a family member or visit your nearest police station in person.
-    - If your phone labelled the call as international but showed an Indian +91 number, report it on Sanchar Saathi's Report International Call page.
+    - Official authorities (Police, CBI, Courts, Transport or VAHAN) never demand payments or arrest citizens over calls, SMS, or WhatsApp. Real legal notices are sent via registered post or official government portals.
+    - To check if you genuinely have a pending challan or notice, verify directly on the official government portal (such as echallan.parivahan.gov.in) or visit the department in person.
+    - Discuss the situation with a family member or visit your local police station in person before taking any action.
   SC-02:
     - Banks never ask for OTP, PIN, CVV, or passwords. Update KYC only in the official app or at a branch.
     - Indian bank websites use the .bank.in domain. Check the address before entering anything.
@@ -103,7 +103,7 @@ contacts_by_typology:
 # ScamSaathi never collects reports itself (FR-087); it only points to these channels.
 report_suspected:
   - Report it, even if you did not lose money. This helps the authorities act on the number or link and protect others. Report the call, SMS, or WhatsApp message on Chakshu at https://sancharsaathi.gov.in/sfc within 30 days.
-  - You can also report the scammer's number, UPI ID, or website on the Cyber Crime Portal at https://cybercrime.gov.in/Webform/cyber_suspect.aspx
+  - You can also report the scammer's number, UPI ID, or website on the Cyber Crime Portal at https://cybercrime.gov.in
 
 # Added when a TRAI 140-series number or a promotional (-P) sender header appears.
 # Source: TCCCPR 2018 as amended 12 Feb 2025 (reg. 23, 25, Schedule-I) and 18 Sep 2026

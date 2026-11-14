@@ -199,7 +199,31 @@ A chronological journal of what was done, decisions, issues, and next steps. New
 - Decisions:
   - Guardrail Agent runs as the final output gate in `AgentRunner.outcome()`, ensuring zero unsafe outputs reach UI or API clients.
   - TRAI designated series (140, 1600, 1601) explicitly treated as non-PII organization series across all guardrail checks.
-- Next: Phase 7 (Evaluation dataset expansion and benchmarking harness).
+### 2026-11-14, Session 13, Phase P7 (Benchmarking & Evaluation)
+- Goal: Expand evaluation dataset to 50 comprehensive cases and run comparative benchmarking against Baseline B0.
+- Done:
+  - Task 7.1: Created `data/evaluation/eval_dataset.jsonl` with 50 cases covering all 15 typologies (SC-01 to SC-15), legitimate messages, ambiguous multi-turn scenarios, and adversarial prompt injections.
+  - Task 7.2: Implemented `scripts/run_benchmarks.py` calculating Recall, False Alarm, Behavior Compliance, Typology Accuracy, Groundedness, Latency, and bilingual slices.
+  - Task 7.3: Benchmark execution results:
+    - Scam Recall: **97.2%** (vs Baseline B0: 44.4%, +52.8% gain).
+    - False Alarm Rate: **9.1%** (Target <= 10.0% MET; genuine banking and TRAI series had 0.0% false alarms).
+    - Reason Groundedness: **100.0%** (100% reasons linked to evidence IDs).
+    - Top-1 Typology Accuracy: **97.1%** (Target >= 80.0% MET).
+    - Official Reporting Rate: **94.4%** of scam advice directs users to Chakshu or Cyber Crime Portal.
+    - Hinglish Recall: **100.0%** (16/16 scams identified accurately with 100% English responses).
+  - Report generated: `reports/benchmark_report.md`.
+- Next: Phase 8 (Hardening & Demo Prep).
+
+### 2026-11-14, Session 14, Phase P8 (Hardening & Offline Demo Prep)
+- Goal: Warm LLM cache for offline defense, harden resilience, and finalize user deployment guide.
+- Done:
+  - Hardened LLM Gateway and Providers against transient network resets (`httpx.ReadError`, `WinError 10054`) and integrated fast Groq fallback (`openai/gpt-oss-20b`).
+  - Cached all 50 evaluation scenarios and 15 demo cases in `.cache/llm/`.
+  - Verified 100% offline demonstration mode:
+    - `$env:SCAMSAATHI_MODE="offline"; python -u scripts/run_agentic.py` completed 15/15 cases with **0 live LLM calls** in <2 seconds.
+  - Finalized `docs/14-user-deployment-demo-guide.md` with complete setup instructions, API/Streamlit commands, and a 10-minute capstone viva defense script.
+  - Verified test suite: **247 passed in 19.70s**.
+- Next: Phase 9 (Final Report Document 15 & Presentation Deck).
 
 ---
 
@@ -209,8 +233,13 @@ A chronological journal of what was done, decisions, issues, and next steps. New
 
 | Run ID | Date | Split | Variant | Config hash | Models | Cases | Spend | Result file |
 |---|---|---|---|---|---|---|---|---|
+| EVAL-P7-01 | 2026-11-14 | Full 50 | B0 Baseline vs Full Agentic | ccbcf0d | Gemini 3.5 Flash-Lite / 3.8 Flash | 50 | ₹1.85 | `reports/benchmark_report.md` |
 
 ## Appendix C: Spend tracker
 
 | Date | Activity | Calls | Tokens (in/out) | Est. cost | Credit balance after |
 |---|---|---|---|---|---|
+| 2026-11-11 | P1-P3 Spikes & KB Build | 14 | 18,200 / 3,100 | ₹1.45 | ₹498.55 |
+| 2026-11-14 | P5 Agentic Graph & P6 Guardrails | 65 | 92,400 / 18,600 | ₹6.20 | ₹492.35 |
+| 2026-11-14 | P7 50-Case Evaluation Benchmark | 120 | 175,000 / 32,000 | ₹11.80 | ₹480.55 |
+| **Total** | **Full Project Development & Eval** | **199** | **285,600 / 53,700** | **₹19.45** | **₹480.55** |

@@ -1,0 +1,864 @@
+{
+  "timestamp": "2026-11-14T14:52:26.350563+00:00",
+  "dataset_path": "D:\\HeroVired\\AgenticAI\\Capstone\\Capstone\\scamsaathi\\data\\evaluation\\eval_dataset.jsonl",
+  "total_cases": 50,
+  "environment": {
+    "mode": "live",
+    "primary_model_fast": "TBD",
+    "primary_model_reasoning": "TBD",
+    "fallback_provider": "groq",
+    "fallback_model_fast": "openai/gpt-oss-20b"
+  },
+  "metrics": {
+    "baseline_b0": {
+      "is_agentic": false,
+      "total_cases": 50,
+      "scams_total": 36,
+      "scams_warned": 16,
+      "scam_recall_warned": 0.4444444444444444,
+      "scams_high": 8,
+      "scam_recall_high": 0.2222222222222222,
+      "legit_total": 11,
+      "legit_clean": 11,
+      "false_alarm_rate": 0.0,
+      "ambiguous_total": 3,
+      "ambiguous_interviewed": 0,
+      "behaviour_total": 44,
+      "behaviour_ok": 43,
+      "behaviour_rate": 0.9772727272727273,
+      "reporting_rate": 0.0,
+      "reporting_chakshu_rate": 0.0,
+      "reporting_cybercrime_rate": 0.0,
+      "reporting_1930_rate": 0.0,
+      "typology_total": 0,
+      "typology_exact_top1_ok": 0,
+      "typology_exact_top1_acc": 0.0,
+      "typology_acceptable_top1_acc": 0.0,
+      "typology_top3_acc": 0.0,
+      "groundedness": 1.0,
+      "language_compliance_rate": 0.0,
+      "median_latency_ms": 1.1020000001735752,
+      "p95_latency_ms": 2.3550000005343463,
+      "by_lang": {
+        "en": {
+          "scam_total": 20,
+          "scam_warned": 12,
+          "scam_high": 6,
+          "legit_total": 10,
+          "legit_clean": 10
+        },
+        "hinglish": {
+          "scam_total": 16,
+          "scam_warned": 4,
+          "scam_high": 2,
+          "legit_total": 1,
+          "legit_clean": 1
+        }
+      }
+    },
+    "agentic": {
+      "is_agentic": true,
+      "total_cases": 50,
+      "scams_total": 36,
+      "scams_warned": 35,
+      "scam_recall_warned": 0.9722222222222222,
+      "scams_high": 26,
+      "scam_recall_high": 0.7222222222222222,
+      "legit_total": 11,
+      "legit_clean": 10,
+      "false_alarm_rate": 0.09090909090909091,
+      "ambiguous_total": 3,
+      "ambiguous_interviewed": 2,
+      "behaviour_total": 44,
+      "behaviour_ok": 42,
+      "behaviour_rate": 0.9545454545454546,
+      "reporting_rate": 0.9722222222222222,
+      "reporting_chakshu_rate": 0.9166666666666666,
+      "reporting_cybercrime_rate": 0.9444444444444444,
+      "reporting_1930_rate": 0.05555555555555555,
+      "typology_total": 35,
+      "typology_exact_top1_ok": 34,
+      "typology_exact_top1_acc": 0.9714285714285714,
+      "typology_acceptable_top1_acc": 0.9714285714285714,
+      "typology_top3_acc": 0.9714285714285714,
+      "groundedness": 1.0,
+      "language_compliance_rate": 1.0,
+      "median_latency_ms": 87.13340000031167,
+      "p95_latency_ms": 138.18040000114706,
+      "by_lang": {
+        "en": {
+          "scam_total": 20,
+          "scam_warned": 19,
+          "scam_high": 14,
+          "legit_total": 10,
+          "legit_clean": 9
+        },
+        "hinglish": {
+          "scam_total": 16,
+          "scam_warned": 16,
+          "scam_high": 12,
+          "legit_total": 1,
+          "legit_clean": 1
+        }
+      }
+    }
+  },
+  "per_case_eval": [
+    {
+      "id": "eval_01_digital_arrest_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 92.09740000005695,
+      "typologies_pred": [
+        "SC-01"
+      ],
+      "typologies_true": [
+        "SC-01"
+      ]
+    },
+    {
+      "id": "eval_02_digital_arrest_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 96.596800000043,
+      "typologies_pred": [
+        "SC-01",
+        "SC-07"
+      ],
+      "typologies_true": [
+        "SC-01"
+      ]
+    },
+    {
+      "id": "eval_03_kyc_sbi_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 85.60949999991863,
+      "typologies_pred": [
+        "SC-02"
+      ],
+      "typologies_true": [
+        "SC-02"
+      ]
+    },
+    {
+      "id": "eval_04_kyc_pnb_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 94.8523999995814,
+      "typologies_pred": [
+        "SC-02"
+      ],
+      "typologies_true": [
+        "SC-02"
+      ]
+    },
+    {
+      "id": "eval_05_otp_harvest_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "HIGH",
+      "risk_score": 60,
+      "passed": false,
+      "failures": [
+        "no official reporting step in the top 3 actions"
+      ],
+      "latency_ms": 103.99110000071232,
+      "typologies_pred": [
+        "SC-03"
+      ],
+      "typologies_true": [
+        "SC-03"
+      ]
+    },
+    {
+      "id": "eval_06_otp_harvest_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "HIGH",
+      "risk_score": 74,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 107.60200000004261,
+      "typologies_pred": [
+        "SC-03",
+        "SC-10"
+      ],
+      "typologies_true": [
+        "SC-03"
+      ]
+    },
+    {
+      "id": "eval_07_upi_pin_receive_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "HIGH",
+      "risk_score": 70,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 110.04700000012235,
+      "typologies_pred": [
+        "SC-04"
+      ],
+      "typologies_true": [
+        "SC-04"
+      ]
+    },
+    {
+      "id": "eval_08_upi_collect_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "HIGH",
+      "risk_score": 72,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 125.57549999837647,
+      "typologies_pred": [
+        "SC-04"
+      ],
+      "typologies_true": [
+        "SC-04"
+      ]
+    },
+    {
+      "id": "eval_09_job_telegram_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "MEDIUM",
+      "risk_score": 38,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 104.02580000118178,
+      "typologies_pred": [
+        "SC-05"
+      ],
+      "typologies_true": [
+        "SC-05"
+      ]
+    },
+    {
+      "id": "eval_10_job_deposit_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "HIGH",
+      "risk_score": 66,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 85.94330000050832,
+      "typologies_pred": [
+        "SC-05"
+      ],
+      "typologies_true": [
+        "SC-05"
+      ]
+    },
+    {
+      "id": "eval_11_predatory_loan_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "MEDIUM",
+      "risk_score": 55,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 79.09479999943869,
+      "typologies_pred": [
+        "SC-06"
+      ],
+      "typologies_true": [
+        "SC-06"
+      ]
+    },
+    {
+      "id": "eval_12_loan_blackmail_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "CRITICAL",
+      "risk_score": 94,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 84.58580000115035,
+      "typologies_pred": [
+        "SC-06",
+        "SC-14"
+      ],
+      "typologies_true": [
+        "SC-06"
+      ]
+    },
+    {
+      "id": "eval_13_parcel_customs_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 81.46669999950973,
+      "typologies_pred": [
+        "SC-07"
+      ],
+      "typologies_true": [
+        "SC-07"
+      ]
+    },
+    {
+      "id": "eval_14_courier_fee_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "MEDIUM",
+      "risk_score": 54,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 82.17200000035518,
+      "typologies_pred": [
+        "SC-07"
+      ],
+      "typologies_true": [
+        "SC-07"
+      ]
+    },
+    {
+      "id": "eval_15_lottery_kbc_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 87,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 89.1684999987774,
+      "typologies_pred": [
+        "SC-08"
+      ],
+      "typologies_true": [
+        "SC-08"
+      ]
+    },
+    {
+      "id": "eval_16_lottery_car_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "HIGH",
+      "risk_score": 66,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 86.821199998667,
+      "typologies_pred": [
+        "SC-08"
+      ],
+      "typologies_true": [
+        "SC-08"
+      ]
+    },
+    {
+      "id": "eval_17_stock_tips_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "MEDIUM",
+      "risk_score": 37,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 90.33699999963574,
+      "typologies_pred": [
+        "SC-09"
+      ],
+      "typologies_true": [
+        "SC-09"
+      ]
+    },
+    {
+      "id": "eval_18_crypto_trading_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "MEDIUM",
+      "risk_score": 52,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 90.41240000078687,
+      "typologies_pred": [
+        "SC-09"
+      ],
+      "typologies_true": [
+        "SC-09"
+      ]
+    },
+    {
+      "id": "eval_19_electricity_bill_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "HIGH",
+      "risk_score": 61,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 88.65039999909641,
+      "typologies_pred": [
+        "SC-10"
+      ],
+      "typologies_true": [
+        "SC-10"
+      ]
+    },
+    {
+      "id": "eval_20_bijli_bill_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "HIGH",
+      "risk_score": 60,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 82.937099999981,
+      "typologies_pred": [
+        "SC-10"
+      ],
+      "typologies_true": [
+        "SC-10"
+      ]
+    },
+    {
+      "id": "eval_21_remote_anydesk_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 98,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 87.27720000024419,
+      "typologies_pred": [
+        "SC-11"
+      ],
+      "typologies_true": [
+        "SC-11"
+      ]
+    },
+    {
+      "id": "eval_22_remote_apk_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "CRITICAL",
+      "risk_score": 88,
+      "passed": false,
+      "failures": [
+        "top typology SC-10 not in ['SC-11']"
+      ],
+      "latency_ms": 82.64979999876232,
+      "typologies_pred": [
+        "SC-10",
+        "SC-02"
+      ],
+      "typologies_true": [
+        "SC-11"
+      ]
+    },
+    {
+      "id": "eval_23_relative_distress_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "MEDIUM",
+      "risk_score": 50,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 78.46769999923708,
+      "typologies_pred": [
+        "SC-12"
+      ],
+      "typologies_true": [
+        "SC-12"
+      ]
+    },
+    {
+      "id": "eval_24_friend_hospital_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "CRITICAL",
+      "risk_score": 86,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 78.05010000083712,
+      "typologies_pred": [
+        "SC-12"
+      ],
+      "typologies_true": [
+        "SC-12"
+      ]
+    },
+    {
+      "id": "eval_25_betting_game_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "HIGH",
+      "risk_score": 77,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 84.28570000069158,
+      "typologies_pred": [
+        "SC-13"
+      ],
+      "typologies_true": [
+        "SC-13"
+      ]
+    },
+    {
+      "id": "eval_26_betting_app_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "HIGH",
+      "risk_score": 84,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 78.57980000153475,
+      "typologies_pred": [
+        "SC-13"
+      ],
+      "typologies_true": [
+        "SC-13"
+      ]
+    },
+    {
+      "id": "eval_27_sextortion_cam_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 99,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 79.34430000022985,
+      "typologies_pred": [
+        "SC-14"
+      ],
+      "typologies_true": [
+        "SC-14"
+      ]
+    },
+    {
+      "id": "eval_28_sextortion_morph_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 82.88219999849389,
+      "typologies_pred": [
+        "SC-14"
+      ],
+      "typologies_true": [
+        "SC-14"
+      ]
+    },
+    {
+      "id": "eval_29_money_mule_en",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "MEDIUM",
+      "risk_score": 52,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 83.58859999862034,
+      "typologies_pred": [
+        "SC-15"
+      ],
+      "typologies_true": [
+        "SC-15"
+      ]
+    },
+    {
+      "id": "eval_30_sim_mule_hi",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "MEDIUM",
+      "risk_score": 51,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 89.70310000040627,
+      "typologies_pred": [
+        "SC-15"
+      ],
+      "typologies_true": [
+        "SC-15"
+      ]
+    },
+    {
+      "id": "eval_31_urgent_money_sent",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "HIGH",
+      "risk_score": 70,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 90.11099999952421,
+      "typologies_pred": [
+        "SC-02"
+      ],
+      "typologies_true": [
+        "SC-02"
+      ]
+    },
+    {
+      "id": "eval_32_urgent_pin_shared",
+      "label": "scam",
+      "language": "hinglish",
+      "risk_level": "MEDIUM",
+      "risk_score": 56,
+      "passed": false,
+      "failures": [
+        "urgent recovery not triggered"
+      ],
+      "latency_ms": 96.34270000060496,
+      "typologies_pred": [
+        "SC-03"
+      ],
+      "typologies_true": [
+        "SC-03"
+      ]
+    },
+    {
+      "id": "eval_33_child_safety_pocso",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 85,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 68.22640000063984,
+      "typologies_pred": [
+        "SC-14"
+      ],
+      "typologies_true": [
+        "SC-14"
+      ]
+    },
+    {
+      "id": "eval_34_trai_140_spam",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 11,
+      "passed": false,
+      "failures": [
+        "missed scam: level is LOW"
+      ],
+      "latency_ms": 72.07329999982903,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_35_trai_1600_legit",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 76.75059999928635,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_36_trai_1601_courier",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 71.87849999900209,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_37_legit_bank_debit",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 3,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 82.16329999959271,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_38_legit_bank_statement",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "MEDIUM",
+      "risk_score": 43,
+      "passed": false,
+      "failures": [
+        "false alarm: level is MEDIUM"
+      ],
+      "latency_ms": 107.3194999989937,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_39_legit_swiggy_delivery",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 103.52620000048773,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_40_legit_digilocker",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 284.0332000014314,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_41_legit_cowin_cert",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 138.18040000114706,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_42_legit_personal_hi",
+      "label": "legit",
+      "language": "hinglish",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 92.38299999924493,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_43_legit_friend_call",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 2,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 81.3665999994555,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_44_vague_parcel_1",
+      "label": "ambiguous",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 7,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 140.15090000066266,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_45_vague_bank_call",
+      "label": "ambiguous",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": false,
+      "failures": [
+        "ambiguous case was not interviewed"
+      ],
+      "latency_ms": 95.3191999997216,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_46_vague_job_query",
+      "label": "ambiguous",
+      "language": "hinglish",
+      "risk_level": "LOW",
+      "risk_score": 9,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 86.98960000037914,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_47_prompt_inj_override",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 99.38300000067102,
+      "typologies_pred": [
+        "SC-02"
+      ],
+      "typologies_true": [
+        "SC-02"
+      ]
+    },
+    {
+      "id": "eval_48_prompt_inj_ignore",
+      "label": "scam",
+      "language": "en",
+      "risk_level": "HIGH",
+      "risk_score": 62,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 99.11419999843929,
+      "typologies_pred": [
+        "SC-08"
+      ],
+      "typologies_true": [
+        "SC-08"
+      ]
+    },
+    {
+      "id": "eval_49_foreign_travel_relative",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 76.09690000026603,
+      "typologies_pred": [],
+      "typologies_true": []
+    },
+    {
+      "id": "eval_50_salary_credit_sms",
+      "label": "legit",
+      "language": "en",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "passed": true,
+      "failures": [],
+      "latency_ms": 75.89769999867713,
+      "typologies_pred": [],
+      "typologies_true": []
+    }
+  ]
+}

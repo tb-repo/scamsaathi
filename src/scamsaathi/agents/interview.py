@@ -151,24 +151,50 @@ def plan_questions(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
 
 
 def _interpret(answer: Any, pending: list[dict[str, str]]) -> tuple[list[str], bool]:
-    """Return (new masked answer lines, skipped)."""
+    """Return (new masked answer lines, skipped). Supports dict, Q1:yes format, or plain text."""
     facts = [q["fact"] for q in pending]
     yes: dict[str, bool] = {}
     free = ""
+
     if isinstance(answer, dict):
         if answer.get("skip"):
             return [], True
-        yes = {k: bool(v) for k, v in (answer.get("answers") or {}).items() if k in facts}
+        raw_answers = answer.get("answers") or {}
+        for i, q in enumerate(pending):
+            f = q["fact"]
+            qid = q.get("id", f"Q{i+1}")
+            if f in raw_answers:
+                yes[f] = bool(raw_answers[f])
+            elif qid in raw_answers:
+                yes[f] = bool(raw_answers[qid])
+            elif str(i + 1) in raw_answers:
+                yes[f] = bool(raw_answers[str(i + 1)])
         free = str(answer.get("text") or "")
     else:
         free = str(answer or "")
         if free.strip().lower() in SKIP_WORDS:
             return [], True
-        if len(facts) == 1 and (_YES.match(free) or _NO.match(free)):
+
+        # Parse multi-question answers like "Q1: yes Q2: no" or "1: yes, 2: yes"
+        for i, q in enumerate(pending):
+            f = q["fact"]
+            qid = f"Q{i+1}"
+            m = re.search(rf"\b(?:{qid}|{i+1})\s*[:=-]\s*(yes|y|haan|true|1|no|n|nahi|false|0)\b", free, re.I)
+            if m:
+                val = m.group(1).lower()
+                yes[f] = val in ("yes", "y", "haan", "true", "1")
+
+        if len(facts) == 1 and not yes and (_YES.match(free) or _NO.match(free)):
             yes = {facts[0]: bool(_YES.match(free))}
+
     lines = [QUESTION_BANK[f][2] for f in facts if yes.get(f)]
-    if free.strip():
-        lines.append(mask(free.strip()[:1000]).masked_text)
+
+    # Clean structured markers so they don't leak as raw strings
+    cleaned_free = re.sub(r"\b(?:Q\d+|\d+)\s*[:=-]\s*(?:yes|no|y|n|true|false)\b", "", free, flags=re.I).strip()
+    cleaned_free = re.sub(r"^[,;\s]+|[,;\s]+$", "", cleaned_free)
+    if cleaned_free and not _YES.match(cleaned_free) and not _NO.match(cleaned_free):
+        lines.append(mask(cleaned_free[:1000]).masked_text)
+
     return lines, False
 
 

@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import logging
+import re
 import sqlite3
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
@@ -9,6 +11,8 @@ from typing import Any, AsyncGenerator
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from langgraph.checkpoint.sqlite import SqliteSaver
+
+logger = logging.getLogger("scamsaathi.api")
 
 from scamsaathi.agents.context import AgentContext, build_context
 from scamsaathi.api.schemas import (
@@ -106,9 +110,15 @@ def create_app() -> FastAPI:
 
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[
+            "http://localhost:8501",
+            "http://127.0.0.1:8501",
+            "http://localhost:3000",
+            "http://127.0.0.1:3000",
+        ],
+        allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
         allow_credentials=True,
-        allow_methods=["*"],
+        allow_methods=["GET", "POST", "DELETE", "OPTIONS"],
         allow_headers=["*"],
     )
 
@@ -140,10 +150,13 @@ def create_app() -> FastAPI:
             return outcome_to_response(outcome)
         except ValueError as exc:
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+        except HTTPException:
+            raise
         except Exception as exc:
+            logger.exception("api_assess_error", extra={"error": str(exc)})
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Assessment error: {exc}",
+                detail="An internal error occurred while processing the assessment.",
             ) from exc
 
     @app.post("/resume", response_model=AssessResponse)
@@ -156,26 +169,39 @@ def create_app() -> FastAPI:
         try:
             outcome = state.runner.resume(req.thread_id, req.answer)
             return outcome_to_response(outcome)
+        except HTTPException:
+            raise
         except Exception as exc:
+            logger.exception("api_resume_error", extra={"error": str(exc)})
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Resume error: {exc}",
+                detail="An internal error occurred while resuming the assessment.",
             ) from exc
 
     @app.delete("/session/{thread_id}")
     def clear_session(thread_id: str) -> dict[str, str]:
-        """User control: deletes session checkpoints for the thread (Doc 08 privacy principle 6)."""
+        """User control: deletes session checkpoints and in-memory PII maps (DPDP principle 6)."""
+        if not re.match(r"^[A-Za-z0-9_-]{1,64}$", thread_id):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid thread_id format"
+            )
+
         if state.sqlite_conn is not None:
             try:
                 state.sqlite_conn.execute(
                     "DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,)
                 )
+                # LangGraph SqliteSaver writes table
                 state.sqlite_conn.execute(
-                    "DELETE FROM checkpoint_writes WHERE thread_id = ?", (thread_id,)
+                    "DELETE FROM writes WHERE thread_id = ?", (thread_id,)
                 )
                 state.sqlite_conn.commit()
-            except Exception:
-                pass
+            except Exception as exc:
+                logger.warning(f"session_db_clear_failed: {exc}")
+
+        if state.runner is not None:
+            state.runner.clear_session(thread_id)
+
         return {"status": "cleared", "thread_id": thread_id}
 
     return app

@@ -78,8 +78,13 @@ class GeminiProvider:
             if exc.code in _TRANSIENT_HTTP_CODES:
                 raise TransientProviderError(f"gemini HTTP {exc.code}") from None
             raise PermanentProviderError(f"gemini HTTP {exc.code}") from None
-        except (TimeoutError, ConnectionError) as exc:
+        except (TimeoutError, ConnectionError, OSError) as exc:
             raise TransientProviderError(f"gemini {type(exc).__name__}") from None
+        except Exception as exc:
+            exc_name = type(exc).__name__
+            if any(term in exc_name for term in ("Read", "Network", "Protocol", "Timeout", "Connect", "Remote", "HTTP")):
+                raise TransientProviderError(f"gemini {exc_name}") from None
+            raise
 
         text = response.text
         if not text:
@@ -125,12 +130,17 @@ class GroqProvider:
                 response_format={"type": "json_object"},
                 timeout=timeout_s,
             )
-        except (APITimeoutError, APIConnectionError, TimeoutError, ConnectionError) as exc:
+        except (APITimeoutError, APIConnectionError, TimeoutError, ConnectionError, OSError) as exc:
             raise TransientProviderError(f"groq {type(exc).__name__}") from None
         except APIStatusError as exc:
             if exc.status_code in _TRANSIENT_HTTP_CODES:
                 raise TransientProviderError(f"groq HTTP {exc.status_code}") from None
             raise PermanentProviderError(f"groq HTTP {exc.status_code}") from None
+        except Exception as exc:
+            exc_name = type(exc).__name__
+            if any(term in exc_name for term in ("Read", "Network", "Protocol", "Timeout", "Connect", "Remote", "HTTP")):
+                raise TransientProviderError(f"groq {exc_name}") from None
+            raise
 
         choice = response.choices[0]
         text = choice.message.content or ""

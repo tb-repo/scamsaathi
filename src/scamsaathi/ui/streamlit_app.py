@@ -132,10 +132,11 @@ with st.sidebar:
     st.subheader("📋 Privacy by Design (FR-084)")
     st.info(
         "**DPDP-Aligned Privacy Protection:**\n\n"
-        "• Your phone numbers, emails, UPI IDs, and account numbers are **masked locally** "
-        "before reaching AI models.\n"
-        "• We **never read** your device SMS, call logs, or contacts (paste-only).\n"
-        "• No personal data is stored or logged."
+        "• **Automated Masking:** Phone numbers, emails, UPI IDs, bank accounts, and OTPs are masked locally before AI processing.\n"
+        "• **User Caution:** Pattern matching cannot reliably detect personal names or street addresses; please avoid entering them.\n"
+        "• **URLs Inspected:** Web links are analyzed for security threat intelligence and domain legitimacy.\n"
+        "• **Zero Device Scraping:** Paste-only interface—we never access device SMS, call logs, or contacts.\n"
+        "• **Ephemeral Processing:** Original text is cleared immediately after analysis."
     )
 
     st.markdown("---")
@@ -216,8 +217,11 @@ if outcome is not None:
         with col_sub1:
             if st.button("Submit Answers", type="primary", use_container_width=True):
                 with st.spinner("Refining assessment with your answers..."):
-                    answered_text = " ".join([f"{k}: yes" for k, v in answers.items() if v]) or "no"
-                    resumed = runner.resume(outcome.thread_id, answered_text)
+                    structured_answers = {
+                        q.get("fact", q_id): answers.get(q_id, False)
+                        for q_id, q in zip(answers.keys(), outcome.questions)
+                    }
+                    resumed = runner.resume(outcome.thread_id, {"answers": structured_answers})
                     st.session_state.outcome = resumed
                     st.rerun()
         with col_sub2:
@@ -269,6 +273,18 @@ if outcome is not None:
             for action in outcome.advice.actions:
                 st.markdown(f"**{action.priority}.** {action.text}")
 
+            if not outcome.advice.urgent_recovery_mode:
+                with st.expander("⚠️ **Already Sent Money or Entered Bank / Card Details?**"):
+                    st.markdown(
+                        """
+                        **If you already transferred money, scanned a QR code, or shared bank/UPI details:**
+                        1. **Call 1930 immediately:** Contact the National Cyber Crime Helpline (24x7) to request an immediate freeze lien on beneficiary accounts.
+                        2. **Contact your bank:** Block your debit/credit card, UPI handle, or net banking access immediately.
+                        3. **Obtain UTR numbers:** Request a bank statement noting each 12-digit transaction reference (UTR).
+                        4. **File an official complaint:** Lodge an online complaint at [cybercrime.gov.in](https://cybercrime.gov.in).
+                        """
+                    )
+
         # Official Reporting Section (Protect Others)
         if outcome.advice is not None and outcome.advice.contacts:
             st.markdown("---")
@@ -285,7 +301,6 @@ if outcome is not None:
                         <div class="portal-card">
                             <div class="portal-title">🌐 {contact.name}</div>
                             <div>Direct Official Portal: <a href="{contact.value}" target="_blank"><b>{contact.value}</b></a></div>
-                            <small style="color: #64748b;">Verified official channel as of {contact.verified_on}</small>
                         </div>
                         """,
                         unsafe_allow_html=True,
@@ -296,11 +311,11 @@ if outcome is not None:
                         <div class="portal-card">
                             <div class="portal-title">📞 {contact.name}</div>
                             <div>Dial or SMS: <b>{contact.value}</b></div>
-                            <small style="color: #64748b;">Verified official helpline as of {contact.verified_on}</small>
                         </div>
                         """,
                         unsafe_allow_html=True,
                     )
+            st.caption("🛡️ *All channels are verified official Indian government portals (DoT Sanchar Saathi & MHA I4C).*")
 
         # Technical Evidence / Threat Intel Expander (For Viva / Demo)
         with st.expander("🔬 Technical Evidence & Agent Intelligence (Examiner / Audit View)"):
@@ -311,11 +326,13 @@ if outcome is not None:
             if outcome.signals:
                 st.markdown("**Extracted Behavioral Signals:**")
                 for s in outcome.signals:
-                    st.markdown(f"- `{s.name.value}` ({s.evidence_id}): *\"{s.evidence_span}\"*")
+                    sig_name = s.name.value if hasattr(s.name, "value") else str(s.name)
+                    st.markdown(f"- `{sig_name}` ({s.evidence_id}): *\"{s.evidence_span}\"*")
             if outcome.intel and outcome.intel.findings:
                 st.markdown("**Threat Intel Findings:**")
                 for f in outcome.intel.findings:
-                    st.markdown(f"- `[{f.severity.value}]` {f.check}: {f.detail} ({f.evidence_id})")
+                    sev = f.severity.value if hasattr(f.severity, "value") else str(f.severity)
+                    st.markdown(f"- `[{sev.upper()}]` {f.check}: {f.detail} ({f.evidence_id})")
 
     # Advisory Disclaimer (FR-065)
     st.markdown(

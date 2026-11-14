@@ -114,7 +114,7 @@ The author's brief notes that apps scanning SMS, call logs or contacts face stri
 
 Primary (government or regulator):
 - I4C FAQ: https://i4c.mha.gov.in/FAQ.aspx
-- National Cyber Crime Reporting Portal, suspect repository and suspect reporting: https://cybercrime.gov.in/Webform/suspect_search_repository.aspx, https://cybercrime.gov.in/Webform/cyber_suspect.aspx
+- National Cyber Crime Reporting Portal, suspect repository and reporting: https://cybercrime.gov.in (portal reporting and suspect search repository)
 - Sanchar Saathi, Chakshu: https://sancharsaathi.gov.in/sfc
 - TRAI press releases: https://www.trai.gov.in/sites/default/files/2025-11/PR_No.137of2025.pdf, https://www.trai.gov.in/sites/default/files/2026-09/PR_No119of2026.pdf
 - TCCCPR (Second Amendment) Regulations, 2025: http://www.trai.gov.in/sites/default/files/2025-02/Regulation_12022025_0.pdf (located, not yet read in full)
