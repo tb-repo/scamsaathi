@@ -67,11 +67,17 @@ class AgentRunner:
         self.ctx.vault.put(thread_id, raw)
         try:
             self.graph.invoke({"request_id": thread_id}, self._config(thread_id))
-        finally:
             if raw.mask is not None:
                 self._session_mappings[thread_id] = dict(raw.mask.mapping)
+            outcome = self.outcome(thread_id)
+            if outcome.status != "needs_followup":
+                self.clear_session(thread_id)
+            return outcome
+        except Exception:
+            self.clear_session(thread_id)
+            raise
+        finally:
             self.ctx.vault.pop(thread_id)  # originals never outlive the request
-        return self.outcome(thread_id)
 
     def resume(self, thread_id: str, answer: str | dict[str, Any]) -> AssessmentOutcome:
         mapping = self._session_mappings.get(thread_id)
@@ -90,8 +96,15 @@ class AgentRunner:
                 "answers": {str(k): bool(v) for k, v in (answer.get("answers") or {}).items()},
                 "text": masked.masked_text,
             }
-        self.graph.invoke(Command(resume=safe), self._config(thread_id))
-        return self.outcome(thread_id)
+        try:
+            self.graph.invoke(Command(resume=safe), self._config(thread_id))
+            outcome = self.outcome(thread_id)
+            if outcome.status != "needs_followup":
+                self.clear_session(thread_id)
+            return outcome
+        except Exception:
+            self.clear_session(thread_id)
+            raise
 
     def outcome(self, thread_id: str) -> AssessmentOutcome:
         snapshot = self.graph.get_state(self._config(thread_id))

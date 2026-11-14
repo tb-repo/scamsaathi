@@ -132,8 +132,8 @@ with st.sidebar:
     st.subheader("📋 Privacy by Design (FR-084)")
     st.info(
         "**DPDP-Aligned Privacy Protection:**\n\n"
-        "• **Automated Masking:** Phone numbers, emails, UPI IDs, bank accounts, and OTPs are masked locally before AI processing.\n"
-        "• **User Caution:** Pattern matching cannot reliably detect personal names or street addresses; please avoid entering them.\n"
+        "• **Automated Masking:** Phone numbers, emails, UPI IDs, bank accounts, national IDs (Aadhaar/PAN), and contextual OTPs are masked locally before AI processing.\n"
+        "• **Known Limitations:** Pattern matching cannot reliably detect free-text personal names or street addresses; please avoid entering them.\n"
         "• **URLs Inspected:** Web links are analyzed for security threat intelligence and domain legitimacy.\n"
         "• **Zero Device Scraping:** Paste-only interface—we never access device SMS, call logs, or contacts.\n"
         "• **Ephemeral Processing:** Original text is cleared immediately after analysis."
@@ -284,8 +284,8 @@ if outcome is not None:
                     st.markdown(
                         """
                         **If you already transferred money, scanned a QR code, or shared bank/UPI details:**
-                        1. **Call 1930 immediately:** Contact the National Cyber Crime Helpline (24x7) to request an immediate freeze lien on beneficiary accounts.
-                        2. **Contact your bank:** Block your debit/credit card, UPI handle, or net banking access immediately.
+                        1. **Call 1930 promptly:** Contact the National Cyber Crime Helpline (24x7) to report the incident and request assistance with beneficiary lien procedures.
+                        2. **Contact your bank via verified channels:** Immediately inform your bank's fraud desk to block compromised cards, UPI handles, or net banking access.
                         3. **Obtain UTR numbers:** Request a bank statement noting each 12-digit transaction reference (UTR).
                         4. **File an official complaint:** Lodge an online complaint at [cybercrime.gov.in](https://cybercrime.gov.in).
                         """

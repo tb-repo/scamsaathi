@@ -39,8 +39,24 @@ def test_ut_pii_05_email_is_not_mistaken_for_upi() -> None:
 
 
 def test_ut_pii_06_amounts_dates_and_short_numbers_are_kept() -> None:
-    text = "Pay Rs. 4,999 or ₹1,50,000 by 11/11/2026 at 10:30, OTP valid 10 min, code 482913"
+    text = "Pay Rs. 4,999 or ₹1,50,000 by 11/11/2026 at 10:30, valid 10 min, item #4829, pincode 560001"
     assert mask(text).masked_text == text
+
+
+def test_ut_pii_contextual_otp_masking() -> None:
+    res1 = mask("Your SBI OTP is 482910 for txn.")
+    assert res1.masked_text == "Your SBI OTP is <OTP_1> for txn."
+    assert res1.original("<OTP_1>") == "482910"
+
+    res2 = mask("Use verification code: 918234 to log in.")
+    assert res2.masked_text == "Use verification code: <OTP_1> to log in."
+    assert res2.original("<OTP_1>") == "918234"
+
+    res3 = mask("Your secret PIN is 1234. Do not share.")
+    assert res3.masked_text == "Your secret PIN is <OTP_1>. Do not share."
+
+    res4 = mask("Enter 654321 as your OTP.")
+    assert res4.masked_text == "Enter <OTP_1> as your OTP."
 
 
 def test_ut_pii_07_card_and_account_numbers() -> None:

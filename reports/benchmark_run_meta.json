@@ -1,5 +1,5 @@
 {
-  "timestamp": "2026-11-14T17:34:28.403131+00:00",
+  "timestamp": "2026-11-14T18:24:21.087654+00:00",
   "dataset_path": "D:\\HeroVired\\AgenticAI\\Capstone\\Capstone\\scamsaathi\\data\\evaluation\\eval_dataset.jsonl",
   "total_cases": 50,
   "environment": {
@@ -42,10 +42,10 @@
       "typology_exact_top1_acc": 0.0,
       "typology_acceptable_top1_acc": 0.0,
       "typology_top3_acc": 0.0,
-      "groundedness": 1.0,
+      "groundedness": null,
       "language_compliance_rate": 0.0,
-      "median_latency_ms": 1.6573499979131157,
-      "p95_latency_ms": 3.6108000022068154,
+      "median_latency_ms": 1.3202499994804384,
+      "p95_latency_ms": 2.6201999971817713,
       "by_lang": {
         "en": {
           "scam_total": 20,
@@ -90,8 +90,8 @@
       "typology_top3_acc": 0.9714285714285714,
       "groundedness": 1.0,
       "language_compliance_rate": 1.0,
-      "median_latency_ms": 88.53955000085989,
-      "p95_latency_ms": 116.99829999997746,
+      "median_latency_ms": 77.04340000054799,
+      "p95_latency_ms": 107.86749999897438,
       "by_lang": {
         "en": {
           "scam_total": 20,
@@ -119,7 +119,7 @@
       "risk_score": 100,
       "passed": true,
       "failures": [],
-      "latency_ms": 136.6106999994372,
+      "latency_ms": 107.86749999897438,
       "typologies_pred": [
         "SC-01"
       ],
@@ -135,7 +135,7 @@
       "risk_score": 100,
       "passed": true,
       "failures": [],
-      "latency_ms": 116.99829999997746,
+      "latency_ms": 76.13499999933993,
       "typologies_pred": [
         "SC-01",
         "SC-07"
@@ -152,7 +152,7 @@
       "risk_score": 100,
       "passed": true,
       "failures": [],
-      "latency_ms": 97.9918999983056,
+      "latency_ms": 71.51529999828199,
       "typologies_pred": [
         "SC-02"
       ],
@@ -168,7 +168,7 @@
       "risk_score": 100,
       "passed": true,
       "failures": [],
-      "latency_ms": 81.83350000035716,
+      "latency_ms": 73.85190000059083,
       "typologies_pred": [
         "SC-02"
       ],
@@ -186,7 +186,7 @@
       "failures": [
         "no official reporting step in the top 3 actions"
       ],
-      "latency_ms": 95.04360000209999,
+      "latency_ms": 80.72220000030939,
       "typologies_pred": [
         "SC-03"
       ],
@@ -202,7 +202,7 @@
       "risk_score": 74,
       "passed": true,
       "failures": [],
-      "latency_ms": 78.85729999907198,
+      "latency_ms": 70.23979999939911,
       "typologies_pred": [
         "SC-03",
         "SC-10"
@@ -219,7 +219,7 @@
       "risk_score": 70,
       "passed": true,
       "failures": [],
-      "latency_ms": 105.77800000100979,
+      "latency_ms": 76.21279999875696,
       "typologies_pred": [
         "SC-04"
       ],
@@ -235,7 +235,7 @@
       "risk_score": 72,
       "passed": true,
       "failures": [],
-      "latency_ms": 106.63650000060443,
+      "latency_ms": 92.06690000064555,
       "typologies_pred": [
         "SC-04"
       ],
@@ -251,7 +251,7 @@
       "risk_score": 38,
       "passed": true,
       "failures": [],
-      "latency_ms": 82.08249999734107,
+      "latency_ms": 70.36969999899156,
       "typologies_pred": [
         "SC-05"
       ],
@@ -267,7 +267,7 @@
       "risk_score": 66,
       "passed": true,
       "failures": [],
-      "latency_ms": 104.93710000082501,
+      "latency_ms": 97.27810000185855,
       "typologies_pred": [
         "SC-05"
       ],
@@ -283,7 +283,7 @@
       "risk_score": 55,
       "passed": true,
       "failures": [],
-      "latency_ms": 109.00129999936325,
+      "latency_ms": 107.98309999881894,
       "typologies_pred": [
         "SC-06"
       ],
@@ -299,7 +299,7 @@
       "risk_score": 94,
       "passed": true,
       "failures": [],
-      "latency_ms": 99.60779999892111,
+      "latency_ms": 132.10379999873112,
       "typologies_pred": [
         "SC-06",
         "SC-14"
@@ -316,7 +316,7 @@
       "risk_score": 100,
       "passed": true,
       "failures": [],
-      "latency_ms": 88.89920000001439,
+      "latency_ms": 98.20210000179941,
       "typologies_pred": [
         "SC-07"
       ],
@@ -332,7 +332,7 @@
       "risk_score": 54,
       "passed": true,
       "failures": [],
-      "latency_ms": 100.68880000108038,
+      "latency_ms": 87.48939999713912,
       "typologies_pred": [
         "SC-07"
       ],
@@ -348,7 +348,7 @@
       "risk_score": 87,
       "passed": true,
       "failures": [],
-      "latency_ms": 106.20669999843813,
+      "latency_ms": 89.00739999808138,
       "typologies_pred": [
         "SC-08"
       ],
@@ -364,7 +364,7 @@
       "risk_score": 66,
       "passed": true,
       "failures": [],
-      "latency_ms": 92.7637999993749,
+      "latency_ms": 81.14280000154395,
       "typologies_pred": [
         "SC-08"
       ],
@@ -380,7 +380,7 @@
       "risk_score": 37,
       "passed": true,
       "failures": [],
-      "latency_ms": 100.14510000110022,
+      "latency_ms": 69.98430000021472,
       "typologies_pred": [
         "SC-09"
       ],
@@ -396,7 +396,7 @@
       "risk_score": 52,
       "passed": true,
       "failures": [],
-      "latency_ms": 133.24250000005122,
+      "latency_ms": 69.48960000227089,
       "typologies_pred": [
         "SC-09"
       ],
@@ -412,7 +412,7 @@
       "risk_score": 61,
       "passed": true,
       "failures": [],
-      "latency_ms": 100.41799999817158,
+      "latency_ms": 80.43540000289795,
       "typologies_pred": [
         "SC-10"
       ],
@@ -428,7 +428,7 @@
       "risk_score": 60,
       "passed": true,
       "failures": [],
-      "latency_ms": 94.86199999810196,
+      "latency_ms": 85.23269999932381,
       "typologies_pred": [
         "SC-10"
       ],
@@ -444,7 +444,7 @@
       "risk_score": 98,
       "passed": true,
       "failures": [],
-      "latency_ms": 92.23700000075041,
+      "latency_ms": 77.83959999869694,
       "typologies_pred": [
         "SC-11"
       ],
@@ -462,7 +462,7 @@
       "failures": [
         "top typology SC-10 not in ['SC-11']"
       ],
-      "latency_ms": 96.91079999902286,
+      "latency_ms": 74.59660000313306,
       "typologies_pred": [
         "SC-10",
         "SC-02"
@@ -479,7 +479,7 @@
       "risk_score": 50,
       "passed": true,
       "failures": [],
-      "latency_ms": 95.79410000151256,
+      "latency_ms": 82.7452000012272,
       "typologies_pred": [
         "SC-12"
       ],
@@ -495,7 +495,7 @@
       "risk_score": 86,
       "passed": true,
       "failures": [],
-      "latency_ms": 96.87470000062604,
+      "latency_ms": 87.35259999957634,
       "typologies_pred": [
         "SC-12"
       ],
@@ -511,7 +511,7 @@
       "risk_score": 77,
       "passed": true,
       "failures": [],
-      "latency_ms": 104.12749999886728,
+      "latency_ms": 79.03380000061588,
       "typologies_pred": [
         "SC-13"
       ],
@@ -527,7 +527,7 @@
       "risk_score": 84,
       "passed": true,
       "failures": [],
-      "latency_ms": 88.10140000059619,
+      "latency_ms": 80.85210000353982,
       "typologies_pred": [
         "SC-13"
       ],
@@ -543,7 +543,7 @@
       "risk_score": 99,
       "passed": true,
       "failures": [],
-      "latency_ms": 88.3934000012232,
+      "latency_ms": 73.61650000166264,
       "typologies_pred": [
         "SC-14"
       ],
@@ -559,7 +559,7 @@
       "risk_score": 100,
       "passed": true,
       "failures": [],
-      "latency_ms": 93.03949999957695,
+      "latency_ms": 76.24720000239904,
       "typologies_pred": [
         "SC-14"
       ],
@@ -575,7 +575,7 @@
       "risk_score": 52,
       "passed": true,
       "failures": [],
-      "latency_ms": 80.63360000232933,
+      "latency_ms": 75.0584000015806,
       "typologies_pred": [
         "SC-15"
       ],
@@ -591,7 +591,7 @@
       "risk_score": 51,
       "passed": true,
       "failures": [],
-      "latency_ms": 81.53669999956037,
+      "latency_ms": 76.24399999986053,
       "typologies_pred": [
         "SC-15"
       ],
@@ -607,7 +607,7 @@
       "risk_score": 70,
       "passed": true,
       "failures": [],
-      "latency_ms": 86.28619999944931,
+      "latency_ms": 81.360100000893,
       "typologies_pred": [
         "SC-02"
       ],
@@ -625,7 +625,7 @@
       "failures": [
         "urgent recovery not triggered"
       ],
-      "latency_ms": 86.02770000288729,
+      "latency_ms": 73.55059999827063,
       "typologies_pred": [
         "SC-03"
       ],
@@ -641,7 +641,7 @@
       "risk_score": 85,
       "passed": true,
       "failures": [],
-      "latency_ms": 76.25889999690116,
+      "latency_ms": 66.20479999764939,
       "typologies_pred": [
         "SC-14"
       ],
@@ -659,7 +659,7 @@
       "failures": [
         "missed scam: level is LOW"
       ],
-      "latency_ms": 77.98560000082944,
+      "latency_ms": 72.30519999939133,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -671,7 +671,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 76.81210000009742,
+      "latency_ms": 74.66679999924963,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -683,7 +683,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 86.01730000009411,
+      "latency_ms": 74.2936999995436,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -695,7 +695,7 @@
       "risk_score": 3,
       "passed": true,
       "failures": [],
-      "latency_ms": 71.70680000126595,
+      "latency_ms": 67.7267999999458,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -709,7 +709,7 @@
       "failures": [
         "false alarm: level is MEDIUM"
       ],
-      "latency_ms": 75.56090000070981,
+      "latency_ms": 70.86770000023535,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -721,7 +721,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 79.62019999831682,
+      "latency_ms": 75.20210000075167,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -733,7 +733,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 81.22410000214586,
+      "latency_ms": 72.19489999988582,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -745,7 +745,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 68.29239999933634,
+      "latency_ms": 66.95620000027702,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -757,7 +757,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 77.24709999820334,
+      "latency_ms": 80.73610000064946,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -769,7 +769,7 @@
       "risk_score": 2,
       "passed": true,
       "failures": [],
-      "latency_ms": 72.76139999885345,
+      "latency_ms": 75.85520000066026,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -781,7 +781,7 @@
       "risk_score": 7,
       "passed": true,
       "failures": [],
-      "latency_ms": 91.59480000016629,
+      "latency_ms": 78.91060000110883,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -795,7 +795,7 @@
       "failures": [
         "ambiguous case was not interviewed"
       ],
-      "latency_ms": 78.05759999973816,
+      "latency_ms": 70.1584999987972,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -807,7 +807,7 @@
       "risk_score": 9,
       "passed": true,
       "failures": [],
-      "latency_ms": 83.39279999927385,
+      "latency_ms": 79.33789999879082,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -819,7 +819,7 @@
       "risk_score": 100,
       "passed": true,
       "failures": [],
-      "latency_ms": 88.68570000049658,
+      "latency_ms": 93.41130000029807,
       "typologies_pred": [
         "SC-02"
       ],
@@ -835,7 +835,7 @@
       "risk_score": 62,
       "passed": true,
       "failures": [],
-      "latency_ms": 84.66000000044005,
+      "latency_ms": 97.63220000240835,
       "typologies_pred": [
         "SC-08"
       ],
@@ -851,7 +851,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 72.17350000064471,
+      "latency_ms": 82.18809999743826,
       "typologies_pred": [],
       "typologies_true": []
     },
@@ -863,7 +863,7 @@
       "risk_score": 0,
       "passed": true,
       "failures": [],
-      "latency_ms": 86.8759000004502,
+      "latency_ms": 78.54499999666587,
       "typologies_pred": [],
       "typologies_true": []
     }

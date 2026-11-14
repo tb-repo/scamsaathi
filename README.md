@@ -11,13 +11,13 @@
 | **Certification** | Hero Vired — Professional Certification in Agentic AI (Capstone Project) |
 | **Author** | Thiagarajan Baskarasubramanian |
 | **Architecture** | 9-Agent StateGraph with LangGraph & SQLite Checkpointer |
-| **Primary LLMs** | Google Gemini (gemini-2.5-flash / gemini-2.5-pro) |
+| **Primary LLMs** | Google Gemini (gemini-3.5-flash-lite / gemini-3.8-flash) |
 | **Fallback LLMs** | Groq (llama-3.3-70b-versatile) with Circuit-Breaker Gateway |
 | **Scope** | Mobile SMS, WhatsApp, and call transcripts in English & Hinglish |
-| **Test Suite** | 248 Unit & Integration Tests (100% Passing) |
+| **Test Suite** | 258 Unit & Integration Tests (100% Passing) |
 | **Evaluation** | 50-Case Comprehensive Benchmark (97.2% Scam Recall, 0% False Alarms on Banking) |
 
-> ⚠️ **Important Safety Disclaimer**: ScamSaathi provides risk assessments and safety guidance, not legal advice or definitive investigative verdicts. Automated masking protects phone numbers, accounts, UPI IDs, and OTPs, but pattern matching cannot reliably redact personal names or street addresses. Always verify independently through official channels.
+> ⚠️ **Important Safety Disclaimer**: ScamSaathi provides risk assessments and safety guidance, not legal advice or definitive investigative verdicts. Automated masking protects phone numbers, accounts, UPI IDs, emails, and contextual OTPs, but pattern matching cannot reliably redact personal names or street addresses. Always verify independently through official channels.
 
 ---
 
@@ -30,7 +30,7 @@
 
 2. **Privacy by Design (DPDP Act Aligned)**:
    - **Zero Device Scraping**: Web paste-only architecture; no access to device SMS, contacts, or call logs.
-   - **Local Pre-LLM Masking**: Sensitive identifiers (`<PHONE_1>`, `<BANK_ACC_1>`, `<UPI_ID_1>`, `<OTP_1>`) are replaced with masked placeholders before any data reaches an LLM.
+   - **Local Pre-LLM Masking**: Sensitive identifiers (`<PHONE_1>`, `<BANK_ACC_1>`, `<UPI_ID_1>`, `<EMAIL_1>`, `<OTP_1>`) are replaced with masked placeholders before any data reaches an LLM.
    - **Ephemeral Raw Vault**: Raw text is held in an in-memory vault strictly for the duration of analysis and deleted immediately upon assessment completion.
    - **Client Session Isolation & TTL**: Thread IDs are strictly validated, checkpoint writes are purged on session clear, and CORS origins are locked down to trusted hosts.
 
@@ -42,7 +42,7 @@
    - Direct integration with verified Indian cyber defense channels:
      - **DoT Chakshu Facility**: Direct reporting for suspected fraud calls, SMS, and WhatsApp (`https://sancharsaathi.gov.in/sfc`).
      - **National Cyber Crime Reporting Portal**: Suspect registry for malicious phone numbers, UPI IDs, and phishing URLs (`https://cybercrime.gov.in`).
-     - **1930 Financial Fraud Helpline**: Immediate golden-hour lien request guidance when financial loss is reported.
+     - **1930 Financial Fraud Helpline**: Rapid golden-hour reporting guidance to assist banks in placing liens when financial loss is reported.
      - **TRAI 1909**: DND and unsolicited commercial communications reporting.
 
 ---
@@ -111,7 +111,7 @@ Evaluated on the 50-case benchmark dataset across both English and Hinglish inpu
 | **False Alarm Rate (Legit > LOW)** | <= 10.0% | 0.0% | **9.1%** | 0% on authenticated `.bank.in` & TRAI headers |
 | **Required Safety Behaviors** | 100.0% | 97.7% | **95.5%** | 1930 recovery, 1098 child safety |
 | **Typology Accuracy (Exact Top-1)** | >= 80.0% | N/A | **97.1%** | Exact primary typology classification |
-| **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Deterministic validation against runtime catalogue (S#, I#, K#, C#) |
+| **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Runtime citation consistency against active catalogue (S#, I#, K#, C#) |
 | **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Zero Devanagari script leakage in English responses (script-level audit) |
 | **Official Reporting Guidance** | N/A | N/A | **97.2%** | Direct Chakshu & Cyber Crime Portal guidance |
 | **Ambiguous Case Handling** | 100.0% | 0.0% | **66.7%** | Interactive interview triggered on ambiguous text |
@@ -154,8 +154,8 @@ Key configuration options (configured via `.env` or environment):
 - `GEMINI_API_KEY`: Google Gemini API key (paid tier recommended).
 - `GROQ_API_KEY`: Optional Groq API key for multi-provider fallback.
 - `SCAMSAATHI_MODE`: Operating mode — `live` (calls model and caches), `cached` (reads cache only), or `offline` (deterministic fallback on cache miss).
-- `GEMINI_MODEL_FAST`: Fast classification model (default: `TBD` -> `gemini-3.5-flash-lite` from `config/llm.yaml`).
-- `GEMINI_MODEL_REASONING`: Reasoning/explanation model (default: `TBD` -> `gemini-3.8-flash` from `config/llm.yaml`).
+- `GEMINI_MODEL_FAST`: Fast classification model (default: `gemini-3.5-flash-lite` from `config/llm.yaml`).
+- `GEMINI_MODEL_REASONING`: Reasoning/explanation model (default: `gemini-3.8-flash` from `config/llm.yaml`).
 - `SCAMSAATHI_MAX_LLM_CALLS_PER_REQUEST`: Per-request call budget cap (default: 6).
 
 ### 3. Running the Streamlit Web Application
@@ -191,7 +191,7 @@ python scripts/run_benchmarks.py
 
 ## 🧪 Testing & Verification
 
-Run the full pytest suite (254 unit and integration tests):
+Run the full pytest suite (258 unit and integration tests):
 
 ```bash
 pytest -v
@@ -239,7 +239,7 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
-├── tests/                  # 254 unit and integration tests
+├── tests/                  # 258 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies
 ├── requirements-dev.txt    # Development and test dependencies

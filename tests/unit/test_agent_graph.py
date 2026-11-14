@@ -397,10 +397,20 @@ def test_interview_preserves_placeholder_mapping(make_runner: Callable[..., Any]
     runner, _ = make_runner({"extract": ['{"signals": []}'], "classify": [_ask(["money_sent"])]})
     first = runner.assess("A man called me from 9876543210 about my parcel")
     assert first.status == "needs_followup"
-    final = runner.resume(first.thread_id, "9876543210 told me to pay 9123456780")
-    # Mapping in runner remembers <PHONE_1> and assigns <PHONE_2> to new number
     assert runner._session_mappings[first.thread_id]["<PHONE_1>"] == "9876543210"
-    assert runner._session_mappings[first.thread_id]["<PHONE_2>"] == "9123456780"
+
+    # Test masking reuse directly with existing mapping
+    mapping = dict(runner._session_mappings[first.thread_id])
+    from scamsaathi.tools.pii_masker import mask
+    resumed_masked = mask("9876543210 told me to pay 9123456780", existing_mapping=mapping)
+    assert resumed_masked.masked_text == "<PHONE_1> told me to pay <PHONE_2>"
+    assert resumed_masked.mapping["<PHONE_1>"] == "9876543210"
+    assert resumed_masked.mapping["<PHONE_2>"] == "9123456780"
+
+    # Resume to completion cleans up session mapping (DPDP principle 6)
+    final = runner.resume(first.thread_id, "9876543210 told me to pay 9123456780")
+    assert final.status == "complete"
+    assert first.thread_id not in runner._session_mappings
 
 
 def test_contextual_llm_interview_questions(make_runner: Callable[..., Any]) -> None:
@@ -480,3 +490,33 @@ def test_user_text_cannot_close_the_data_block(make_runner: Callable[..., Any]) 
     extract_prompt = next(user for name, user in llm.calls if name == "extract")
     assert extract_prompt.count("</user_content>") == 1
     assert "[tag removed]" in extract_prompt
+
+
+def test_runner_session_mappings_lifecycle(make_runner: Callable[..., Any]) -> None:
+    # 1. Complete assessment cleans up _session_mappings immediately
+    runner, llm = make_runner({
+        "extract": ['{"signals": []}'],
+        "classify": ['{"typology": "SC-01", "signals": [], "confidence": 0.9}'],
+        "explain": [good_explain],
+    })
+    outcome = runner.assess(KYC)
+    assert outcome.status == "complete"
+    assert outcome.thread_id not in runner._session_mappings
+    assert runner.ctx.vault.get(outcome.thread_id) is None
+
+    # 2. Needs followup retains _session_mappings until resume completes
+    runner2, llm2 = make_runner({
+        "extract": ['{"signals": []}'],
+        "classify": [_ask(["asked_for_secret"])],
+        "explain": [good_explain],
+    })
+    first = runner2.assess("Someone called me about my parcel")
+    assert first.status == "needs_followup"
+    assert first.thread_id in runner2._session_mappings
+
+    # Resume to completion clears the mapping
+    final = runner2.resume(first.thread_id, {"answers": {first.questions[0]["fact"]: True}})
+    assert final.status == "complete"
+    assert first.thread_id not in runner2._session_mappings
+    assert runner2.ctx.vault.get(first.thread_id) is None
+

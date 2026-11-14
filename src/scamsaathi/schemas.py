@@ -49,7 +49,7 @@ class SignalName(StrEnum):
 RiskLevel = Literal["LOW", "MEDIUM", "HIGH", "CRITICAL"]
 # "sender_header": a TRAI DLT SMS header such as "AX-HDFCBK-S" (organisation name, not PII).
 EntityKind = Literal[
-    "url", "phone", "upi", "email", "amount", "account_like", "id_number", "sender_header"
+    "url", "phone", "upi", "email", "amount", "account_like", "id_number", "sender_header", "otp"
 ]
 Severity = Literal["info", "low", "medium", "high"]
 

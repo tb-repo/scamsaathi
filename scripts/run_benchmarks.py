@@ -262,7 +262,7 @@ def evaluate_pipeline(
         "typology_exact_top1_acc": (typology_exact_top1_ok / typology_total) if typology_total else 0.0,
         "typology_acceptable_top1_acc": (typology_acceptable_top1_ok / typology_total) if typology_total else 0.0,
         "typology_top3_acc": (typology_top3_ok / typology_total) if typology_total else 0.0,
-        "groundedness": (grounded_reasons / total_reasons) if total_reasons else 1.0,
+        "groundedness": (grounded_reasons / total_reasons) if total_reasons else None,
         "language_compliance_rate": (lang_compliant_cases / len(cases)) if cases else 1.0,
         "median_latency_ms": statistics.median(latencies) if latencies else 0.0,
         "p95_latency_ms": (
@@ -285,27 +285,34 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         "| :--- | :---: | :---: | :---: | :---: | :--- |",
     ]
 
-    def pct(val: float) -> str:
+    def pct(val: float | None) -> str:
+        if val is None:
+            return "Not measured"
         return f"{val * 100:.1f}%"
+
+    def signed_pp(ag_val: float, b0_val: float) -> str:
+        delta = (ag_val - b0_val) * 100
+        sign = "+" if delta > 0 else ""
+        return f"{sign}{delta:.1f} pp"
 
     m_b0 = b0_metrics
     m_ag = agentic_metrics
 
     lines.append(
         f"| **Scam Recall (Warned > LOW)** | >= 95.0% | {pct(m_b0['scam_recall_warned'])} | "
-        f"**{pct(m_ag['scam_recall_warned'])}** | +{(m_ag['scam_recall_warned'] - m_b0['scam_recall_warned']) * 100:.1f}% | Catches nuanced social engineering |"
+        f"**{pct(m_ag['scam_recall_warned'])}** | {signed_pp(m_ag['scam_recall_warned'], m_b0['scam_recall_warned'])} | Catches nuanced social engineering |"
     )
     lines.append(
         f"| **High-Risk Recall (HIGH/CRITICAL)** | >= 90.0% | {pct(m_b0['scam_recall_high'])} | "
-        f"**{pct(m_ag['scam_recall_high'])}** | +{(m_ag['scam_recall_high'] - m_b0['scam_recall_high']) * 100:.1f}% | Correctly escalates active threats |"
+        f"**{pct(m_ag['scam_recall_high'])}** | {signed_pp(m_ag['scam_recall_high'], m_b0['scam_recall_high'])} | Correctly escalates active threats |"
     )
     lines.append(
         f"| **False Alarm Rate (Legit > LOW)** | <= 10.0% | {pct(m_b0['false_alarm_rate'])} | "
-        f"**{pct(m_ag['false_alarm_rate'])}** | 0.0% (Clean) | Banking `.bank.in` & TRAI headers safe |"
+        f"**{pct(m_ag['false_alarm_rate'])}** | {signed_pp(m_ag['false_alarm_rate'], m_b0['false_alarm_rate'])} | Banking `.bank.in` & TRAI headers safe |"
     )
     lines.append(
         f"| **Required Safety Behaviors** | 100.0% | {pct(m_b0['behaviour_rate'])} | "
-        f"**{pct(m_ag['behaviour_rate'])}** | +{(m_ag['behaviour_rate'] - m_b0['behaviour_rate']) * 100:.1f}% | 1930 recovery, 1098 child safety |"
+        f"**{pct(m_ag['behaviour_rate'])}** | {signed_pp(m_ag['behaviour_rate'], m_b0['behaviour_rate'])} | 1930 recovery, 1098 child safety |"
     )
     lines.append(
         f"| **Typology Accuracy (Exact Top-1)** | >= 80.0% | N/A (Rules) | "
@@ -317,7 +324,7 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
     )
     lines.append(
         f"| **Evidence-ID Grounding Rate** | 100.0% | N/A | "
-        f"**{pct(m_ag['groundedness'])}** | Deterministic State Validation | All cited IDs map to verified signals/intel/KB/overrides |"
+        f"**{pct(m_ag['groundedness'])}** | Runtime Citation Consistency | Measures evidence-ID catalogue citation consistency against runtime state, not factual correctness |"
     )
     lines.append(
         f"| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | "
@@ -370,8 +377,8 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         "",
         "1. **Near-Zero False Alarm Rate:** Legitimate banking notifications (debit notices, e-statements on `.bank.in`) and TRAI designated numbers (1600 service, 1601 courier) achieved 0% false alarms.",
         f"2. **Non-Devanagari Script Compliance ({pct(m_ag['language_compliance_rate'])}):** All generated responses across English and Hinglish inputs were audited at the character level and confirmed to contain zero Devanagari script leakage.",
-        f"3. **Verified Evidence Grounding:** {pct(m_ag['groundedness'])} of generated explanation reasons strictly cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue.",
-        "4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with immediate 1930 helpline routing on financial loss.",
+        f"3. **Evidence-ID Grounding Rate ({pct(m_ag['groundedness'])}):** Generated explanation reasons cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue (measures citation consistency against runtime state, not external factual correctness).",
+        "4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with rapid 1930 helpline routing on financial loss for bank lien assistance.",
         "5. **Human-in-the-Loop Value:** Ambiguous messages triggered targeted clarifying questions, providing accurate outcomes upon user resume.",
     ])
 
@@ -404,6 +411,11 @@ def main() -> int:
     runner = AgentRunner(ctx)
     agentic_metrics = evaluate_pipeline(cases, runner=runner, is_agentic=True)
 
+    def pct(val: float | None) -> str:
+        if val is None:
+            return "Not measured"
+        return f"{val * 100:.1f}%"
+
     # 3. Print Summary
     print("\n" + "=" * 60)
     print("EVALUATION RESULTS SUMMARY")
@@ -420,7 +432,7 @@ def main() -> int:
     print(f"  - Chakshu Facility:           {agentic_metrics['reporting_chakshu_rate']*100:.1f}%")
     print(f"  - Cyber Crime Portal:         {agentic_metrics['reporting_cybercrime_rate']*100:.1f}%")
     print(f"  - 1930 Financial Helpline:    {agentic_metrics['reporting_1930_rate']*100:.1f}%")
-    print(f"Evidence-ID Grounding Rate:     {agentic_metrics['groundedness']*100:.1f}%")
+    print(f"Evidence-ID Grounding Rate:     {pct(agentic_metrics['groundedness'])}")
     print(f"Non-Devanagari Script Compliance: {agentic_metrics['language_compliance_rate']*100:.1f}%")
     print("=" * 60)
 

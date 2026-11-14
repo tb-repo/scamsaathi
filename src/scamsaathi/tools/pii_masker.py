@@ -70,6 +70,15 @@ _PATTERNS: Final[tuple[tuple[str, re.Pattern[str], Callable[[str], bool] | None]
     ),
     # Number embedded in a WhatsApp click-to-chat link: wa.me/<country code + number>.
     ("PHONE", re.compile(r"(?<=wa\.me/)\d{8,15}(?!\d)", re.IGNORECASE), None),
+    # Contextual OTP / PIN / verification code: 4 to 8 digits preceded or followed by OTP context keywords.
+    (
+        "OTP",
+        re.compile(
+            r"(?i)\b(?:otp|one[- ]time[- ]password|verification[- ]code|security[- ]code|passcode|secret[- ]code|pin)\b(?:\s+(?:is|code|number))?[\s:= -]{1,5}(\d{4,8})\b"
+            r"|\b(\d{4,8})\b(?:\s+(?:is\s+(?:your\s+)?|as\s+(?:your\s+)?)(?:otp|verification[- ]code|pin|passcode|code)\b)",
+        ),
+        None,
+    ),
     # Aadhaar: 12 digits, first digit 2-9, optional 4-4-4 grouping.
     (
         "ID",
@@ -93,7 +102,7 @@ _URL = re.compile(
 )
 QUERY_PLACEHOLDER: Final = "?<QUERY>"
 
-_PLACEHOLDER = re.compile(r"<(?:EMAIL|UPI|PHONE|ID|ACCT)_\d+>")
+_PLACEHOLDER = re.compile(r"<(?:EMAIL|UPI|PHONE|ID|ACCT|OTP)_\d+>")
 
 
 @dataclass(frozen=True)
@@ -157,11 +166,16 @@ def find_pii(text: str, claimed: list[tuple[int, int]] | None = None) -> list[PI
     hits: list[PIIMatch] = []
     for kind, pattern, validator in _PATTERNS:
         for match in pattern.finditer(text):
-            span = (match.start(), match.end())
-            if _overlaps(span, taken) or (validator is not None and not validator(match.group(0))):
+            if match.lastindex is not None and match.lastindex >= 1:
+                val = match.group(match.lastindex)
+                span = (match.start(match.lastindex), match.end(match.lastindex))
+            else:
+                val = match.group(0)
+                span = (match.start(), match.end())
+            if _overlaps(span, taken) or (validator is not None and not validator(val)):
                 continue
             taken.append(span)
-            hits.append(PIIMatch(kind=kind, span=span, value=match.group(0)))
+            hits.append(PIIMatch(kind=kind, span=span, value=val))
     hits.sort(key=lambda hit: hit.span[0])
     return hits
 

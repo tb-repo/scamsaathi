@@ -12,8 +12,9 @@ import uuid
 from contextlib import asynccontextmanager
 from typing import Any, AsyncGenerator
 
-from fastapi import FastAPI, Header, HTTPException, status
+from fastapi import FastAPI, Header, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from langgraph.checkpoint.sqlite import SqliteSaver
 
 logger = logging.getLogger("scamsaathi.api")
@@ -88,6 +89,8 @@ state = AppState()
 
 def _purge_session_records(conn: sqlite3.Connection | None, thread_id: str) -> None:
     """Atomic rollback of all session artifacts (metadata, checkpoints, writes) on failure."""
+    if state.runner is not None:
+        state.runner.clear_session(thread_id)
     if conn is None:
         return
     try:
@@ -96,7 +99,7 @@ def _purge_session_records(conn: sqlite3.Connection | None, thread_id: str) -> N
             conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
             conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
     except Exception as exc:
-        logger.warning(f"session_purge_failed for {thread_id}: {exc}")
+        logger.warning(f"session_purge_failed for {thread_id}: {type(exc).__name__}")
 
 
 def cleanup_expired_sessions(conn: sqlite3.Connection, ttl_seconds: float = 86400.0) -> int:
@@ -110,6 +113,8 @@ def cleanup_expired_sessions(conn: sqlite3.Connection, ttl_seconds: float = 8640
             cur.execute("DELETE FROM checkpoints WHERE thread_id = ?", (tid,))
             cur.execute("DELETE FROM writes WHERE thread_id = ?", (tid,))
             cur.execute("DELETE FROM session_meta WHERE thread_id = ?", (tid,))
+            if state.runner is not None:
+                state.runner.clear_session(tid)
         # Prune any orphaned checkpoints/writes not tracked in session_meta (trusted maintenance path)
         try:
             cur.execute("DELETE FROM checkpoints WHERE thread_id NOT IN (SELECT thread_id FROM session_meta)")
@@ -121,7 +126,7 @@ def cleanup_expired_sessions(conn: sqlite3.Connection, ttl_seconds: float = 8640
             logger.info(f"purged_{len(expired)}_expired_sessions")
         return len(expired)
     except Exception as exc:
-        logger.warning(f"session_ttl_cleanup_failed: {exc}")
+        logger.warning(f"session_ttl_cleanup_failed: {type(exc).__name__}")
         return 0
 
 
@@ -161,7 +166,7 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
             except asyncio.CancelledError:
                 break
             except Exception as exc:
-                logger.warning(f"periodic_cleanup_error: {exc}")
+                logger.warning(f"periodic_cleanup_error: {type(exc).__name__}")
 
     cleanup_task = asyncio.create_task(_periodic_cleanup(conn))
     yield
@@ -183,6 +188,30 @@ def create_app() -> FastAPI:
         version="0.1.0",
         lifespan=lifespan,
     )
+
+    _rate_limit_records: dict[str, list[float]] = {}
+    app.state.rate_limit_records = _rate_limit_records
+    _RATE_LIMIT_MAX_REQUESTS = 60
+    _RATE_LIMIT_WINDOW_SECONDS = 60.0
+
+    @app.middleware("http")
+    async def rate_limit_middleware(request: Request, call_next: Any) -> Response:
+        if request.method == "OPTIONS":
+            return await call_next(request)
+        client_ip = request.client.host if request.client else "unknown"
+        now = time.time()
+        window_start = now - _RATE_LIMIT_WINDOW_SECONDS
+
+        records = getattr(app.state, "rate_limit_records", _rate_limit_records)
+        history = [ts for ts in records.get(client_ip, []) if ts > window_start]
+        if len(history) >= _RATE_LIMIT_MAX_REQUESTS:
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={"detail": "Too many requests. Please slow down and try again later."},
+            )
+        history.append(now)
+        records[client_ip] = history
+        return await call_next(request)
 
     app.add_middleware(
         CORSMiddleware,
@@ -254,13 +283,13 @@ def create_app() -> FastAPI:
                         status_code=status.HTTP_409_CONFLICT,
                         detail="Session ID already exists; cannot overwrite an existing session.",
                     ) from exc
-                logger.error(f"session_meta_insert_failed: {exc}", exc_info=True)
+                logger.error(f"session_meta_insert_failed: {type(exc).__name__}", exc_info=True)
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to initialize session record.",
                 ) from exc
             except Exception as exc:
-                logger.error(f"session_meta_insert_failed: {exc}", exc_info=True)
+                logger.error(f"session_meta_insert_failed: {type(exc).__name__}", exc_info=True)
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to initialize session record.",
@@ -277,7 +306,7 @@ def create_app() -> FastAPI:
             raise
         except Exception as exc:
             _purge_session_records(state.sqlite_conn, thread_id)
-            logger.exception("api_assess_error", extra={"error": str(exc)})
+            logger.exception("api_assess_error", extra={"error_type": type(exc).__name__})
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="An internal error occurred while processing the assessment.",
@@ -339,7 +368,7 @@ def create_app() -> FastAPI:
         except HTTPException:
             raise
         except Exception as exc:
-            logger.exception("api_resume_error", extra={"error": str(exc)})
+            logger.exception("api_resume_error", extra={"error_type": type(exc).__name__})
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="An internal error occurred while resuming the assessment.",
@@ -351,13 +380,16 @@ def create_app() -> FastAPI:
         token: str | None = None,
         x_session_token: str | None = Header(None, alias="X-Session-Token"),
     ) -> dict[str, str]:
-        """User control: deletes session checkpoints and in-memory PII maps (DPDP principle 6)."""
+        """User control: deletes session checkpoints and in-memory PII maps (DPDP principle 6).
+
+        Session token should preferably be provided in the 'X-Session-Token' HTTP header.
+        """
         if not re.match(r"^[A-Za-z0-9_-]{8,64}$", thread_id):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid thread_id format"
             )
 
-        token_to_verify = token or x_session_token
+        token_to_verify = x_session_token or token
         if state.sqlite_conn is not None:
             cur = state.sqlite_conn.cursor()
             cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
@@ -379,7 +411,7 @@ def create_app() -> FastAPI:
                     state.sqlite_conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
                     state.sqlite_conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
             except Exception as exc:
-                logger.exception("session_db_clear_failed", extra={"error": str(exc)})
+                logger.exception("session_db_clear_failed", extra={"error_type": type(exc).__name__})
                 raise HTTPException(
                     status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                     detail="Failed to clear session data from storage.",

@@ -209,3 +209,45 @@ def test_delete_session_database_failure_fails_closed(client: TestClient) -> Non
         state.sqlite_conn.commit()
         client.delete(f"/session/{custom_thread_id}?token={token}")
 
+
+def test_delete_session_via_header_token(client: TestClient) -> None:
+    custom_thread_id = "test_header_token_del_123"
+    resp = client.post(
+        "/assess",
+        json={"text": "Custom verification request", "thread_id": custom_thread_id},
+    )
+    assert resp.status_code == 200
+    token = resp.json()["session_token"]
+
+    # Delete using X-Session-Token header instead of query param
+    del_resp = client.delete(
+        f"/session/{custom_thread_id}",
+        headers={"X-Session-Token": token},
+    )
+    assert del_resp.status_code == 200
+    assert del_resp.json()["status"] == "cleared"
+
+    # Verify session is deleted
+    del_resp2 = client.delete(
+        f"/session/{custom_thread_id}",
+        headers={"X-Session-Token": token},
+    )
+    assert del_resp2.status_code == 404
+
+
+def test_rate_limiting_middleware(client: TestClient) -> None:
+    try:
+        # Rapidly send health check requests to trigger rate limit (cap is 60 req/min)
+        got_429 = False
+        for _ in range(70):
+            r = client.get("/health")
+            if r.status_code == 429:
+                got_429 = True
+                assert "Too many requests" in r.json()["detail"]
+                break
+        assert got_429, "Expected 429 Too Many Requests after 60 rapid requests"
+    finally:
+        if hasattr(app.state, "rate_limit_records"):
+            app.state.rate_limit_records.clear()
+
+

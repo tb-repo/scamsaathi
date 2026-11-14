@@ -58,6 +58,7 @@ _PII_KIND: Final[dict[str, EntityKind]] = {
     "PHONE": "phone",
     "ID": "id_number",
     "ACCT": "account_like",
+    "OTP": "otp",
 }
 
 
