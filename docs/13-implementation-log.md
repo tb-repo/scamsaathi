@@ -169,6 +169,38 @@ A chronological journal of what was done, decisions, issues, and next steps. New
 - Known limitation: masking an answer separately restarts placeholder numbering, so `<PHONE_1>` in an answer may be a different number from `<PHONE_1>` in the message. Privacy-safe; to be fixed in Phase 5 by masking answers with the session's placeholder map.
 - Follow-up 2: author added `Regulation_18092026.pdf` (Third Amendment 2026, Gazette text with EM; signed scan with a text layer). Confirmed the phased start (appeal at 90 days, about 17 Dec 2026), the new 34A(1) scope (apps that offer spam reporting) and 34A(2). Found and fixed two inaccuracies: the 1601 series is for utilities, logistics and courier companies (not RBI-regulated entities), and 140xx calls are not spam unless the user has opted out (spam advice made conditional). The IndiaLaw summary was accurate. Doc 16 section 13.
 
+### 2026-11-14, Session 12, Phase P6 (Guardrails, API & Web UI)
+- Goal: Implement Agent A9 Guardrail, FastAPI REST endpoints, and the Streamlit Web Application.
+- Done:
+  - Task 6.1 (Guardrail Agent A9): Implemented `agents/guardrails.py` performing post-generation safety checks:
+    - PII leakage check on headlines, reasons, actions, and follow-up questions.
+    - Banned absolute/guaranteed claims check (`100% safe`, `definitely a scam`).
+    - Legal sections check (FR-083: no IPC, BNS, IT Act, POCSO section citations in user-facing text).
+    - Secret demand check (FR-064: user never instructed to provide OTP, PIN, password, CVV).
+    - Verified contacts and official domains validation (FR-050, NFR-019).
+    - Automatic fallback sanitization using deterministic safe templates on violation.
+  - Task 6.2 (FastAPI REST Backend): Implemented `api/app.py` and `api/schemas.py`:
+    - `POST /assess`: Analyzes pasted text/transcript and returns structured verdict, risk level, evidence-backed reasons, actions, and verified official contacts.
+    - `POST /resume`: Continues interrupted threads for multi-turn interview responses.
+    - `GET /health`: Reports status, version, providers (Gemini + Groq), and active mode.
+    - `DELETE /session/{thread_id}`: Allows users to delete session checkpoints (Doc 08 privacy principle 6).
+    - Wired SQLite session persistence (`SqliteSaver`).
+  - Task 6.3 (Streamlit Web UI): Implemented `ui/streamlit_app.py`:
+    - Mobile-responsive layout (designed and tested for 360px viewport).
+    - DPDP-aligned data-use notice (FR-084) and paste-only input area (FR-080).
+    - High-contrast visual risk badges (Low, Medium, High, Critical) with accessible score display (NFR-012).
+    - Interactive clarifying interview cards with quick-submit and "Skip / Best Guess" options.
+    - Prominent **"Protect Others - Report this Scammer"** portal cards with direct links to Chakshu (`sancharsaathi.gov.in/sfc`), Cyber Crime Portal Suspect Registry (`cybercrime.gov.in`), and 1930 Helpline.
+    - Collapsible "Technical Evidence & Agent Intelligence" drawer for viva and evaluator inspections.
+    - Advisory disclaimer (FR-065).
+  - Verification:
+    - Pytest: **247 passed in 27.08s** (`tests/unit/test_guardrails.py`, `tests/integration/test_api.py`, full suite).
+    - Live Agent Graph: **15/15 cases fully passing** (10/10 scams warned, 4/4 genuine cleared, 13/13 required behaviors).
+- Decisions:
+  - Guardrail Agent runs as the final output gate in `AgentRunner.outcome()`, ensuring zero unsafe outputs reach UI or API clients.
+  - TRAI designated series (140, 1600, 1601) explicitly treated as non-PII organization series across all guardrail checks.
+- Next: Phase 7 (Evaluation dataset expansion and benchmarking harness).
+
 ---
 
 ## Appendix A: Final prompts (to be filled during P4)

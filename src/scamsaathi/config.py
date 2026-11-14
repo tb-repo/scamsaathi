@@ -48,6 +48,12 @@ class Settings(BaseSettings):
         default=PLACEHOLDER_MODEL, validation_alias="GEMINI_EMBEDDING_MODEL"
     )
 
+    groq_api_key: SecretStr | None = Field(default=None, validation_alias="GROQ_API_KEY")
+    groq_model_fast: str = Field(default="llama-3.1-8b-instant", validation_alias="GROQ_MODEL_FAST")
+    groq_model_reasoning: str = Field(
+        default="llama-3.3-70b-versatile", validation_alias="GROQ_MODEL_REASONING"
+    )
+
     mode: Mode = Field(default=Mode.LIVE, validation_alias="SCAMSAATHI_MODE")
     llm_cache_dir: Path = Field(
         default=PROJECT_ROOT / ".cache" / "llm", validation_alias="SCAMSAATHI_LLM_CACHE_DIR"
@@ -69,7 +75,7 @@ class Settings(BaseSettings):
     def _resolve_cache_dir(cls, value: Path) -> Path:
         return value if value.is_absolute() else PROJECT_ROOT / value
 
-    @field_validator("gemini_api_key")
+    @field_validator("gemini_api_key", "groq_api_key")
     @classmethod
     def _blank_key_is_none(cls, value: SecretStr | None) -> SecretStr | None:
         if value is None:
@@ -130,6 +136,17 @@ def load_llm_config(settings: Settings, path: Path | None = None) -> LLMConfig:
         tier = config.tiers.get(tier_name)
         if tier is not None and tier.provider == "gemini" and model != PLACEHOLDER_MODEL:
             config.tiers[tier_name] = tier.model_copy(update={"model": model})
+
+    if settings.groq_api_key is not None:
+        groq_fallbacks = {
+            "fast": FallbackConfig(provider="groq", model=settings.groq_model_fast),
+            "reasoning": FallbackConfig(provider="groq", model=settings.groq_model_reasoning),
+        }
+        for tier_name, fb in groq_fallbacks.items():
+            existing = config.fallbacks.get(tier_name, [])
+            if not any(f.provider == "groq" for f in existing):
+                config.fallbacks[tier_name] = [*existing, fb]
+
     return config
 
 

@@ -16,13 +16,16 @@ Questions never ask for an OTP, PIN, password, card or account number (FR-064).
 
 from __future__ import annotations
 
+import json
 import re
 from typing import Any, Final
 
 from langgraph.types import interrupt
+from pydantic import BaseModel, Field
 
 from scamsaathi.agents.context import AgentContext
-from scamsaathi.graph.state import ScamState
+from scamsaathi.graph.state import ScamState, case_text
+from scamsaathi.prompts import load_prompt, untrusted_block
 from scamsaathi.schemas import ClassificationResult
 from scamsaathi.tools.pii_masker import mask
 
@@ -84,9 +87,24 @@ _NO: Final = re.compile(r"^\s*(?:no|n|nope|nahi|nahin|na|false)\b", re.I)
 SKIP_WORDS: Final = frozenset({"skip", "skip it", "give me best assessment", "rehne do"})
 
 
-def question_text(fact: str, language: str) -> str:
-    english, hinglish, _ = QUESTION_BANK[fact]
-    return hinglish if language == "hinglish" else english
+_FORBIDDEN_SECRET_WORDS: Final = re.compile(
+    r"\b(?:what is your|share your|tell me your|enter your|give me your)\s+(?:otp|pin|password|cvv|card\s*number)\b",
+    re.I,
+)
+
+
+class GeneratedQuestion(BaseModel):
+    fact: str
+    text: str = Field(min_length=5, max_length=200)
+
+
+class InterviewOutput(BaseModel):
+    questions: list[GeneratedQuestion] = Field(default_factory=list, max_length=3)
+
+
+def question_text(fact: str, language: str = "en") -> str:
+    english, _, _ = QUESTION_BANK[fact]
+    return english
 
 
 def plan_questions(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
@@ -94,8 +112,42 @@ def plan_questions(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
     asked = set(state.get("asked_facts", []))
     facts = [f for f in classification.missing_facts if f in QUESTION_BANK and f not in asked]
     facts = facts[: ctx.routing.max_questions_per_turn]
-    language = state.get("language", "en")
-    return {"pending_questions": [{"fact": f, "text": question_text(f, language)} for f in facts]}
+    if not facts:
+        return {"pending_questions": []}
+
+    static_questions = [{"fact": f, "text": question_text(f)} for f in facts]
+
+    # Task 5.1: Try contextual LLM-generated questions if configured, active, and within budget
+    if ctx.routing.llm_interview_questions:
+        user = (
+            "MISSING_FACTS: "
+            + json.dumps(facts)
+            + "\nDEFAULT_QUESTIONS: "
+            + json.dumps(static_questions)
+            + "\n"
+            + untrusted_block(case_text(state))
+        )
+        result, update = ctx.call_llm(
+            state,
+            node="interview",
+            prompt=load_prompt("interview"),
+            tier="fast",
+            user=user,
+            schema=InterviewOutput,
+            reserve=ctx.routing.llm_reserve_for_explanation,
+        )
+        if result and result.output.questions:
+            valid_map: dict[str, str] = {}
+            for q in result.output.questions:
+                if q.fact in facts and not _FORBIDDEN_SECRET_WORDS.search(q.text):
+                    valid_map[q.fact] = q.text.strip()
+            merged: list[dict[str, str]] = []
+            for sq in static_questions:
+                f = sq["fact"]
+                merged.append({"fact": f, "text": valid_map.get(f, sq["text"])})
+            return {"pending_questions": merged[: ctx.routing.max_questions_per_turn]}
+
+    return {"pending_questions": static_questions}
 
 
 def _interpret(answer: Any, pending: list[dict[str, str]]) -> tuple[list[str], bool]:

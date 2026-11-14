@@ -148,7 +148,7 @@ def evidence_catalogue(state: ScamState, ctx: AgentContext, risk: RiskScore) -> 
 
 def template_explanation(risk: RiskScore, catalogue: dict[str, str], language: str,
                          typology_names: list[str]) -> Explanation:
-    lang = "hinglish" if language == "hinglish" else "en"
+    lang = "en"
     headline = HEADLINES[lang][risk.level]
     if typology_names and risk.level != "LOW":
         headline += f" It looks like: {typology_names[0]}."
@@ -247,7 +247,7 @@ def explain_advise(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
     catalogue = evidence_catalogue(state, ctx, risk)
     template = template_explanation(risk, catalogue, language, names)
 
-    reply_language = {"hinglish": "hinglish", "hi": "hindi"}.get(language, "english")
+    reply_language = "english"
     user = "\n".join([
         f"RISK_LEVEL: {risk.level}",
         "EVIDENCE: " + json.dumps(catalogue, ensure_ascii=False),

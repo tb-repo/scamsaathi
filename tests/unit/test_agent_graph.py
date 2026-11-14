@@ -353,11 +353,11 @@ def test_skip_goes_straight_to_scoring(make_runner: Callable[..., Any]) -> None:
     assert llm.names() == ["extract", "classify", "explain"]
 
 
-def test_hinglish_questions(make_runner: Callable[..., Any]) -> None:
+def test_hinglish_input_english_questions(make_runner: Callable[..., Any]) -> None:
     runner, _ = make_runner({"extract": ['{"signals": []}'], "classify": [_ask(["money_sent"])]})
     outcome = runner.assess("Mujhe ek call aaya tha, unhone parcel ke baare mein kaha")
     assert outcome.status == "needs_followup"
-    assert outcome.questions[0]["text"].startswith("Kya aapne")
+    assert outcome.questions[0]["text"].startswith("Have you already")
 
 
 def test_followup_cap_routes_to_scoring() -> None:
@@ -391,6 +391,31 @@ def test_checkpoint_holds_masked_data_only(make_runner: Callable[..., Any], tmp_
     for raw in (b"9876543210", b"fraud.desk@ybl", b"9123456780"):
         assert raw not in blobs
     assert b"<PHONE_1>" in blobs
+
+
+def test_interview_preserves_placeholder_mapping(make_runner: Callable[..., Any]) -> None:
+    runner, _ = make_runner({"extract": ['{"signals": []}'], "classify": [_ask(["money_sent"])]})
+    first = runner.assess("A man called me from 9876543210 about my parcel")
+    assert first.status == "needs_followup"
+    final = runner.resume(first.thread_id, "9876543210 told me to pay 9123456780")
+    # Mapping in runner remembers <PHONE_1> and assigns <PHONE_2> to new number
+    assert runner._session_mappings[first.thread_id]["<PHONE_1>"] == "9876543210"
+    assert runner._session_mappings[first.thread_id]["<PHONE_2>"] == "9123456780"
+
+
+def test_contextual_llm_interview_questions(make_runner: Callable[..., Any]) -> None:
+    custom_question = "Did the person claiming to be a customs officer ask you to pay a clearance fee?"
+    interview_reply = json.dumps({"questions": [{"fact": "asked_to_pay", "text": custom_question}]})
+    runner, llm = make_runner({
+        "extract": ['{"signals": []}'],
+        "classify": [_ask(["asked_to_pay"])],
+        "interview": [interview_reply],
+    })
+    runner.ctx.routing = runner.ctx.routing.model_copy(update={"llm_interview_questions": True})
+    first = runner.assess("Someone called me about a parcel from customs")
+    assert first.status == "needs_followup"
+    assert first.questions[0]["text"] == custom_question
+
 
 
 # --- Prompts and injection -------------------------------------------------------------

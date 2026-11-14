@@ -61,6 +61,18 @@ def test_invalid_mode_rejected(monkeypatch: pytest.MonkeyPatch) -> None:
         _settings()
 
 
+def test_groq_settings_and_fallback(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("GROQ_API_KEY", "gsk_test123")
+    settings = _settings()
+    assert settings.groq_api_key is not None
+    assert settings.groq_model_fast == "llama-3.1-8b-instant"
+    assert settings.groq_model_reasoning == "llama-3.3-70b-versatile"
+    config = load_llm_config(settings, CONFIG_DIR / "llm.yaml")
+    assert any(fb.provider == "groq" for fb in config.fallbacks["fast"])
+    assert any(fb.provider == "groq" for fb in config.fallbacks["reasoning"])
+
+
+
 def test_log_lines_are_json_and_pii_masked() -> None:
     record = logging.makeLogRecord(
         {"name": "scamsaathi.test", "levelname": "INFO", "msg": "user typed %s",

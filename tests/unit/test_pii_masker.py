@@ -77,3 +77,15 @@ def test_ut_pii_10_edge_cases() -> None:
 def test_contains_pii_ignores_placeholders() -> None:
     assert contains_pii("Call 9876543210")
     assert not contains_pii(mask("Call 9876543210, UPI a.b@ybl, PAN ABCDE1234F").masked_text)
+
+
+def test_ut_pii_11_session_existing_mapping() -> None:
+    first = mask("Call me at 9876543210")
+    assert first.masked_text == "Call me at <PHONE_1>"
+
+    # Answer mentions the same phone and adds a new one
+    second = mask("I called 9876543210 and also 9123456780", existing_mapping=first.mapping)
+    assert second.masked_text == "I called <PHONE_1> and also <PHONE_2>"
+    assert second.mapping["<PHONE_1>"] == "9876543210"
+    assert second.mapping["<PHONE_2>"] == "9123456780"
+

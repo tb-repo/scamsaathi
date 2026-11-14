@@ -35,7 +35,7 @@ from scamsaathi.llm.errors import (
     SchemaViolation,
     TransientProviderError,
 )
-from scamsaathi.llm.providers import GeminiProvider, Provider, ProviderResponse
+from scamsaathi.llm.providers import GeminiProvider, GroqProvider, Provider, ProviderResponse
 from scamsaathi.tools.pii_masker import contains_pii
 
 logger = logging.getLogger("scamsaathi.llm")
@@ -301,10 +301,12 @@ class LLMGateway:
 
 
 def build_gateway(settings: Settings) -> LLMGateway:
-    """Construct the gateway from settings. Gemini is registered only when a key is set."""
+    """Construct the gateway from settings. Providers are registered when their keys are set."""
     providers: dict[str, Provider] = {}
     if settings.gemini_api_key is not None and settings.mode is Mode.LIVE:
         providers["gemini"] = GeminiProvider(settings.gemini_api_key)
+    if settings.groq_api_key is not None and settings.mode is Mode.LIVE:
+        providers["groq"] = GroqProvider(settings.groq_api_key)
     return LLMGateway(
         config=load_llm_config(settings),
         mode=settings.mode,

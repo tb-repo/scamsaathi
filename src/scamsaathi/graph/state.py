@@ -77,6 +77,7 @@ class RoutingConfig(BaseModel):
     llm_reserve_for_explanation: int = Field(ge=0, le=3)
     max_input_chars: int = Field(ge=100)
     recursion_limit: int = Field(ge=10)
+    llm_interview_questions: bool = Field(default=False)
 
 
 @lru_cache(maxsize=4)

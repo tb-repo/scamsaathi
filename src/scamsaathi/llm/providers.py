@@ -90,3 +90,56 @@ class GeminiProvider:
             input_tokens=(usage.prompt_token_count or 0) if usage else 0,
             output_tokens=(usage.candidates_token_count or 0) if usage else 0,
         )
+
+
+class GroqProvider:
+    """Groq API client as a fast fallback provider (ADR-001)."""
+
+    name = "groq"
+
+    def __init__(self, api_key: SecretStr) -> None:
+        from groq import Groq  # local import keeps tests and offline mode SDK-free
+
+        self._client = Groq(api_key=api_key.get_secret_value())
+
+    def generate(
+        self,
+        *,
+        model: str,
+        system: str,
+        user: str,
+        json_schema: dict[str, Any],
+        temperature: float,
+        timeout_s: float,
+    ) -> ProviderResponse:
+        from groq import APIConnectionError, APIStatusError, APITimeoutError
+
+        try:
+            response = self._client.chat.completions.create(
+                model=model,
+                messages=[
+                    {"role": "system", "content": system},
+                    {"role": "user", "content": user},
+                ],
+                temperature=temperature,
+                response_format={"type": "json_object"},
+                timeout=timeout_s,
+            )
+        except (APITimeoutError, APIConnectionError, TimeoutError, ConnectionError) as exc:
+            raise TransientProviderError(f"groq {type(exc).__name__}") from None
+        except APIStatusError as exc:
+            if exc.status_code in _TRANSIENT_HTTP_CODES:
+                raise TransientProviderError(f"groq HTTP {exc.status_code}") from None
+            raise PermanentProviderError(f"groq HTTP {exc.status_code}") from None
+
+        choice = response.choices[0]
+        text = choice.message.content or ""
+        if not text:
+            raise TransientProviderError("groq returned an empty response")
+        usage = response.usage
+        return ProviderResponse(
+            text=text,
+            input_tokens=usage.prompt_tokens if usage else 0,
+            output_tokens=usage.completion_tokens if usage else 0,
+        )
+

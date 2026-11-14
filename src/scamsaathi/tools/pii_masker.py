@@ -193,8 +193,12 @@ def canonical(kind: str, value: str) -> str:
     return re.sub(r"[ -]", "", value).lower()
 
 
-def mask(text: str) -> MaskResult:
-    """Mask PII in ``text``. Identical values get the same placeholder."""
+def mask(text: str, existing_mapping: dict[str, str] | None = None) -> MaskResult:
+    """Mask PII in ``text``. Identical values get the same placeholder.
+
+    If ``existing_mapping`` is provided, existing placeholders and their numbers are
+    preserved and reused for identical values, with new identifiers continuing the sequence.
+    """
     query_spans = _query_spans(text)
     found: list[tuple[int, int, str, str | None]] = [(s, e, "QUERY", None) for s, e in query_spans]
     found += [(h.span[0], h.span[1], h.kind, h.value) for h in find_pii(text, query_spans)]
@@ -202,7 +206,15 @@ def mask(text: str) -> MaskResult:
 
     counters: dict[str, int] = {}
     by_value: dict[tuple[str, str], str] = {}
-    mapping: dict[str, str] = {}
+    mapping: dict[str, str] = dict(existing_mapping or {})
+    if existing_mapping:
+        for ph, orig in existing_mapping.items():
+            m = re.match(r"^<([A-Z]+)_(\d+)>$", ph)
+            if m:
+                k, num = m.group(1), int(m.group(2))
+                counters[k] = max(counters.get(k, 0), num)
+                by_value[(k, canonical(k, orig))] = ph
+
     entities: list[MaskedEntity] = []
     pieces: list[str] = []
     cursor = 0

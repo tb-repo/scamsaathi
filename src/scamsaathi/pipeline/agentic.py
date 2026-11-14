@@ -16,6 +16,7 @@ from langgraph.checkpoint.memory import InMemorySaver
 from langgraph.types import Command
 
 from scamsaathi.agents.context import AgentContext, RawRequest
+from scamsaathi.agents.guardrails import GuardrailAgent
 from scamsaathi.graph.builder import build_graph
 from scamsaathi.schemas import AdviceBundle, Explanation, IntelResult, RiskScore, Signal
 from scamsaathi.tools.pii_masker import mask
@@ -46,7 +47,9 @@ class AssessmentOutcome:
 class AgentRunner:
     def __init__(self, ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | None = None):
         self.ctx = ctx
+        self.guardrail = GuardrailAgent(ctx)
         self.graph = build_graph(ctx, checkpointer or InMemorySaver())
+        self._session_mappings: dict[str, dict[str, str]] = {}
 
     def _config(self, thread_id: str) -> Any:
         return {"configurable": {"thread_id": thread_id},
@@ -59,21 +62,32 @@ class AgentRunner:
         if len(text) > self.ctx.routing.max_input_chars:
             raise ValueError(f"input is longer than {self.ctx.routing.max_input_chars} characters")
         thread_id = thread_id or uuid.uuid4().hex
-        self.ctx.vault.put(thread_id, RawRequest(text=text))
+        raw = RawRequest(text=text)
+        self.ctx.vault.put(thread_id, raw)
         try:
             self.graph.invoke({"request_id": thread_id}, self._config(thread_id))
         finally:
+            if raw.mask is not None:
+                self._session_mappings[thread_id] = dict(raw.mask.mapping)
             self.ctx.vault.pop(thread_id)  # originals never outlive the request
         return self.outcome(thread_id)
 
     def resume(self, thread_id: str, answer: str | dict[str, Any]) -> AssessmentOutcome:
+        mapping = self._session_mappings.get(thread_id)
         if isinstance(answer, str):
-            safe: str | dict[str, Any] = mask(answer[:1000]).masked_text
+            masked = mask(answer[:1000], existing_mapping=mapping)
+            if mapping is not None:
+                mapping.update(masked.mapping)
+            safe: str | dict[str, Any] = masked.masked_text
         else:
+            text_val = str(answer.get("text") or "")[:1000]
+            masked = mask(text_val, existing_mapping=mapping)
+            if mapping is not None:
+                mapping.update(masked.mapping)
             safe = {
                 "skip": bool(answer.get("skip")),
                 "answers": {str(k): bool(v) for k, v in (answer.get("answers") or {}).items()},
-                "text": mask(str(answer.get("text") or "")[:1000]).masked_text,
+                "text": masked.masked_text,
             }
         self.graph.invoke(Command(resume=safe), self._config(thread_id))
         return self.outcome(thread_id)
@@ -94,9 +108,13 @@ class AgentRunner:
         }
         if snapshot.interrupts:
             payload = snapshot.interrupts[0].value or {}
-            return AssessmentOutcome(status="needs_followup",
-                                     questions=list(payload.get("questions", [])), **common)
-        return AssessmentOutcome(
+            followup = AssessmentOutcome(
+                status="needs_followup",
+                questions=list(payload.get("questions", [])),
+                **common,
+            )
+            return self.guardrail.sanitize(followup)
+        complete = AssessmentOutcome(
             status="complete",
             risk=RiskScore.model_validate(values["score"]),
             explanation=Explanation.model_validate(values["explanation"]),
@@ -105,3 +123,4 @@ class AgentRunner:
             explanation_source=values.get("explanation_source", ""),
             **common,
         )
+        return self.guardrail.sanitize(complete)

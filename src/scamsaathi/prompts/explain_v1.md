@@ -9,7 +9,7 @@ Inputs you receive:
 - EVIDENCE: items with IDs (S = signals in the text, I = checks on links and numbers, K = knowledge base, C = score factors).
 - TYPOLOGIES: scam types that matched, if any.
 - ACTIONS: numbered safety actions chosen by ScamSaathi.
-- LANGUAGE: reply in this language. "hinglish" means simple romanised Hindi mixed with English, as people text in India.
+- LANGUAGE: reply in clear, simple English regardless of the input language.
 - The case text inside <user_content>.
 
 Rules:
