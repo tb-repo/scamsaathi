@@ -21,7 +21,7 @@ Mobile communication fraud in India has escalated into a national security and s
 ### Key Innovations & Architecture
 1. **Multi-Agent Orchestration (LangGraph State Graph):** 9 specialized agents (A1 Extractor, A2 Risk Heuristic, A3 Hybrid Threat Intelligence Retriever, A4 Clarifying Interviewer, A5 Typology Classifier, A6 Risk Scorer, A7 Action Advisory, A8 Explainer, and A9 Safety Guardrail) collaborate across deterministic and probabilistic steps.
 2. **Audited Script Compliance with Multilingual Ingestion:** Understands English, Devanagari Hindi, and romanized Hinglish seamlessly, while generating response fields (headlines, reasons, advice, and interview questions) audited across benchmark cases for zero Devanagari script leakage.
-3. **Citizen Protection & Government Reporting Integration:** Every scam verdict prioritizes actionable, official reporting channels: DoT's **Chakshu Portal** (`sancharsaathi.gov.in/sfc`) for suspect numbers/messages, the **Cyber Crime Portal** (`cybercrime.gov.in`) for fraud attempts, and the **1930 Helpline** for financial fraud lien assistance.
+3. **Citizen Protection & Government Reporting Integration:** Every scam verdict prioritizes actionable, official reporting channels: DoT's **Chakshu Portal** (`sancharsaathi.gov.in/sfc`) for suspect numbers/messages, the **Cyber Crime Portal** (`cybercrime.gov.in`) for fraud attempts, and the **1930 Helpline** for financial fraud reporting and bank coordination assistance.
 4. **Human-in-the-Loop Clarification:** When ambiguous inputs lack conclusive threat signals, the system triggers a targeted, multi-turn interview rather than hallucinating or issuing false alarms.
 5. **Rigorous Privacy & Air-Gapped Offline Defense:** Deterministic PII masking strips phone numbers, account digits, contextual OTPs, and emails *before* state checkpointing or LLM ingestion. A persistent two-tier cache enables complete, air-gapped offline operation.
 
@@ -231,7 +231,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 - Seamless guidance to:
   - **Chakshu Portal** (`sancharsaathi.gov.in/sfc`) for reporting malicious communications.
   - **National Cyber Crime Suspect Registry** (`cybercrime.gov.in`).
-  - **1930 Helpline** for golden-hour reporting and bank lien assistance.
+  - **1930 Helpline** for golden-hour reporting and bank coordination assistance (lien/freezing actions decided by banks/LEAs).
 
 ### Slide 8: Privacy by Design & DPDP Compliance
 - Automatic PII redaction of phones, account digits, UPI IDs, emails, and contextual OTPs (names and street addresses disclosed as limitations).

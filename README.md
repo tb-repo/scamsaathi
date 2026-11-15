@@ -42,7 +42,7 @@
    - Direct integration with verified Indian cyber defense channels:
      - **DoT Chakshu Facility**: Direct reporting for suspected fraud calls, SMS, and WhatsApp (`https://sancharsaathi.gov.in/sfc`).
      - **National Cyber Crime Reporting Portal**: Suspect registry for malicious phone numbers, UPI IDs, and phishing URLs (`https://cybercrime.gov.in`).
-     - **1930 Financial Fraud Helpline**: Rapid golden-hour reporting guidance to assist banks in placing liens when financial loss is reported.
+     - **1930 Financial Fraud Helpline**: Rapid golden-hour reporting guidance and bank coordination assistance when financial loss is reported (lien/freezing decisions remain the statutory remit of banks and law enforcement authorities).
      - **TRAI 1909**: DND and unsolicited commercial communications reporting.
 
 ---

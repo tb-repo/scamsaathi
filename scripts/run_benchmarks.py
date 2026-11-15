@@ -402,8 +402,8 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         f"**{pct(m_ag['reporting_rate'])}** | Active Citizen Defense | Any official channel recommended |"
     )
     lines.append(
-        f"| **Ambiguous Case Handling** | 100.0% | 0.0% (No Interview) | "
-        f"**{pct(m_ag['ambiguous_interviewed'] / m_ag['ambiguous_total'])}** | Interactive Interview | HITL targeted clarification questions |"
+        f"| **Ambiguous Case Clarification** | 100.0% | 0.0% (No Interview) | "
+        f"**{pct(m_ag['ambiguous_interviewed'] / m_ag['ambiguous_total'])}** | Interactive Interview | Proactive clarification questions on under-specified inputs (measures interview triggering behavior) |"
     )
     lines.append(
         f"| **Median Latency** | < 5000 ms | {m_b0['median_latency_ms']:.1f} ms | "
@@ -446,7 +446,7 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         f"2. **Non-Devanagari Script Compliance ({pct(m_ag['language_compliance_rate'])}):** Across all 50 evaluated benchmark cases, all generated text fields (explanation headline, reasons, uncertainty, advice action items, and clarification questions) were audited at the character level and confirmed to contain zero Devanagari script leakage.",
         f"3. **Evidence-ID Grounding Rate ({pct(m_ag['groundedness'])}):** Generated explanation reasons cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue (measures citation consistency against runtime state, not external factual correctness).",
         "4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with rapid 1930 helpline routing on financial loss for prompt reporting and bank coordination assistance (100% of applicable urgent recovery cases).",
-        "5. **Human-in-the-Loop Value:** Ambiguous messages triggered targeted clarifying questions, providing accurate outcomes upon user resume.",
+        f"5. **Human-in-the-Loop Clarification ({pct(m_ag['ambiguous_interviewed'] / m_ag['ambiguous_total'])}):** Ambiguous or under-specified messages triggered targeted clarifying interview questions (evaluating proactive clarification behavior on incomplete reports; multi-turn resumed outcome accuracy across diverse citizen responses remains an area for extended evaluation).",
     ])
 
     return "\n".join(lines)

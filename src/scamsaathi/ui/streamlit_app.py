@@ -145,7 +145,7 @@ with st.sidebar:
         "• **Known Limitations:** Pattern matching cannot reliably detect free-text personal names or street addresses; please avoid entering them.\n"
         "• **URLs Inspected:** Web links are analyzed for security threat intelligence and domain legitimacy.\n"
         "• **Zero Device Scraping:** Paste-only interface—we never access device SMS, call logs, or contacts.\n"
-        "• **Ephemeral Processing:** Original text is cleared immediately after analysis."
+        "• **Ephemeral Processing:** Original unmasked text is held strictly in memory during analysis and immediately evicted from the vault upon graph completion. Masked analysis outcomes, checkpoints, and the input widget persist only in your active session until cleared, replaced, or purged after 30 minutes of inactivity."
     )
 
     st.markdown("---")
@@ -176,11 +176,13 @@ if "user_text_input" not in st.session_state:
 if "last_selected_scenario" not in st.session_state:
     st.session_state.last_selected_scenario = "Select a pre-built scenario..."
 
-# Inactivity TTL cleanup: purge abandoned runner session if inactive > 30 minutes
-if st.session_state.thread_id and (now - st.session_state.last_active_time > STREAMLIT_INACTIVITY_TTL_SECONDS):
-    runner.clear_session(st.session_state.thread_id)
+# Inactivity TTL cleanup: purge abandoned runner session, checkpoint state, and input widget if inactive > 30 minutes
+if (st.session_state.thread_id or st.session_state.user_text_input) and (now - st.session_state.last_active_time > STREAMLIT_INACTIVITY_TTL_SECONDS):
+    if st.session_state.thread_id:
+        runner.clear_session(st.session_state.thread_id)
     st.session_state.thread_id = None
     st.session_state.outcome = None
+    st.session_state.user_text_input = ""
     st.session_state.last_active_time = now
 
 # Handle scenario selection change: purge old runner session and load new text

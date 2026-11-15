@@ -133,5 +133,5 @@ python -u scripts/run_benchmarks.py
 All recommendations prioritize verified government portals to protect fellow citizens:
 1. **Chakshu Portal (DoT Sanchar Saathi):** `https://sancharsaathi.gov.in/sfc` (For reporting suspect SMS, WhatsApp, and call numbers).
 2. **National Cyber Crime Reporting Portal (Suspect Registry):** `https://cybercrime.gov.in` (For financial and impersonation fraud).
-3. **National Cyber Crime Helpline:** `1930` (Prompt reporting for financial fraud lien assistance within the golden hour; also contact your bank directly through verified channels).
+3. **National Cyber Crime Helpline:** `1930` (Prompt reporting and bank coordination assistance within the golden hour; lien/freeze actions are decided by banks/LEAs; also contact your bank directly through verified channels).
 4. **TRAI DND Helpline:** `1909` (For unsolicited commercial communications).

@@ -541,4 +541,5 @@ def test_runner_cleanup_abandoned_sessions(make_runner: Callable[..., Any]) -> N
     assert first.thread_id not in runner._session_mappings
     assert first.thread_id not in runner._session_created_at
     assert runner.ctx.vault.get(first.thread_id) is None
+    assert runner.checkpointer.get_tuple(runner._config(first.thread_id)) is None
 

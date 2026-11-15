@@ -50,7 +50,8 @@ class AgentRunner:
     def __init__(self, ctx: AgentContext, checkpointer: BaseCheckpointSaver[Any] | None = None):
         self.ctx = ctx
         self.guardrail = GuardrailAgent(ctx)
-        self.graph = build_graph(ctx, checkpointer or InMemorySaver())
+        self.checkpointer = checkpointer or InMemorySaver()
+        self.graph = build_graph(ctx, self.checkpointer)
         self._session_mappings: dict[str, dict[str, str]] = {}
         self._session_created_at: dict[str, float] = {}
 
@@ -75,7 +76,7 @@ class AgentRunner:
                 self._session_created_at[thread_id] = time.time()
             outcome = self.outcome(thread_id)
             if outcome.status != "needs_followup":
-                self.clear_session(thread_id)
+                self.clear_session(thread_id, purge_checkpoint=False)
             return outcome
         except Exception:
             self.clear_session(thread_id)
@@ -104,7 +105,7 @@ class AgentRunner:
             self.graph.invoke(Command(resume=safe), self._config(thread_id))
             outcome = self.outcome(thread_id)
             if outcome.status != "needs_followup":
-                self.clear_session(thread_id)
+                self.clear_session(thread_id, purge_checkpoint=False)
             return outcome
         except Exception:
             self.clear_session(thread_id)
@@ -144,11 +145,24 @@ class AgentRunner:
         )
         return self.guardrail.sanitize(complete)
 
-    def clear_session(self, thread_id: str) -> bool:
-        """Purge in-memory PII mappings and vault entries for the session (DPDP principle 6)."""
+    def clear_session(self, thread_id: str, purge_checkpoint: bool = True) -> bool:
+        """Purge in-memory PII mappings, vault entries, and optionally graph checkpoints for the session (DPDP principle 6)."""
         self._session_created_at.pop(thread_id, None)
         popped = self._session_mappings.pop(thread_id, None) is not None
         self.ctx.vault.pop(thread_id)
+        if purge_checkpoint:
+            # Purge graph checkpoint state from checkpointer
+            if hasattr(self.checkpointer, "delete_thread"):
+                try:
+                    self.checkpointer.delete_thread(thread_id)
+                except Exception:
+                    pass
+            if hasattr(self.checkpointer, "storage") and isinstance(self.checkpointer.storage, dict):
+                self.checkpointer.storage.pop(thread_id, None)
+            if hasattr(self.checkpointer, "writes") and isinstance(self.checkpointer.writes, dict):
+                dead_keys = [k for k in self.checkpointer.writes if isinstance(k, tuple) and k and k[0] == thread_id]
+                for k in dead_keys:
+                    self.checkpointer.writes.pop(k, None)
         return popped
 
     def cleanup_abandoned_sessions(self, max_age_seconds: float = 1800.0) -> int:
