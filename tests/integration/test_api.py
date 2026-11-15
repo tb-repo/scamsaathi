@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import sqlite3
 import time
+import uuid
 
 import pytest
 from fastapi.testclient import TestClient
@@ -410,6 +411,65 @@ def test_resume_expired_session_purge_failure_fails_closed(client: TestClient) -
         state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_exp_purge_test;")
         state.sqlite_conn.commit()
         client.delete(f"/session/{custom_thread_id}", headers={"X-Session-Token": token})
+
+
+def test_concurrent_assess_resume_and_cleanup(client: TestClient) -> None:
+    """Exercises concurrent assessments, resumes, and periodic cleanup simultaneously under SQLite lock serialization."""
+    import concurrent.futures
+    from scamsaathi.api.app import cleanup_expired_sessions
+
+    assert state.sqlite_conn is not None
+
+    # Step 1: Pre-create 2 ambiguous sessions that require follow-up questions
+    base_threads: dict[str, str] = {}
+    for i in range(2):
+        tid = f"test_conc_base_{i}_{uuid.uuid4().hex[:8]}"
+        resp = client.post("/assess", json={"text": "They called about my parcel.", "thread_id": tid})
+        assert resp.status_code == 200
+        base_threads[tid] = resp.json()["session_token"]
+
+    errors: list[str] = []
+
+    def run_assess(idx: int) -> None:
+        try:
+            tid = f"test_conc_assess_{idx}_{uuid.uuid4().hex[:8]}"
+            r = client.post("/assess", json={"text": "Courier parcel notification", "thread_id": tid})
+            if r.status_code != 200:
+                errors.append(f"assess_{idx}_status_{r.status_code}: {r.text}")
+        except Exception as e:
+            errors.append(f"assess_{idx}_exc: {type(e).__name__}: {e}")
+
+    def run_resume(tid: str, token: str) -> None:
+        try:
+            r = client.post("/resume", json={"thread_id": tid, "answer": "skip", "session_token": token})
+            if r.status_code != 200:
+                errors.append(f"resume_{tid}_status_{r.status_code}: {r.text}")
+        except Exception as e:
+            errors.append(f"resume_{tid}_exc: {type(e).__name__}: {e}")
+
+    def run_cleanup() -> None:
+        try:
+            assert state.sqlite_conn is not None
+            cleanup_expired_sessions(state.sqlite_conn)
+        except Exception as e:
+            errors.append(f"cleanup_exc: {type(e).__name__}: {e}")
+
+    # Concurrently execute 4 assessments, 2 resumes, and 2 cleanup operations
+    with concurrent.futures.ThreadPoolExecutor(max_workers=8) as executor:
+        futures = []
+        for i in range(4):
+            futures.append(executor.submit(run_assess, i))
+        for tid, token in base_threads.items():
+            futures.append(executor.submit(run_resume, tid, token))
+        futures.append(executor.submit(run_cleanup))
+        futures.append(executor.submit(run_cleanup))
+        concurrent.futures.wait(futures)
+
+    assert not errors, f"Concurrent operations encountered errors: {errors}"
+
+    # Clean up base threads
+    for tid, token in base_threads.items():
+        client.delete(f"/session/{tid}", headers={"X-Session-Token": token})
 
 
 

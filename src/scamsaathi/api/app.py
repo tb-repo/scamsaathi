@@ -7,6 +7,7 @@ import logging
 import re
 import secrets
 import sqlite3
+import threading
 import time
 import uuid
 from contextlib import asynccontextmanager
@@ -82,6 +83,7 @@ class AppState:
     ctx: AgentContext | None = None
     runner: AgentRunner | None = None
     sqlite_conn: sqlite3.Connection | None = None
+    db_lock: threading.RLock = threading.RLock()
 
 
 state = AppState()
@@ -96,43 +98,45 @@ def _purge_session_records(conn: sqlite3.Connection | None, thread_id: str) -> b
         state.runner.clear_session(thread_id)
     if conn is None:
         return True
-    try:
-        with conn:
-            conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
-            conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
-            conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
-        return True
-    except Exception as exc:
-        logger.exception("session_purge_failed", extra={"thread_id": thread_id, "error_type": type(exc).__name__})
-        return False
+    with state.db_lock:
+        try:
+            with conn:
+                conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (thread_id,))
+                conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (thread_id,))
+                conn.execute("DELETE FROM writes WHERE thread_id = ?", (thread_id,))
+            return True
+        except Exception as exc:
+            logger.exception("session_purge_failed", extra={"thread_id": thread_id, "error_type": type(exc).__name__})
+            return False
 
 
 def cleanup_expired_sessions(conn: sqlite3.Connection, ttl_seconds: float = 86400.0) -> int:
     """Enforces 24-hour storage limitation (DPDP Principle 4 / FR-084) by pruning expired checkpoints."""
     cutoff = time.time() - ttl_seconds
-    try:
-        cur = conn.cursor()
-        cur.execute("SELECT thread_id FROM session_meta WHERE last_accessed < ?", (cutoff,))
-        expired = [row[0] for row in cur.fetchall()]
-        for tid in expired:
-            cur.execute("DELETE FROM checkpoints WHERE thread_id = ?", (tid,))
-            cur.execute("DELETE FROM writes WHERE thread_id = ?", (tid,))
-            cur.execute("DELETE FROM session_meta WHERE thread_id = ?", (tid,))
-            if state.runner is not None:
-                state.runner.clear_session(tid)
-        # Prune any orphaned checkpoints/writes not tracked in session_meta (trusted maintenance path)
+    with state.db_lock:
         try:
-            cur.execute("DELETE FROM checkpoints WHERE thread_id NOT IN (SELECT thread_id FROM session_meta)")
-            cur.execute("DELETE FROM writes WHERE thread_id NOT IN (SELECT thread_id FROM session_meta)")
-        except sqlite3.OperationalError:
-            pass
-        conn.commit()
-        if expired:
-            logger.info(f"purged_{len(expired)}_expired_sessions")
-        return len(expired)
-    except Exception as exc:
-        logger.warning(f"session_ttl_cleanup_failed: {type(exc).__name__}")
-        return 0
+            cur = conn.cursor()
+            cur.execute("SELECT thread_id FROM session_meta WHERE last_accessed < ?", (cutoff,))
+            expired = [row[0] for row in cur.fetchall()]
+            for tid in expired:
+                cur.execute("DELETE FROM checkpoints WHERE thread_id = ?", (tid,))
+                cur.execute("DELETE FROM writes WHERE thread_id = ?", (tid,))
+                cur.execute("DELETE FROM session_meta WHERE thread_id = ?", (tid,))
+                if state.runner is not None:
+                    state.runner.clear_session(tid)
+            # Prune any orphaned checkpoints/writes not tracked in session_meta (trusted maintenance path)
+            try:
+                cur.execute("DELETE FROM checkpoints WHERE thread_id NOT IN (SELECT thread_id FROM session_meta)")
+                cur.execute("DELETE FROM writes WHERE thread_id NOT IN (SELECT thread_id FROM session_meta)")
+            except sqlite3.OperationalError:
+                pass
+            conn.commit()
+            if expired:
+                logger.info(f"purged_{len(expired)}_expired_sessions")
+            return len(expired)
+        except Exception as exc:
+            logger.warning(f"session_ttl_cleanup_failed: {type(exc).__name__}")
+            return 0
 
 
 @asynccontextmanager
@@ -290,8 +294,6 @@ def create_app() -> FastAPI:
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
                 detail="Pipeline runner is not initialized",
             )
-        if state.sqlite_conn is not None:
-            cleanup_expired_sessions(state.sqlite_conn)
 
         thread_id = req.thread_id or uuid.uuid4().hex
         if not re.match(r"^[A-Za-z0-9_-]{8,64}$", thread_id):
@@ -301,56 +303,61 @@ def create_app() -> FastAPI:
 
         session_token = secrets.token_urlsafe(32)
         now = time.time()
-        if state.sqlite_conn is not None:
-            # Prevent session takeover: reject duplicate thread_id if already exists
-            cur = state.sqlite_conn.cursor()
-            cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
-            if cur.fetchone() is not None:
-                raise HTTPException(
-                    status_code=status.HTTP_409_CONFLICT,
-                    detail="Session ID already exists; cannot overwrite an existing session.",
-                )
-            try:
-                state.sqlite_conn.execute(
-                    "INSERT INTO session_meta (thread_id, session_token, created_at, last_accessed) "
-                    "VALUES (?, ?, ?, ?)",
-                    (thread_id, session_token, now, now),
-                )
-                state.sqlite_conn.commit()
-            except sqlite3.IntegrityError as exc:
-                if "UNIQUE" in str(exc) or "PRIMARY KEY" in str(exc):
+
+        # Synchronize access to shared SQLite connection and checkpointer to avoid transaction interleaving
+        with state.db_lock:
+            if state.sqlite_conn is not None:
+                cleanup_expired_sessions(state.sqlite_conn)
+
+                # Prevent session takeover: reject duplicate thread_id if already exists
+                cur = state.sqlite_conn.cursor()
+                cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
+                if cur.fetchone() is not None:
                     raise HTTPException(
                         status_code=status.HTTP_409_CONFLICT,
                         detail="Session ID already exists; cannot overwrite an existing session.",
+                    )
+                try:
+                    state.sqlite_conn.execute(
+                        "INSERT INTO session_meta (thread_id, session_token, created_at, last_accessed) "
+                        "VALUES (?, ?, ?, ?)",
+                        (thread_id, session_token, now, now),
+                    )
+                    state.sqlite_conn.commit()
+                except sqlite3.IntegrityError as exc:
+                    if "UNIQUE" in str(exc) or "PRIMARY KEY" in str(exc):
+                        raise HTTPException(
+                            status_code=status.HTTP_409_CONFLICT,
+                            detail="Session ID already exists; cannot overwrite an existing session.",
+                        ) from exc
+                    logger.error(f"session_meta_insert_failed: {type(exc).__name__}", exc_info=True)
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Failed to initialize session record.",
                     ) from exc
-                logger.error(f"session_meta_insert_failed: {type(exc).__name__}", exc_info=True)
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to initialize session record.",
-                ) from exc
-            except Exception as exc:
-                logger.error(f"session_meta_insert_failed: {type(exc).__name__}", exc_info=True)
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to initialize session record.",
-                ) from exc
+                except Exception as exc:
+                    logger.error(f"session_meta_insert_failed: {type(exc).__name__}", exc_info=True)
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Failed to initialize session record.",
+                    ) from exc
 
-        try:
-            outcome = state.runner.assess(req.text, thread_id=thread_id)
-            return outcome_to_response(outcome, session_token=session_token)
-        except ValueError as exc:
-            _purge_session_records(state.sqlite_conn, thread_id)
-            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
-        except HTTPException:
-            _purge_session_records(state.sqlite_conn, thread_id)
-            raise
-        except Exception as exc:
-            _purge_session_records(state.sqlite_conn, thread_id)
-            logger.exception("api_assess_error", extra={"error_type": type(exc).__name__})
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An internal error occurred while processing the assessment.",
-            ) from exc
+            try:
+                outcome = state.runner.assess(req.text, thread_id=thread_id)
+                return outcome_to_response(outcome, session_token=session_token)
+            except ValueError as exc:
+                _purge_session_records(state.sqlite_conn, thread_id)
+                raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
+            except HTTPException:
+                _purge_session_records(state.sqlite_conn, thread_id)
+                raise
+            except Exception as exc:
+                _purge_session_records(state.sqlite_conn, thread_id)
+                logger.exception("api_assess_error", extra={"error_type": type(exc).__name__})
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="An internal error occurred while processing the assessment.",
+                ) from exc
 
     @app.post("/resume", response_model=AssessResponse)
     def resume_thread(
@@ -368,52 +375,55 @@ def create_app() -> FastAPI:
             )
 
         token_to_verify = req.session_token or x_session_token
-        if state.sqlite_conn is not None:
-            cur = state.sqlite_conn.cursor()
-            cur.execute(
-                "SELECT session_token, last_accessed FROM session_meta WHERE thread_id = ?",
-                (req.thread_id,),
-            )
-            row = cur.fetchone()
-            if row is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Session not found or has expired.",
+
+        # Synchronize access to shared SQLite connection and checkpointer to avoid transaction interleaving
+        with state.db_lock:
+            if state.sqlite_conn is not None:
+                cur = state.sqlite_conn.cursor()
+                cur.execute(
+                    "SELECT session_token, last_accessed FROM session_meta WHERE thread_id = ?",
+                    (req.thread_id,),
                 )
-            stored_token, last_accessed = row
-            if time.time() - last_accessed > 86400.0:
-                if not _purge_session_records(state.sqlite_conn, req.thread_id):
+                row = cur.fetchone()
+                if row is None:
                     raise HTTPException(
-                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                        detail="Failed to prune expired session data from storage.",
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Session not found or has expired.",
                     )
-                raise HTTPException(
-                    status_code=status.HTTP_410_GONE,
-                    detail="Session has expired (24-hour TTL) and has been pruned.",
-                )
+                stored_token, last_accessed = row
+                if time.time() - last_accessed > 86400.0:
+                    if not _purge_session_records(state.sqlite_conn, req.thread_id):
+                        raise HTTPException(
+                            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                            detail="Failed to prune expired session data from storage.",
+                        )
+                    raise HTTPException(
+                        status_code=status.HTTP_410_GONE,
+                        detail="Session has expired (24-hour TTL) and has been pruned.",
+                    )
 
-            if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Session ownership verification failed: invalid or missing session token",
+                if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Session ownership verification failed: invalid or missing session token",
+                    )
+                state.sqlite_conn.execute(
+                    "UPDATE session_meta SET last_accessed = ? WHERE thread_id = ?",
+                    (time.time(), req.thread_id),
                 )
-            state.sqlite_conn.execute(
-                "UPDATE session_meta SET last_accessed = ? WHERE thread_id = ?",
-                (time.time(), req.thread_id),
-            )
-            state.sqlite_conn.commit()
+                state.sqlite_conn.commit()
 
-        try:
-            outcome = state.runner.resume(req.thread_id, req.answer)
-            return outcome_to_response(outcome, session_token=token_to_verify)
-        except HTTPException:
-            raise
-        except Exception as exc:
-            logger.exception("api_resume_error", extra={"error_type": type(exc).__name__})
-            raise HTTPException(
-                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail="An internal error occurred while resuming the assessment.",
-            ) from exc
+            try:
+                outcome = state.runner.resume(req.thread_id, req.answer)
+                return outcome_to_response(outcome, session_token=token_to_verify)
+            except HTTPException:
+                raise
+            except Exception as exc:
+                logger.exception("api_resume_error", extra={"error_type": type(exc).__name__})
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail="An internal error occurred while resuming the assessment.",
+                ) from exc
 
     @app.delete("/session/{thread_id}")
     def clear_session(
@@ -431,30 +441,33 @@ def create_app() -> FastAPI:
             )
 
         token_to_verify = x_session_token or token
-        if state.sqlite_conn is not None:
-            cur = state.sqlite_conn.cursor()
-            cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
-            row = cur.fetchone()
-            if row is None:
-                raise HTTPException(
-                    status_code=status.HTTP_404_NOT_FOUND,
-                    detail="Session not found or has expired.",
-                )
-            stored_token = row[0]
-            if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
-                raise HTTPException(
-                    status_code=status.HTTP_403_FORBIDDEN,
-                    detail="Session ownership verification failed: invalid or missing session token",
-                )
-            if not _purge_session_records(state.sqlite_conn, thread_id):
-                raise HTTPException(
-                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                    detail="Failed to clear session data from storage.",
-                )
-        elif state.runner is not None:
-            state.runner.clear_session(thread_id)
 
-        return {"status": "cleared", "thread_id": thread_id}
+        # Synchronize access to shared SQLite connection and checkpointer to avoid transaction interleaving
+        with state.db_lock:
+            if state.sqlite_conn is not None:
+                cur = state.sqlite_conn.cursor()
+                cur.execute("SELECT session_token FROM session_meta WHERE thread_id = ?", (thread_id,))
+                row = cur.fetchone()
+                if row is None:
+                    raise HTTPException(
+                        status_code=status.HTTP_404_NOT_FOUND,
+                        detail="Session not found or has expired.",
+                    )
+                stored_token = row[0]
+                if token_to_verify is None or not secrets.compare_digest(token_to_verify, stored_token):
+                    raise HTTPException(
+                        status_code=status.HTTP_403_FORBIDDEN,
+                        detail="Session ownership verification failed: invalid or missing session token",
+                    )
+                if not _purge_session_records(state.sqlite_conn, thread_id):
+                    raise HTTPException(
+                        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                        detail="Failed to clear session data from storage.",
+                    )
+            elif state.runner is not None:
+                state.runner.clear_session(thread_id)
+
+            return {"status": "cleared", "thread_id": thread_id}
 
     return app
 
