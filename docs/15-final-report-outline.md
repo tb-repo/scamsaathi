@@ -99,7 +99,7 @@ flowchart TD
 | **A6: Risk Scorer** | Deterministic | Mathematical Model | Computes final risk score (0-100) and assigns categorical band (LOW, MEDIUM, HIGH, CRITICAL). Caps LLM influence to prevent jailbreaks. |
 | **A7: Advisory Agent** | Deterministic | Curated Rule Matrix | Generates immediate triage actions, golden-hour recovery steps, and links to verified official reporting portals. |
 | **A8: Explainer Agent** | Agentic | Gemini 3.8 Flash | Synthesizes plain-English, evidence-grounded reasoning without technical jargon. |
-| **A9: Guardrail Agent** | Deterministic | Post-Generation Gate | Inspects all generated text: blocks PII, strips legal sections (FR-083), prevents secret demands (FR-064), and ensures 100% English output. |
+| **A9: Guardrail Agent** | Deterministic | Post-Generation Gate | Inspects all generated text: blocks PII, strips legal sections (FR-083), prevents secret demands (FR-064), and audits for non-Devanagari script compliance (preventing script leakage in English responses). |
 
 ---
 
@@ -240,7 +240,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 
 ### Slide 9: Agent A9 Guardrail Defense Layer
 - Real-time post-generation safety gate.
-- Enforces strict 100% English response rule.
+- Enforces strict non-Devanagari script compliance (audited for zero Devanagari script leakage in English responses).
 - Eliminates legal section citations (FR-083) and secret demands (FR-064).
 
 ### Slide 10: Live Demonstration (Scenarios)
@@ -287,8 +287,8 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 ### Q2: How does ScamSaathi achieve 0% false alarms on genuine banking messages?
 **Answer:** ScamSaathi incorporates verified regulatory knowledge. The Reserve Bank of India (RBI) mandates that scheduled commercial banks transition their digital services to the `.bank.in` domain (e.g., `sbi.bank.in`, `hdfc.bank.in`). Agent A3 cross-references extracted domains against our verified official registry. If a message contains a verified `.bank.in` domain and lacks coercive urgency or secret demands, it is assigned a LOW risk score (0/100) without triggering unnecessary alarm.
 
-### Q3: Why is all user-facing output strictly in English, even when inputs are in Hinglish?
-**Answer:** Indian citizens receive fraud messages in diverse regional dialects and colloquial scripts (e.g., Devanagari Hindi, romanized Hinglish). While ScamSaathi's ingestion layer understands all of these, generating explanations in colloquial Hinglish introduces ambiguity, translation drift, and potential guardrail bypasses. Standardizing on 100% English for all user-facing output guarantees maximum clarity, precise legal wording, and flawless safety guardrail verification.
+### Q3: Why is all user-facing output formatted in English, even when inputs are in Hinglish?
+**Answer:** Indian citizens receive fraud messages in diverse regional dialects and colloquial scripts (e.g., Devanagari Hindi, romanized Hinglish). While ScamSaathi's ingestion layer understands all of these, generating explanations in colloquial Hinglish introduces ambiguity, translation drift, and potential guardrail bypasses. Enforcing standard English output audited for non-Devanagari script compliance ensures clarity, precise guidance, and consistent guardrail verification.
 
 ### Q4: How is ScamSaathi's API spend kept under ₹20 for the entire capstone?
 **Answer:** ScamSaathi uses a tiered model architecture (ADR-001):
@@ -308,4 +308,4 @@ This ensures the scammer's infrastructure is dismantled before other citizens ar
 
 ## 10. Conclusion
 
-ScamSaathi demonstrates that agentic AI architectures—combining stateful graph coordination, domain-specific threat intelligence, deterministic guardrails, and human-in-the-loop clarification—deliver substantial improvements in safety, accuracy, and citizen protection over traditional rule-based or single-prompt LLM systems. With a **97.2% scam recall**, **9.1% false alarm rate**, **100% evidence-ID citation consistency**, and an internal test execution spend under **₹20**, ScamSaathi provides a robust, production-grade template for mobile scam defense in India.
+ScamSaathi demonstrates that agentic AI architectures—combining stateful graph coordination, domain-specific threat intelligence, deterministic guardrails, and human-in-the-loop clarification—deliver substantial improvements in safety, accuracy, and citizen protection over traditional rule-based or single-prompt LLM systems. With a **97.2% scam recall**, **9.1% false alarm rate**, **100% evidence-ID citation consistency**, and an internal test execution spend under **₹20**, ScamSaathi provides a robust functional agentic prototype and reference template for mobile scam defense in India, validated under internal benchmark evaluation.

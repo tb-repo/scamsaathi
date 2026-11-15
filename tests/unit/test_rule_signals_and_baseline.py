@@ -102,6 +102,8 @@ def test_evaluate_pipeline_handles_runner_exception_without_unbound_local() -> N
     metrics = evaluate_pipeline([case], runner=FailingRunner(), is_agentic=True)  # type: ignore[arg-type]
     assert metrics["eval_errors"] == 1
     assert metrics["cases"][0]["eval_error"] is True
-    assert metrics["behaviour_ok"] == 0
-    assert metrics["behaviour_total"] == 1
+    assert metrics["scams_total"] == 0
+    assert metrics["scam_recall_warned"] is None
+    assert metrics["behaviour_total"] == 0
+    assert metrics["evaluated_cases"] == 0
 

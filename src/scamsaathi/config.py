@@ -69,6 +69,14 @@ class Settings(BaseSettings):
     log_level: Literal["DEBUG", "INFO", "WARNING", "ERROR"] = Field(
         default="INFO", validation_alias="SCAMSAATHI_LOG_LEVEL"
     )
+    trusted_proxies: str = Field(
+        default="127.0.0.1,::1,localhost,testclient",
+        validation_alias="SCAMSAATHI_TRUSTED_PROXIES",
+    )
+
+    @property
+    def trusted_proxy_set(self) -> set[str]:
+        return {p.strip() for p in self.trusted_proxies.split(",") if p.strip()}
 
     @field_validator("llm_cache_dir")
     @classmethod

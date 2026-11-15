@@ -140,101 +140,102 @@ def evaluate_pipeline(
             all_failures = [err_msg]
             is_pass = False
 
-        # Metrics collection
-        lang = case.language
-        if case.label == "scam":
-            scams_total += 1
-            by_lang[lang]["scam_total"] += 1
-            if risk.level in ("MEDIUM", "HIGH", "CRITICAL"):
-                scams_warned += 1
-                by_lang[lang]["scam_warned"] += 1
-            if risk.level in ("HIGH", "CRITICAL"):
-                scams_high += 1
-                by_lang[lang]["scam_high"] += 1
+        # Metrics collection (only include non-errored cases in quality metrics)
+        if not is_eval_error:
+            lang = case.language
+            if case.label == "scam":
+                scams_total += 1
+                by_lang[lang]["scam_total"] += 1
+                if risk.level in ("MEDIUM", "HIGH", "CRITICAL"):
+                    scams_warned += 1
+                    by_lang[lang]["scam_warned"] += 1
+                if risk.level in ("HIGH", "CRITICAL"):
+                    scams_high += 1
+                    by_lang[lang]["scam_high"] += 1
 
-            # Typology evaluation: True Top-1, Acceptable Top-1, and Top-3 Coverage
-            if is_agentic and case.typologies:
-                typology_total += 1
-                pred_top1 = typologies[0] if typologies else None
-                true_primary = case.typologies[0]
-                if pred_top1 == true_primary:
-                    typology_exact_top1_ok += 1
-                if pred_top1 in case.typologies:
-                    typology_acceptable_top1_ok += 1
-                if any(t in case.typologies for t in typologies[:3]):
-                    typology_top3_ok += 1
+                # Typology evaluation: True Top-1, Acceptable Top-1, and Top-3 Coverage
+                if is_agentic and case.typologies:
+                    typology_total += 1
+                    pred_top1 = typologies[0] if typologies else None
+                    true_primary = case.typologies[0]
+                    if pred_top1 == true_primary:
+                        typology_exact_top1_ok += 1
+                    if pred_top1 in case.typologies:
+                        typology_acceptable_top1_ok += 1
+                    if any(t in case.typologies for t in typologies[:3]):
+                        typology_top3_ok += 1
 
-            # Official Reporting Guidance: breakdown by channel
-            if is_agentic and advice is not None:
-                reporting_total += 1
-                action_texts = " ".join(a.text for a in advice.actions)
-                has_chakshu = "sancharsaathi.gov.in" in action_texts or "chakshu" in action_texts.lower()
-                has_cybercrime = "cybercrime.gov.in" in action_texts
-                has_1930 = "1930" in action_texts
-                if has_chakshu:
-                    reporting_chakshu += 1
-                if has_cybercrime:
-                    reporting_cybercrime += 1
-                if has_1930:
-                    reporting_1930 += 1
-                if has_chakshu or has_cybercrime or has_1930 or "1909" in action_texts:
-                    reporting_any += 1
+                # Official Reporting Guidance: breakdown by channel
+                if is_agentic and advice is not None:
+                    reporting_total += 1
+                    action_texts = " ".join(a.text for a in advice.actions)
+                    has_chakshu = "sancharsaathi.gov.in" in action_texts or "chakshu" in action_texts.lower()
+                    has_cybercrime = "cybercrime.gov.in" in action_texts
+                    has_1930 = "1930" in action_texts
+                    if has_chakshu:
+                        reporting_chakshu += 1
+                    if has_cybercrime:
+                        reporting_cybercrime += 1
+                    if has_1930:
+                        reporting_1930 += 1
+                    if has_chakshu or has_cybercrime or has_1930 or "1909" in action_texts:
+                        reporting_any += 1
 
-        elif case.label == "legit":
-            legit_total += 1
-            by_lang[lang]["legit_total"] += 1
-            if risk.level == "LOW":
-                legit_clean += 1
-                by_lang[lang]["legit_clean"] += 1
+            elif case.label == "legit":
+                legit_total += 1
+                by_lang[lang]["legit_total"] += 1
+                if risk.level == "LOW":
+                    legit_clean += 1
+                    by_lang[lang]["legit_clean"] += 1
 
-        elif case.label == "ambiguous":
-            ambiguous_total += 1
-            if asked:
-                ambiguous_interviewed += 1
+            elif case.label == "ambiguous":
+                ambiguous_total += 1
+                if asked:
+                    ambiguous_interviewed += 1
 
-        if case.required:
-            behaviour_total += 1
-            if not beh_failures:
-                behaviour_ok += 1
+            if case.required:
+                behaviour_total += 1
+                if not beh_failures:
+                    behaviour_ok += 1
 
-        # Verified Evidence Groundedness against the actual per-case evidence catalogue
-        if is_agentic and explanation is not None and outcome is not None:
-            catalogue_eids = (
-                set(outcome.catalogue.keys())
-                if hasattr(outcome, "catalogue") and outcome.catalogue
-                else set()
-            )
-            # Fallback to signals/intel/overrides if catalogue not exposed
-            if not catalogue_eids:
-                catalogue_eids = {s.evidence_id for s in outcome.signals} if hasattr(outcome, "signals") else set()
-                if hasattr(outcome, "intel") and outcome.intel:
-                    catalogue_eids |= {f.evidence_id for f in outcome.intel.findings}
-                catalogue_eids |= (
-                    {f"C{i+1}" for i in range(len(risk.overrides))} if risk.overrides else {"C1"}
+            # Verified Evidence Groundedness against the actual per-case evidence catalogue
+            if is_agentic and explanation is not None and outcome is not None:
+                catalogue_eids = (
+                    set(outcome.catalogue.keys())
+                    if hasattr(outcome, "catalogue") and outcome.catalogue
+                    else set()
                 )
+                # Fallback to signals/intel/overrides if catalogue not exposed
+                if not catalogue_eids:
+                    catalogue_eids = {s.evidence_id for s in outcome.signals} if hasattr(outcome, "signals") else set()
+                    if hasattr(outcome, "intel") and outcome.intel:
+                        catalogue_eids |= {f.evidence_id for f in outcome.intel.findings}
+                    catalogue_eids |= (
+                        {f"C{i+1}" for i in range(len(risk.overrides))} if risk.overrides else {"C1"}
+                    )
 
-            for r in explanation.reasons:
-                total_reasons += 1
-                if r.evidence_ids and set(r.evidence_ids) <= catalogue_eids:
-                    grounded_reasons += 1
+                for r in explanation.reasons:
+                    total_reasons += 1
+                    if r.evidence_ids and set(r.evidence_ids) <= catalogue_eids:
+                        grounded_reasons += 1
 
-        # Language compliance: verify output is 100% English (no Devanagari script)
-        if is_agentic:
-            snippets: list[str] = []
-            if explanation is not None:
-                if explanation.headline:
-                    snippets.append(explanation.headline)
-                if explanation.uncertainty:
-                    snippets.append(explanation.uncertainty)
-                snippets.extend(r.text for r in explanation.reasons)
-            if advice is not None:
-                snippets.extend(a.text for a in advice.actions)
-            if outcome is not None and getattr(outcome, "questions", None):
-                snippets.extend(q.get("text", "") for q in outcome.questions)
-            full_text = " ".join(snippets)
-            has_devanagari = any("\u0900" <= ch <= "\u097f" for ch in full_text)
-            if not has_devanagari and snippets:
-                lang_compliant_cases += 1
+            # Language compliance: verify output has zero Devanagari script leakage
+            if is_agentic:
+                snippets: list[str] = []
+                if explanation is not None:
+                    if explanation.headline:
+                        snippets.append(explanation.headline)
+                    if explanation.uncertainty:
+                        snippets.append(explanation.uncertainty)
+                    snippets.extend(r.text for r in explanation.reasons)
+                if advice is not None:
+                    snippets.extend(a.text for a in advice.actions)
+                if outcome is not None and getattr(outcome, "questions", None):
+                    snippets.extend(q.get("text", "") for q in outcome.questions)
+                full_text = " ".join(snippets)
+                has_devanagari = any("\u0900" <= ch <= "\u097f" for ch in full_text)
+                if not has_devanagari and snippets:
+                    lang_compliant_cases += 1
 
         case_results.append({
             "id": case.id,
@@ -250,34 +251,36 @@ def evaluate_pipeline(
             "typologies_true": case.typologies,
         })
 
+    evaluated_cases = len(cases) - eval_errors
     return {
         "is_agentic": is_agentic,
         "total_cases": len(cases),
+        "evaluated_cases": evaluated_cases,
         "eval_errors": eval_errors,
         "scams_total": scams_total,
         "scams_warned": scams_warned,
-        "scam_recall_warned": (scams_warned / scams_total) if scams_total else 0.0,
+        "scam_recall_warned": (scams_warned / scams_total) if scams_total else (None if eval_errors else 0.0),
         "scams_high": scams_high,
-        "scam_recall_high": (scams_high / scams_total) if scams_total else 0.0,
+        "scam_recall_high": (scams_high / scams_total) if scams_total else (None if eval_errors else 0.0),
         "legit_total": legit_total,
         "legit_clean": legit_clean,
-        "false_alarm_rate": ((legit_total - legit_clean) / legit_total) if legit_total else 0.0,
+        "false_alarm_rate": ((legit_total - legit_clean) / legit_total) if legit_total else (None if eval_errors else 0.0),
         "ambiguous_total": ambiguous_total,
         "ambiguous_interviewed": ambiguous_interviewed,
         "behaviour_total": behaviour_total,
         "behaviour_ok": behaviour_ok,
-        "behaviour_rate": (behaviour_ok / behaviour_total) if behaviour_total else 0.0,
-        "reporting_rate": (reporting_any / reporting_total) if reporting_total else 0.0,
-        "reporting_chakshu_rate": (reporting_chakshu / reporting_total) if reporting_total else 0.0,
-        "reporting_cybercrime_rate": (reporting_cybercrime / reporting_total) if reporting_total else 0.0,
-        "reporting_1930_rate": (reporting_1930 / reporting_total) if reporting_total else 0.0,
+        "behaviour_rate": (behaviour_ok / behaviour_total) if behaviour_total else (None if eval_errors else 0.0),
+        "reporting_rate": (reporting_any / reporting_total) if reporting_total else (None if eval_errors else 0.0),
+        "reporting_chakshu_rate": (reporting_chakshu / reporting_total) if reporting_total else (None if eval_errors else 0.0),
+        "reporting_cybercrime_rate": (reporting_cybercrime / reporting_total) if reporting_total else (None if eval_errors else 0.0),
+        "reporting_1930_rate": (reporting_1930 / reporting_total) if reporting_total else (None if eval_errors else 0.0),
         "typology_total": typology_total,
         "typology_exact_top1_ok": typology_exact_top1_ok,
-        "typology_exact_top1_acc": (typology_exact_top1_ok / typology_total) if typology_total else 0.0,
-        "typology_acceptable_top1_acc": (typology_acceptable_top1_ok / typology_total) if typology_total else 0.0,
-        "typology_top3_acc": (typology_top3_ok / typology_total) if typology_total else 0.0,
+        "typology_exact_top1_acc": (typology_exact_top1_ok / typology_total) if typology_total else (None if eval_errors else 0.0),
+        "typology_acceptable_top1_acc": (typology_acceptable_top1_ok / typology_total) if typology_total else (None if eval_errors else 0.0),
+        "typology_top3_acc": (typology_top3_ok / typology_total) if typology_total else (None if eval_errors else 0.0),
         "groundedness": (grounded_reasons / total_reasons) if total_reasons else None,
-        "language_compliance_rate": (lang_compliant_cases / len(cases)) if cases else 1.0,
+        "language_compliance_rate": (lang_compliant_cases / evaluated_cases) if evaluated_cases else None,
         "median_latency_ms": statistics.median(latencies) if latencies else 0.0,
         "p95_latency_ms": (
             sorted(latencies)[int(len(latencies) * 0.95)] if latencies else 0.0
@@ -293,24 +296,36 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         "",
         "**Generated:** 2026-11-14 | **Evaluation Dataset Size:** 50 Cases",
         "",
+    ]
+
+    m_b0 = b0_metrics
+    m_ag = agentic_metrics
+
+    if m_ag.get("eval_errors", 0) > 0 or m_b0.get("eval_errors", 0) > 0:
+        lines.extend([
+            f"> ⚠️ **Evaluation Warning**: {m_ag.get('eval_errors', 0)} evaluation error(s) occurred during benchmarking. "
+            f"Quality metrics exclude errored cases and reflect partial evaluation ({m_ag.get('evaluated_cases', 0)}/{m_ag.get('total_cases', 0)} cases).",
+            "",
+        ])
+
+    lines.extend([
         "## 1. Executive Comparison: Baseline B0 vs. Full Agentic Pipeline",
         "",
         "| Evaluation Metric | Target (Doc 09) | Baseline B0 (Rules) | Full Agentic (Ours) | Delta / Gain | Notes |",
         "| :--- | :---: | :---: | :---: | :---: | :--- |",
-    ]
+    ])
 
     def pct(val: float | None) -> str:
         if val is None:
             return "Not measured"
         return f"{val * 100:.1f}%"
 
-    def signed_pp(ag_val: float, b0_val: float) -> str:
+    def signed_pp(ag_val: float | None, b0_val: float | None) -> str:
+        if ag_val is None or b0_val is None:
+            return "N/A"
         delta = (ag_val - b0_val) * 100
         sign = "+" if delta > 0 else ""
         return f"{sign}{delta:.1f} pp"
-
-    m_b0 = b0_metrics
-    m_ag = agentic_metrics
 
     lines.append(
         f"| **Scam Recall (Warned > LOW)** | >= 95.0% | {pct(m_b0['scam_recall_warned'])} | "

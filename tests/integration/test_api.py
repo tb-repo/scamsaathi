@@ -261,3 +261,44 @@ def test_rate_limiting_middleware(client: TestClient) -> None:
             app.state.rate_limit_records.clear()
 
 
+def test_resume_expired_session_purge_failure_fails_closed(client: TestClient) -> None:
+    assert state.sqlite_conn is not None
+
+    custom_thread_id = "test_exp_fail_purge_123"
+    resp = client.post(
+        "/assess",
+        json={"text": "Courier parcel notification", "thread_id": custom_thread_id},
+    )
+    assert resp.status_code == 200
+    token = resp.json()["session_token"]
+
+    # Age the session past 24h
+    state.sqlite_conn.execute(
+        "UPDATE session_meta SET last_accessed = ? WHERE thread_id = ?",
+        (time.time() - 90000.0, custom_thread_id),
+    )
+    state.sqlite_conn.commit()
+
+    # Trigger failure on delete from checkpoints
+    state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_exp_purge_test;")
+    state.sqlite_conn.commit()
+    state.sqlite_conn.execute(
+        "CREATE TRIGGER fail_exp_purge_test BEFORE DELETE ON checkpoints "
+        "FOR EACH ROW WHEN OLD.thread_id = 'test_exp_fail_purge_123' "
+        "BEGIN SELECT RAISE(ABORT, 'simulated exp purge failure'); END;"
+    )
+    state.sqlite_conn.commit()
+    try:
+        resume_resp = client.post(
+            "/resume",
+            json={"thread_id": custom_thread_id, "answer": "skip", "session_token": token},
+        )
+        assert resume_resp.status_code == 500
+        assert "Failed to prune expired session data" in resume_resp.json()["detail"]
+    finally:
+        state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_exp_purge_test;")
+        state.sqlite_conn.commit()
+        client.delete(f"/session/{custom_thread_id}", headers={"X-Session-Token": token})
+
+
+
