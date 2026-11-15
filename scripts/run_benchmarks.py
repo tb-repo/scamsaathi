@@ -28,6 +28,11 @@ from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
+# Ensure 'src' is in sys.path so scamsaathi is discoverable when launched directly
+_SRC_DIR = Path(__file__).resolve().parent.parent / "src"
+if str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
+
 from scamsaathi.agents.context import build_context
 from scamsaathi.config import PROJECT_ROOT, get_settings, load_llm_config
 from scamsaathi.evaluation.labels import (

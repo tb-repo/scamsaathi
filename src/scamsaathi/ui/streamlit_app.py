@@ -5,7 +5,14 @@ Agentic AI Assistant for Mobile Scam Defense in India.
 
 from __future__ import annotations
 
+import sys
 import time
+from pathlib import Path
+
+# Ensure 'src' is in sys.path so scamsaathi is discoverable when launched directly via Streamlit CLI
+_SRC_DIR = Path(__file__).resolve().parent.parent.parent
+if str(_SRC_DIR) not in sys.path:
+    sys.path.insert(0, str(_SRC_DIR))
 
 import streamlit as st
 
