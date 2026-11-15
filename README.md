@@ -1,216 +1,274 @@
-# ScamSaathi (स्कैम साथी)
+# 🛡️ ScamSaathi (स्कैम साथी)
 
-**An Agentic AI Assistant for Mobile Scam Defense in India.**
+<p align="center">
+  <img src="submission/ScamSaathi_Architecture.svg" alt="ScamSaathi Multi-Agent Architecture" width="100%" />
+</p>
 
-> *Helping citizens identify mobile scams, understand social engineering manipulation, and take safe, official recovery steps before or after financial loss.*
+<p align="center">
+  <strong>An Agentic AI Assistant for Mobile Scam Defense in India</strong><br>
+  <em>Protecting citizens against SMS, WhatsApp, and call scams through deterministic guardrails, privacy-preserving multi-agent reasoning, and official recovery guidance.</em>
+</p>
+
+<p align="center">
+  <a href="#-multi-agent-architecture"><img src="https://img.shields.io/badge/Architecture-9--Agent%20LangGraph-blue.svg?style=flat-square" alt="Architecture" /></a>
+  <a href="#-empirical-benchmark-evaluation"><img src="https://img.shields.io/badge/Scam%20Recall-97.2%25-success.svg?style=flat-square" alt="Scam Recall" /></a>
+  <a href="#-empirical-benchmark-evaluation"><img src="https://img.shields.io/badge/Safety%20Behaviors-97.7%25-success.svg?style=flat-square" alt="Safety Behaviors" /></a>
+  <a href="#-testing--verification"><img src="https://img.shields.io/badge/Pytest-268%20Passed%20(100%25)-brightgreen.svg?style=flat-square" alt="Tests" /></a>
+  <a href="#-privacy-by-design--dpdp-act-2023-compliance"><img src="https://img.shields.io/badge/Privacy-DPDP%20Act%20Aligned-darkgreen.svg?style=flat-square" alt="Privacy" /></a>
+  <a href="#-quick-start--installation"><img src="https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square&logo=python&logoColor=white" alt="Python Version" /></a>
+  <a href="#-license--capstone-metadata"><img src="https://img.shields.io/badge/Certification-Hero%20Vired%20Agentic%20AI-orange.svg?style=flat-square" alt="Hero Vired Capstone" /></a>
+</p>
 
 ---
 
-| Attribute | Details |
-| :--- | :--- |
-| **Certification** | Hero Vired — Professional Certification in Agentic AI (Capstone Project) |
-| **Author** | Thiagarajan Baskarasubramanian |
-| **Architecture** | 9-Agent StateGraph with LangGraph & SQLite Checkpointer |
-| **Primary LLMs** | Google Gemini (gemini-3.5-flash-lite / gemini-3.8-flash) |
-| **Fallback LLMs** | Groq (`openai/gpt-oss-20b` fast / `openai/gpt-oss-120b` reasoning, configurable to `llama-3.3-70b-versatile`) with Circuit-Breaker Gateway |
-| **Scope** | Mobile SMS, WhatsApp, and call transcripts in English & Hinglish |
-| **Test Suite** | 268 Unit & Integration Tests (100% Passing) |
-| **Evaluation** | 50-Case Comprehensive Benchmark (97.2% Scam Recall, 0% False Alarms on Banking) |
+## 📌 Executive Summary
 
-> ⚠️ **Important Safety Disclaimer**: ScamSaathi provides risk assessments and safety guidance, not legal advice or definitive investigative verdicts. Automated masking protects phone numbers, accounts, UPI IDs, emails, and contextual OTPs, but pattern matching cannot reliably redact personal names or street addresses. Always verify independently through official channels.
+India lost **₹22,495 crore** to cyber fraud in 2024–2026 (*Ministry of Home Affairs, Press Information Bureau Press Release dated 21 August 2026, PRID 2301973*). Over **69% of reported cases** originate through unsolicited mobile channels: SMS phishing, WhatsApp investment traps, part-time job offers, electricity disconnection threats, and digital arrest extortion.
 
----
+Traditional defense tools fail because:
+1. **Static keyword filters & regex** miss evolving social engineering tactics and trigger high false alarm rates on legitimate banking alerts (`.bank.in`).
+2. **Pure LLM solutions** hallucinate fake helplines, exhibit unpredictable risk scoring, leak private user data to third-party APIs, and cannot enforce strict safety floors.
 
-## 🌟 Key Capabilities
-
-1. **Deterministic-First Agentic Defense**:
-   - **Deterministic Rules & Threat Intel**: URL blocklists, TRAI designated service series (1600/1601), `.bank.in` / `.gov.in` domain legitimacy verification, and keyword signal extraction run deterministically before LLM invocation.
-   - **Bounded LLM Reasoning**: LLMs classify Indian cyber fraud typologies (I4C SC-01 through SC-15) and explain social engineering tactics within bounded score delta limits.
-   - **Deterministic Safety Floors**: Overrides enforce strict minimum risk scores and safety actions for critical indicators (e.g. `apk_attachment`, `urgent_recovery`, `child_safety`).
-
-2. **Privacy by Design (DPDP Act Aligned)**:
-   - **Zero Device Scraping**: Web paste-only architecture; no access to device SMS, contacts, or call logs.
-   - **Local Pre-LLM Masking**: Sensitive identifiers (`<PHONE_1>`, `<BANK_ACC_1>`, `<UPI_ID_1>`, `<EMAIL_1>`, `<OTP_1>`) are replaced with masked placeholders before any data reaches an LLM.
-   - **Ephemeral Raw Vault**: Raw text is held in an in-memory vault strictly for the duration of analysis and deleted immediately upon assessment completion.
-   - **Client Session Isolation & TTL**: Thread IDs are strictly validated, checkpoint writes are purged on session clear, and CORS origins are locked down to trusted hosts.
-
-3. **Human-in-the-Loop (HITL) Interactive Interview**:
-   - Ambiguous messages trigger targeted, low-friction follow-up questions rather than guessing.
-   - Structured multi-question answering allows users to confirm critical context (e.g., whether they initiated a call or sent money), updating the assessment deterministically upon resume.
-
-4. **Actionable Citizen Recovery Guidance**:
-   - Direct integration with verified Indian cyber defense channels:
-     - **DoT Chakshu Facility**: Direct reporting for suspected fraud calls, SMS, and WhatsApp (`https://sancharsaathi.gov.in/sfc`).
-     - **National Cyber Crime Reporting Portal**: Suspect registry for malicious phone numbers, UPI IDs, and phishing URLs (`https://cybercrime.gov.in`).
-     - **1930 Financial Fraud Helpline**: Rapid golden-hour reporting guidance and bank coordination assistance when financial loss is reported (lien/freezing decisions remain the statutory remit of banks and law enforcement authorities).
-     - **TRAI 1909**: DND and unsolicited commercial communications reporting.
+**ScamSaathi** solves this with a **Deterministic-First Agentic Architecture**:
+- **Deterministic Pre-Screen & Rules Engine**: Checks official TRAI service codes (1600/1601), authenticated banking domains (`.bank.in`, `.gov.in`), and known malicious URLs before LLMs are invoked.
+- **Privacy-by-Design Masking**: Replaces phone numbers, bank accounts, UPI IDs, emails, and contextual OTPs with local tokens before prompts leave the machine.
+- **Stateful Multi-Agent Reasoning (LangGraph)**: Employs 9 specialized agents to extract psychological urgency signals, classify against the 15 Indian cyber fraud typologies (I4C SC-01 through SC-15), score risk (0–100) within bounded delta limits, and cite deterministic evidence IDs (`S#`, `I#`, `K#`, `C#`).
+- **Human-in-the-Loop (HITL) Clarification**: Triggers targeted multi-question follow-ups on ambiguous reports rather than hallucinating answers.
+- **Official Citizen Recovery Guidance**: Directly routes victims to the **DoT Chakshu Facility**, the **National Cyber Crime Reporting Portal**, and the **1930 Financial Fraud Helpline** for golden-hour loss mitigation.
 
 ---
 
 ## 🏗️ Multi-Agent Architecture
 
-<p align="center">
-  <img src="submission/ScamSaathi_Architecture.svg" alt="ScamSaathi Current Implementation Architecture" width="100%">
-</p>
+The ScamSaathi architecture strictly separates access, application execution, external AI gateways, and user-directed reporting into 4 clear architectural zones:
 
-The core pipeline is orchestrated via a LangGraph state graph consisting of 9 specialized agents plus a deterministic post-graph safety barrier:
+![ScamSaathi Current Implementation Architecture](submission/ScamSaathi_Architecture.svg)
+
+### The 4 Architectural Zones
+
+1. **Access & Experience Zone (Untrusted Input Boundary)**:
+   - **Streamlit Web Application** (`src/scamsaathi/ui/streamlit_app.py`): Interactive citizen portal with sample scam presets, visual risk gauges, evidence breakdowns, and bilingual (English/Hinglish) support.
+   - **FastAPI REST Service** (`src/scamsaathi/api/app.py`): Secure API featuring cryptographic session token verification (`X-Session-Token`), sliding-window rate limiting (60 req/min), and automated 24-hour TTL pruning.
+   - **Air-Gapped Offline CLI** (`scripts/run_agentic.py`): Demonstrates full multi-agent graph execution across canonical scenarios without internet or external API dependencies.
+
+2. **ScamSaathi Application Boundary (Python Runtime)**:
+   - **Intake & Local Masker**: Detects language (EN / Hinglish) and replaces sensitive identifiers (`<PHONE_1>`, `<BANK_ACC_1>`, `<UPI_ID_1>`, `<EMAIL_1>`, `<OTP_1>`).
+   - **Threat Intel DB**: SQLite-backed verification of TRAI 1600/1601 series, designated bank domains (`.bank.in`), and URL reputation.
+   - **Feature Extractor**: Identifies urgent financial coercion, authority impersonation, and structural suspicious patterns.
+   - **Deterministic Prescreen**: Applies fast-path rules and calculates deterministic baseline scores.
+   - **Classifier Agent**: Maps threats to I4C typologies (SC-01 to SC-15) and enforces bounded delta constraints ($\pm 15$ max variance from baseline).
+   - **Question Planner & HITL Node**: Pauses graph execution with LangGraph `interrupt()` when ambiguous reports require user clarification.
+   - **Deterministic Scorer**: Calculates calibrated 0–100 risk score and enforces mandatory safety floors (`apk_attachment`, `urgent_recovery`, `child_safety`).
+   - **Explainer & Advice Agents**: Synthesizes evidence-grounded explanations citing runtime IDs (`S#`, `I#`, `K#`, `C#`) and verified emergency contacts.
+   - **A9 Guardrail Sanitizer**: Post-graph security barrier enforcing zero Devanagari script leakage, contact allowlist validation, and raw vault clearing.
+
+3. **External Services Trust Boundary (Masked Prompts Only)**:
+   - **LLM Gateway with Circuit Breakers**: Dual-provider resiliency with Google Gemini (`gemini-3.5-flash-lite` fast tier, `gemini-3.8-flash` reasoning tier) and Groq fallback (`openai/gpt-oss-20b` fast, `openai/gpt-oss-120b` reasoning, configurable to `llama-3.3-70b-versatile`).
+   - **Ephemeral In-Memory Vault**: Raw unmasked text is held exclusively in memory during graph execution and popped immediately upon assessment completion.
+
+4. **User-Directed Reporting Guidance (Verified Official Channels)**:
+   - **DoT Chakshu Facility**: Suspected fraud communication reporting (`sancharsaathi.gov.in/sfc`).
+   - **National Cyber Crime Portal**: Official suspect registry for phone numbers, UPI IDs, and URLs (`cybercrime.gov.in`).
+   - **1930 Financial Fraud Helpline**: Golden-hour recovery reporting and bank coordination assistance (lien/freezing decisions remain the statutory remit of banks and law enforcement authorities).
+
+---
+
+## 🔄 9-Agent StateGraph Execution Flow
 
 ```
-                       [Citizen Input]
-                              │
-                              ▼
-                       ┌─────────────┐
-                       │   intake    │ ── Language detection (EN/Hinglish) & mode setup
-                       └─────────────┘
-                              │
-                              ▼
-                       ┌─────────────┐
-                       │    intel    │ ── SQLite Threat Intel (URL blocklists, TRAI 1600, .bank.in)
-                       └─────────────┘
-                              │
-                              ▼
-                       ┌─────────────┐
-                       │   extract   │ ── Entities & psychological urgency/coercion signals
-                       └─────────────┘
-                              │
-                              ▼
-                       ┌─────────────┐
-                       │  prescreen  │ ── Fast-path check / deterministic rules baseline
-                       └─────────────┘
-                              │
-               ┌──────────────┴──────────────┐
-               │ (ambiguous / needs LLM)     │ (clear rules / fast path)
-               ▼                             │
-        ┌─────────────┐                      │
-        │  classify   │ (SC-01 to SC-15)     │
-        └─────────────┘                      │
-               │                             │
-        ┌──────┴──────┐                      │
- (ambiguous)   (conclusive)                  │
-        ▼             │                      │
-┌───────────────┐     │                      │
-│ plan_questions│     │                      │
-└───────────────┘     │                      │
-        │             │                      │
-        ▼             │                      │
-┌───────────────┐     │                      │
-│ await_answers │(HITL)                      │
-└───────────────┘     │                      │
-        │             │                      │
-        └──────┬──────┘                      │
-               ▼                             ▼
-        ┌──────────────────────────────────────────┐
-        │                  score                   │ ── Deterministic 0-100 & safety floors
-        └──────────────────────────────────────────┘
-                              │
-                              ▼
-        ┌──────────────────────────────────────────┐
-        │              explain_advise              │ ── Evidence IDs (A8) & reporting advice (A7)
-        └──────────────────────────────────────────┘
-                              │
-                              ▼
-                       [StateGraph END]
-                              │
-                              ▼
-        ┌──────────────────────────────────────────┐
-        │           A9: GuardrailSanitizer         │ ── Post-graph PII, safety & advice gate
-        └──────────────────────────────────────────┘
-                              │
-                              ▼
-                     [Assessment Outcome]
+                     [Citizen Input (Text / Transcript)]
+                                     │
+                                     ▼
+                     ┌───────────────────────────────┐
+                     │            intake             │ ── Language detection & local PII masking
+                     └───────────────────────────────┘
+                                     │
+                                     ▼
+                     ┌───────────────────────────────┐
+                     │             intel             │ ── Threat intel lookup (TRAI 1600, .bank.in, URLs)
+                     └───────────────────────────────┘
+                                     │
+                                     ▼
+                     ┌───────────────────────────────┐
+                     │            extract            │ ── Urgent coercion & entity pattern extraction
+                     └───────────────────────────────┘
+                                     │
+                                     ▼
+                     ┌───────────────────────────────┐
+                     │           prescreen           │ ── Rule baseline score & fast-path evaluation
+                     └───────────────────────────────┘
+                                     │
+                    ┌────────────────┴────────────────┐
+                    │ (needs LLM reasoning)           │ (clear rules / fast-path)
+                    ▼                                 │
+             ┌─────────────┐                          │
+             │  classify   │ (SC-01 to SC-15)         │
+             └─────────────┘                          │
+                    │                                 │
+             ┌──────┴──────┐                          │
+      (ambiguous)     (conclusive)                    │
+             ▼             │                          │
+     ┌───────────────┐     │                          │
+     │ plan_questions│     │                          │
+     └───────────────┘     │                          │
+             │             │                          │
+             ▼             │                          │
+     ┌───────────────┐     │                          │
+     │ await_answers │(HITL Interrupt)                │
+     └───────────────┘     │                          │
+             │             │                          │
+             └──────┬──────┘                          │
+                    ▼                                 ▼
+             ┌──────────────────────────────────────────────┐
+             │                    score                     │ ── Calibrated 0-100 score & safety floors
+             └──────────────────────────────────────────────┘
+                                    │
+                                    ▼
+             ┌──────────────────────────────────────────────┐
+             │                explain_advise                │ ── Evidence grounding (A8) & advice (A7)
+             └──────────────────────────────────────────────┘
+                                    │
+                                    ▼
+                             [StateGraph END]
+                                    │
+                                    ▼
+             ┌──────────────────────────────────────────────┐
+             │            A9: GuardrailSanitizer            │ ── Post-graph PII, script & safety gate
+             └──────────────────────────────────────────────┘
+                                    │
+                                    ▼
+                        [Final Assessment Outcome]
 ```
 
 ---
 
-## 📊 Benchmark Evaluation (Phase 7 & Hardened Rigor)
+## 📋 The 15 Indian Cyber Fraud Typologies (I4C Taxonomy)
 
-Evaluated on the 50-case benchmark dataset across both English and Hinglish inputs (`reports/benchmark_report.md`):
+ScamSaathi's knowledge base and classification agents are aligned with the Indian Cyber Crime Coordination Centre (I4C) taxonomy:
 
-| Evaluation Metric | Target | Baseline B0 (Rules) | Full Agentic (Ours) | Rigorous Verification |
-| :--- | :---: | :---: | :---: | :--- |
-| **Scam Recall (Warned > LOW)** | >= 95.0% | 47.2% | **97.2%** | +50.0 pp gain; catches nuanced social engineering |
-| **High-Risk Recall (HIGH/CRITICAL)** | >= 90.0% | 25.0% | **75.0%** | +50.0 pp gain (27/36 high-risk threats correctly escalated) |
-| **False Alarm Rate (Legit > LOW)** | <= 10.0% | 0.0% | **9.1%** | 0% false alarms on authenticated `.bank.in` & TRAI headers |
-| **Required Safety Behaviors** | 100.0% | 100.0% | **97.7%** | 43/44 behaviors met (1930 recovery, 1098 child safety) |
-| **Typology Accuracy (Exact Top-1)** | >= 80.0% | N/A | **97.1%** | Exact primary typology classification |
-| **Typology Top-3 Coverage** | >= 90.0% | N/A | **97.1%** | Primary typology included in top 3 predictions |
-| **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Runtime citation consistency against active catalogue (S#, I#, K#, C#) |
-| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Zero Devanagari script leakage across evaluated response fields (script-level audit) |
-| **Official Reporting Guidance** | N/A | N/A | **97.2%** | Direct Chakshu (88.9%), Cyber Crime Portal (94.4%), 1930 (100% urgent loss) |
-| **Ambiguous Case Clarification** | 100.0% | 0.0% | **66.7%** | Interactive interview triggered on ambiguous text |
-| **All-Checks Pass Rate** | N/A | 62.0% (31/50) | **90.0% (45/50)** | 45 of 50 cases passed 100% of multi-dimensional criteria (0 pipeline errors) |
-
-> **Audit Note on Benchmark Case Results & Metric Gaps**: Across all 50 evaluated cases, the pipeline executed with **0 runtime/pipeline errors**. **45 out of 50 cases (90.0%)** passed every core, safety, and typology criterion. The 5 specific criteria failures directly correspond to our measured metrics:
-> - `eval_34`: Subtle scam missed with LOW score (drives the 97.2% recall rate; 35/36 scams detected).
-> - `eval_38`: Legitimate bank statement false alarm (drives the 9.1% false-alarm rate; 1/11).
-> - `eval_05`: Advisory ordering gap where reporting was outside top 3 actions (drives the 97.7% safety score; 43/44).
-> - `eval_22`: Top-1 typology mismatch (drives the 97.1% top-1 accuracy; 34/35).
-> - `eval_45`: Ambiguous case resolved directly without interview (drives the 66.7% clarification rate; 2/3).
->
-> *High-Risk Recall Gap*: `check_core()` evaluates binary scam recall (scam cases must receive risk > LOW). In addition to `eval_34`, 8 detected scams received a `MEDIUM` risk level rather than `HIGH` or `CRITICAL`, explaining the 75.0% (27/36) high-risk recall versus the $\ge 90.0\%$ target.
->
-> *Baseline B0 Comparability Caveat*: Baseline B0's 62.0% (31/50) all-checks pass rate measures only rule-based warning triggering on scams and absence of false alarms on clean messages. Because B0 produces neither typologies nor advice, advice-specific checks are bypassed. By contrast, the Full Agentic pipeline's 90.0% (45/50) rate evaluates the full multi-dimensional suite (warning, 15-typology classification, evidence citations, and official citizen reporting guidance).
+| Code | Typology Name | Primary Attack Channels | Psychological Vector | Primary Defense Guidance |
+| :---: | :--- | :--- | :--- | :--- |
+| **SC-01** | KYC / Account Deactivation | SMS, WhatsApp, IVR | Urgency & Fear of Disruption | Bank official app / DoT Chakshu |
+| **SC-02** | Electricity / Utility Cutoff | SMS, WhatsApp | Immediate Panic & Urgency | Official Discom Portal / Chakshu |
+| **SC-03** | Part-Time Job / Task Scam | Telegram, WhatsApp | Financial Greed & Sunk Cost | Cyber Crime Portal / Block Account |
+| **SC-04** | Fake Investment / Stock Trading | WhatsApp Groups, Social Media | Authority Impersonation & Greed | SEBI SCORES / Cyber Crime Portal |
+| **SC-05** | Digital Arrest / Police Scam | Video Calls (Skype/WhatsApp) | Severe Fear & Isolation | **Immediate Disconnect** / 1930 / MHA |
+| **SC-06** | Predatory Loan App Blackmail | Malicious APKs, SMS | Shame, Harassment & Extortion | Uninstall APK / Police / Cyber Crime |
+| **SC-07** | Customs / FedEx Courier Trap | Phone Calls, IVR, SMS | Legal Threat & Fear of Contraband | Verify on official courier site / Chakshu |
+| **SC-08** | Lottery / KBC Lucky Draw | WhatsApp, SMS | Sudden Wealth & Excitement | Never pay advance fees / Chakshu |
+| **SC-09** | Sextortion / Video Call Extortion | WhatsApp, Video Calls | Blackmail & Acute Panic | **Do Not Pay** / 1930 / Cyber Crime |
+| **SC-10** | Fake Tech Support (AnyDesk) | SMS, Google Ads, Phone | Confusion & False Relief | Never install screen share / Disconnect |
+| **SC-11** | Aadhaar / PAN Linking Phishing | SMS, Phishing URLs | Compliance Fear & Deadline Panic | Official UIDAI / Income Tax Portal |
+| **SC-12** | Credit Card Reward Points Expiry | SMS, Shortened URLs | Loss Aversion & Urgency | Bank official portal / Never share OTP |
+| **SC-13** | Matrimonial / Romance Fraud | Matrimonial Sites, Social Media | Emotional Trust & Vulnerability | Never transfer money / Report profile |
+| **SC-14** | Traffic E-Challan APK Phishing | SMS, Fake Vahan URLs | Fear of Legal Fine / Impoundment | Official Parivahan (`echallan.parivahan.gov.in`) |
+| **SC-15** | SIM Swap / e-SIM Upgradation | SMS, Impersonation Calls | Fear of Telecom Disconnection | Physical Telecom Store / Never forward SMS |
 
 ---
 
-## 🔒 Data Retention & Privacy by Interface (DPDP Principle 4 / 6)
+## 📊 Empirical Benchmark Evaluation
 
-ScamSaathi implements strict data minimization, purpose limitation, and storage limitation. Because the user experience differs between interactive web usage and API integration, retention is tailored specifically to each interface:
+Rigorous evaluation across the authoritative 50-case benchmark dataset (`reports/benchmark_report.md`):
 
-1. **Streamlit Web Application (`src/scamsaathi/ui/streamlit_app.py`)**:
-   - **Ephemeral In-Memory Vault**: Raw unmasked text is stored in an in-memory vault solely during graph execution and popped immediately once analysis completes.
-   - **Immediate Completed Outcome Purge**: When an assessment or resumed interview finishes with `status == "complete"`, LangGraph checkpoints and in-memory PII mappings are purged immediately (`runner.clear_session(thread_id, purge_checkpoint=True)`), and session thread tracking is reset.
-   - **Paused Interview Inactivity TTL**: For ambiguous cases awaiting user answers (`status == "needs_followup"`), checkpoints and PII mappings remain in memory to support resumption. On the next user interaction after **30 minutes of inactivity**, the UI automatically purges the runner session, clears the stored outcome, and resets the input widget.
-   - **Explicit User Clear**: Clicking the "Clear" button resets all session state, purges the in-memory runner session and checkpoint, and clears the input widget.
+| Evaluation Metric | Target | Baseline B0 (Rules) | Full Agentic (Ours) | Delta / Achievement | Verification Level |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| **Scam Recall (Warned > LOW)** | $\ge 95.0\%$ | 47.2% | **97.2%** | **+50.0 pp** | 35/36 scams detected; catches subtle social engineering |
+| **High-Risk Recall (HIGH/CRITICAL)** | $\ge 90.0\%$ | 25.0% | **75.0%** | **+50.0 pp** | 27/36 scams escalated to HIGH/CRITICAL |
+| **False Alarm Rate (Legit > LOW)** | $\le 10.0\%$ | 0.0% | **9.1%** | Target Met | 0% false alarms on authentic `.bank.in` & TRAI headers |
+| **Required Safety Behaviors** | 100.0% | 100.0% | **97.7%** | -2.3 pp Gap | 43/44 behaviors met (1930 recovery, child safety) |
+| **Typology Accuracy (Exact Top-1)** | $\ge 80.0\%$ | N/A | **97.1%** | **+17.1 pp** | 34/35 primary typologies classified accurately |
+| **Typology Top-3 Coverage** | $\ge 90.0\%$ | N/A | **97.1%** | **+7.1 pp** | Primary typology included in top 3 predictions |
+| **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | **Target Met** | 100% citation consistency against runtime state (`S#`, `I#`, `K#`, `C#`) |
+| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | **Target Met** | Character-level audit: 0% Devanagari script leakage |
+| **Official Reporting Guidance** | N/A | N/A | **97.2%** | Active Value | Chakshu (88.9%), Cyber Crime (94.4%), 1930 (100% loss) |
+| **Ambiguous Case Clarification** | 100.0% | 0.0% | **66.7%** | Proactive HITL | 2/3 ambiguous reports successfully triggered interview |
+| **All-Checks Pass Rate** | N/A | 62.0% (31/50) | **90.0% (45/50)** | **+28.0 pp** | 45 of 50 cases passed 100% of all criteria (0 errors) |
+| **Median Execution Latency** | $< 5000\text{ ms}$ | 5.4 ms | **191.9 ms** (Cached) | Instantaneous | Within Target (< 5000 ms) |
 
-2. **FastAPI REST Backend (`src/scamsaathi/api/app.py`)**:
-   - **Immediate Completed Outcome Purge**: For completed assessments (`status == "complete"`), SQLite `session_meta`, `checkpoints`, and `writes` records are purged atomically via `_purge_session_records` before returning the response. `session_token` in the response is set to `null`.
-   - **Paused Session Retention & Security**: When follow-up clarification is needed (`status == "needs_followup"`), SQLite retains checkpoint records accompanied by a cryptographically random ownership token (`X-Session-Token`). Only callers presenting the matching token can resume or delete the session.
-   - **24-Hour TTL & Background Purge**: Active/paused sessions expire after **24 hours**. An hourly background task and lazy assessment checks prune stale sessions; attempting to resume an expired session returns `410 Gone` and rolls back all records immediately.
-   - **Right to Erasure Endpoint**: Callers can call `DELETE /session/{thread_id}` with their token to purge checkpoint records on demand.
+### Bilingual Performance Slices (English vs. Hinglish)
+
+| Language Slice | Total Scams | Scams Warned | Recall Rate | Genuine Messages | False Alarms | False Alarm Rate |
+| :--- | :---: | :---: | :---: | :---: | :---: | :---: |
+| **English (EN)** | 20 | 19 | **95.0%** | 10 | 1 | 10.0% |
+| **Hinglish (HI-EN)** | 16 | 16 | **100.0%** | 1 | 0 | **0.0%** |
+
+### Audit Notes & Transparent Metric Disclosures
+
+> **Case-Level Execution Audit**: Across all 50 evaluated cases, execution completed with **0 pipeline or runtime errors**. **45 out of 50 cases (90.0%)** passed every core, safety, and typology criterion. The 5 specific criteria failures directly explain observed metrics:
+> - `eval_34`: 1 subtle digital arrest scam missed with a LOW score, driving the 97.2% recall rate (35/36 scams detected).
+> - `eval_38`: 1 false alarm on a legitimate bank statement, driving the 9.1% false-alarm rate (1/11).
+> - `eval_05`: Advisory ordering gap where reporting was outside top 3 actions, driving the 97.7% safety score (43/44).
+> - `eval_22`: Top-1 typology mismatch, driving the 97.1% top-1 accuracy (34/35).
+> - `eval_45`: Ambiguous case resolved directly without interview, driving the 66.7% clarification rate (2/3).
+>
+> **High-Risk Recall Gap**: `check_core()` evaluates binary scam recall (scam cases must receive risk > LOW). In addition to `eval_34`, **8 detected scams received a `MEDIUM` risk level** rather than being escalated to `HIGH` or `CRITICAL`, explaining the 75.0% (27/36) high-risk recall versus the $\ge 90.0\%$ target.
+>
+> **Baseline B0 Comparability Caveat**: Baseline B0's 62.0% (31/50) all-checks pass rate measures only rule-based warning triggering on scams and absence of false alarms on clean messages. Because Baseline B0 produces neither typologies nor advice, advice-specific checks are bypassed. In contrast, Full Agentic's 90.0% (45/50) evaluates the complete multi-dimensional criteria suite (warning, 15-typology classification, evidence citations, and official citizen reporting guidance).
+
+---
+
+## 🔒 Privacy by Design & DPDP Act 2023 Compliance
+
+ScamSaathi implements strict data minimization, purpose limitation, and storage limitation. Retention policies are tailored specifically to each interface:
+
+### 1. Streamlit Web Application (`src/scamsaathi/ui/streamlit_app.py`)
+- **Zero Device Scraping**: Operates purely via web paste; requests no access to device SMS, contacts, or call logs.
+- **Ephemeral In-Memory Vault**: Raw unmasked text exists in an in-memory vault solely during graph execution and is popped immediately once analysis completes.
+- **Immediate Completed Outcome Purge**: When an assessment or resumed interview finishes (`status == "complete"`), LangGraph checkpoints and in-memory PII mappings are purged immediately (`runner.clear_session(thread_id, purge_checkpoint=True)`), and thread tracking is reset.
+- **Paused Interview Inactivity TTL**: For ambiguous cases awaiting user answers (`status == "needs_followup"`), checkpoints remain in memory to support resumption. On the next user interaction after **30 minutes of inactivity**, the UI automatically purges the runner session, clears the stored outcome, and resets the input widget.
+- **Explicit User Clear**: Clicking the "Clear" button resets all session state, purges checkpoints, and resets inputs.
+
+### 2. FastAPI REST Backend (`src/scamsaathi/api/app.py`)
+- **Immediate Completed Outcome Purge**: Completed assessments (`status == "complete"`) have their SQLite `session_meta`, `checkpoints`, and `writes` records purged atomically via `_purge_session_records` before the response is returned. `session_token` in the response is set to `null`.
+- **Paused Session Retention & Security**: Paused sessions (`status == "needs_followup"`) retain checkpoint records accompanied by a cryptographically random ownership token (`X-Session-Token`). Only callers presenting the matching token can resume or delete the session.
+- **24-Hour TTL & Background Purge**: Active/paused sessions expire after **24 hours**. An hourly background task and lazy assessment checks prune stale sessions; resuming an expired session returns `410 Gone`.
+- **Right to Erasure Endpoint**: Callers can call `DELETE /session/{thread_id}` with their token to purge checkpoint records on demand.
 
 ---
 
 ## 🚀 Quick Start & Installation
 
-### 1. Environment Setup
+### 1. Prerequisites & Environment Setup
 
-ScamSaathi requires Python 3.11+. We provide both a pinned `requirements.lock` (authoritative, verified) and a flexible `requirements.txt`:
+ScamSaathi requires **Python 3.11+**.
 
 ```bash
 # Clone the repository
-git clone <repo-url>
+git clone git@github.com:tb-repo/scamsaathi.git
 cd scamsaathi
 
 # Create and activate a virtual environment
 python -m venv .venv
-# On Windows:
-.venv\Scripts\activate
-# On Linux/macOS:
+
+# On Windows (PowerShell):
+.venv\Scripts\Activate.ps1
+# On Linux / macOS:
 source .venv/bin/activate
 
 # Install authoritative dependencies
 pip install -r requirements.lock
-# Or for standard installation:
+# Or install in editable development mode:
 pip install -e .
 ```
 
 ### 2. Configuration (`.env`)
 
-Copy `.env.example` to `.env` and provide your API keys:
+Copy the example configuration file and set your API keys:
 
 ```bash
 cp .env.example .env
 ```
 
-Key configuration options (configured via `.env` or environment):
-- `GEMINI_API_KEY`: Google Gemini API key (paid tier recommended).
-- `GROQ_API_KEY`: Optional Groq API key for multi-provider fallback.
-- `SCAMSAATHI_MODE`: Operating mode — `live` (calls model and caches), `cached` (reads cache only), or `offline` (deterministic fallback on cache miss).
-- `GEMINI_MODEL_FAST`: Fast classification model (default: `gemini-3.5-flash-lite` from `config/llm.yaml`).
-- `GEMINI_MODEL_REASONING`: Reasoning/explanation model (default: `gemini-3.8-flash` from `config/llm.yaml`).
-- `SCAMSAATHI_MAX_LLM_CALLS_PER_REQUEST`: Per-request call budget cap (default: 6).
-- `SCAMSAATHI_TRUSTED_PROXIES`: Comma-separated trusted upstream proxy IPs/hostnames (default: `127.0.0.1,::1,localhost,testclient`). The rate limiter only trusts `X-Forwarded-For` from direct peers in this list; reverse proxies must strip/overwrite incoming untrusted forwarding headers.
+Key environment configuration variables:
+| Variable | Description | Default |
+| :--- | :--- | :--- |
+| `GEMINI_API_KEY` | Primary Google Gemini API key (paid tier recommended) | Required |
+| `GROQ_API_KEY` | Groq API key for multi-provider fallback | Optional |
+| `SCAMSAATHI_MODE` | Operating mode: `live`, `cached`, or `offline` | `live` |
+| `GEMINI_MODEL_FAST` | Fast classification model tier | `gemini-3.5-flash-lite` |
+| `GEMINI_MODEL_REASONING` | Reasoning & explanation model tier | `gemini-3.8-flash` |
+| `SCAMSAATHI_MAX_LLM_CALLS_PER_REQUEST` | Per-request call budget cap | `6` |
+| `SCAMSAATHI_TRUSTED_PROXIES` | Trusted reverse proxy IPs for rate limiting | `127.0.0.1,::1,localhost` |
 
 ### 3. Running the Streamlit Web Application
 
@@ -219,24 +277,22 @@ streamlit run src/scamsaathi/ui/streamlit_app.py
 ```
 Open your browser at `http://localhost:8501`.
 
-### 4. Running the FastAPI REST Service
+### 4. Running the FastAPI REST Backend
 
 ```bash
 uvicorn scamsaathi.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
-Interactive API docs available at `http://localhost:8000/docs`.
-- Features cryptographic session token ownership verification and automated 24-hour checkpoint TTL cleanup.
-- Includes sliding-window rate limiting (60 req/min) with bounded tracking memory that preserves active clients' counters (no rate-limit bypass under high-cardinality bursts; horizontally scaled deployments should configure a shared distributed limiter such as Redis).
+Interactive Swagger API documentation is available at `http://localhost:8000/docs`.
 
 ### 5. Running the Air-Gapped Offline Demo
 
-Demonstrates multi-agent analysis on 15 canonical Indian scam scenarios without requiring live internet or API keys:
+Demonstrates the 9-agent pipeline on canonical Indian scam scenarios without requiring internet connectivity or API credits:
 
 ```bash
 python scripts/run_agentic.py
 ```
 
-### 6. Running the Benchmark Harness
+### 6. Running the Benchmark Evaluation Harness
 
 ```bash
 python scripts/run_benchmarks.py
@@ -246,19 +302,21 @@ python scripts/run_benchmarks.py
 
 ## 🧪 Testing & Verification
 
-Run the full pytest suite (268 unit and integration tests):
+The project includes a comprehensive offline test suite covering all units, pipelines, and security boundaries:
 
 ```bash
 pytest -v
 ```
 
-All tests run completely offline and verify:
-- Deterministic signal extractors and blocklist queries
-- PII masking and raw vault clearing
-- State graph routing and interrupt-resume cycles
-- LLM Gateway caching, retries, and fallback circuit-breakers
-- FastAPI endpoints, session ownership tokens, 24h TTL cleanup, CORS restrictions, and session deletion
-- Advice engine contact allowlists and URL validation
+**Verification Results: 268 passed in 45.65s (100% Passing)**
+
+The test suite validates:
+- Deterministic signal extractors and threat intel database queries.
+- PII masking, token replacement, and raw vault clearing.
+- LangGraph state routing and interrupt/resume cycles.
+- Multi-provider LLM gateway caching, retries, and fallback circuit-breakers.
+- FastAPI endpoints, cryptographic session ownership tokens, 24h TTL expiration, CORS restrictions, and session deletion.
+- Advice engine official contact allowlists and URL validation.
 
 ---
 
@@ -275,7 +333,17 @@ scamsaathi/
 │   ├── intel/              # Threat intel blocklists and designated numbers
 │   └── kb/                 # Indian cyber fraud typologies (SC-01 to SC-15) & embeddings
 ├── docs/                   # Full project documentation & architectural decisions
-├── reports/                # Benchmark evaluation reports & execution metadata
+│   ├── 01-charter.md       # Project charter & problem statement
+│   ├── 02-user-journeys.md # Persona definitions & user journey maps
+│   ├── 03-requirements.md  # Functional (FR) & Non-Functional (NFR) specs
+│   ├── 04-architecture.md  # Detailed system architecture & component boundaries
+│   ├── 08-security-privacy-responsible-ai.md # DPDP Act compliance & threat model
+│   ├── 11-adr/             # Architectural Decision Records (ADR-001 to ADR-006)
+│   ├── 14-user-deployment-demo-guide.md # Deployment & live demo instructions
+│   └── 15-final-report-outline.md       # Executive final report outline
+├── reports/                # Benchmark evaluation reports & run metadata
+│   ├── benchmark_report.md # Generated Markdown benchmark evaluation report
+│   └── benchmark_run_meta.json # Detailed per-case metrics & execution metadata
 ├── scripts/
 │   ├── build_kb.py         # Knowledge base builder
 │   ├── run_agentic.py      # Air-gapped offline interactive demo
@@ -294,6 +362,8 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
+├── submission/             # Architecture diagrams, slides & final deliverables
+│   └── ScamSaathi_Architecture.svg # Full implementation architecture diagram
 ├── tests/                  # 268 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies
@@ -303,7 +373,10 @@ scamsaathi/
 
 ---
 
-## 📜 License & Disclaimers
+## 📜 License & Capstone Metadata
 
-Developed as a Capstone Project for the Hero Vired Professional Certification in Agentic AI.
-All rights reserved © 2026 Thiagarajan Baskarasubramanian.
+- **Program**: Professional Certification in Agentic AI — Capstone Project
+- **Institution**: Hero Vired
+- **Candidate**: Thiagarajan Baskarasubramanian
+- **Date**: November 2026
+- **License**: All rights reserved © 2026 Thiagarajan Baskarasubramanian.
