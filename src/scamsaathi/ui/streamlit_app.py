@@ -192,6 +192,18 @@ with st.sidebar:
     )
 
     st.markdown("---")
+    st.subheader("📊 Understanding the 0–100 Risk Scale")
+    st.markdown(
+        """
+        **The score measures threat escalation stage & harm urgency, NOT a percentage probability of safety:**
+        * 🟢 **0–29 | LOW (Legitimate):** Authenticated banking (`.bank.in`) or registered TRAI 1600 series communications.
+        * 🟡 **30–59 | MEDIUM (Scam Lure / Trap):** **Warning!** Unsolicited fraud hook (e.g. fake jobs, lottery, hotel rating tasks). Scammers use this initial hook to lure victims onto Telegram/WhatsApp before demanding deposits.
+        * 🟠 **60–84 | HIGH (Active Scam):** Coercion, fake CBI/police threats, APK malware, or active demands for payments/OTPs.
+        * 🔴 **85–100 | CRITICAL (Immediate Loss):** Money already sent or credentials compromised; urgent 1930 recovery required.
+        """
+    )
+
+    st.markdown("---")
     st.subheader("🧪 Quick Demo Samples")
     selected_scenario = st.selectbox("Load sample message:", list(DEMO_SCENARIOS.keys()))
 
@@ -357,6 +369,41 @@ if outcome is not None:
             """,
             unsafe_allow_html=True,
         )
+
+        # Contextual Citizen Safety Warning Callouts
+        if level == "MEDIUM":
+            st.warning(
+                "⚠️ **Citizen Warning (Scam Lure Detected):** "
+                "A **MEDIUM** score (30–59) indicates active scam lure techniques "
+                "(such as unrealistic daily earnings or moving you to Telegram/WhatsApp). "
+                "**Do NOT take this lightly or assume it is safe because the score is under 60.** "
+                "Scammers use these low-pressure lures to build initial trust before demanding deposits or stealing credentials."
+            )
+        elif level == "HIGH":
+            st.error(
+                "🚨 **High-Risk Scam Attack in Progress:** "
+                "This message exhibits strong deception patterns (financial demands, threats, or fake authority claims). "
+                "**Do NOT respond, click links, or send any money.**"
+            )
+        elif level == "CRITICAL":
+            st.error(
+                "🚨 **CRITICAL EMERGENCY:** "
+                "Imminent harm or account compromise detected. If you have already transferred money or entered passwords, "
+                "**call 1930 immediately** to freeze beneficiary accounts."
+            )
+
+        with st.expander("ℹ️ **How to read this Risk Score (0–100 Scale)**"):
+            st.markdown(
+                """
+                - **Scores 30 and above (MEDIUM, HIGH, CRITICAL) are ALL scams or dangerous solicitations.** Never assume a score in the 30s is safe to explore.
+                - **The score is an Urgency & Threat Stage Scale, NOT a percentage probability.** A score of 38 does **not** mean a "38% chance of scam / 62% chance of safe job" — it means a **confirmed scam in its pre-attack lure stage**.
+                - **Risk Tiers:**
+                  - 🟢 **LOW (0–29):** Legitimate or verified communication from authenticated institutions (`.bank.in`, TRAI 1600 numbers).
+                  - 🟡 **MEDIUM (30–59):** **Scam Lure / Trap.** Unsolicited job, investment, or task hook. Scammers use this stage to move you to private channels (Telegram/WhatsApp) before demanding deposits.
+                  - 🟠 **HIGH (60–84):** **Active Scam.** Scammer is actively demanding payments, OTPs, PINs, or threatening arrest.
+                  - 🔴 **CRITICAL (85–100):** **Emergency / Loss Recovery.** Financial compromise or money transfer has occurred; immediate 1930 reporting required.
+                """
+            )
 
         # Headline & Reasons
         if outcome.explanation is not None:
