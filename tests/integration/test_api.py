@@ -262,7 +262,7 @@ def test_rate_limiting_middleware(client: TestClient) -> None:
 
 
 def test_rate_limiting_tracked_ips_hard_cap(client: TestClient) -> None:
-    # Verify that memory is strictly bounded by evicting oldest tracked IP when capacity is reached
+    # Verify that memory is strictly bounded and active clients are preserved without resetting
     orig_cap = getattr(app.state, "rate_limit_max_tracked_ips", None)
     app.state.rate_limit_max_tracked_ips = 5
     try:
@@ -278,13 +278,91 @@ def test_rate_limiting_tracked_ips_hard_cap(client: TestClient) -> None:
         assert len(records) == 5
         assert "10.0.0.1" in records
 
-        # Request from a 6th IP should evict the oldest tracked IP (10.0.0.1)
-        time.sleep(0.02)
+        # Request from a 6th IP beyond tracking capacity must receive 429 (saturated capacity)
+        # without evicting active client 10.0.0.1 or resetting its counter
         r = client.get("/health", headers={"X-Forwarded-For": "10.0.0.6"})
-        assert r.status_code == 200
+        assert r.status_code == 429
+        assert "Rate limit capacity reached" in r.json()["detail"]
         assert len(records) == 5
-        assert "10.0.0.1" not in records
-        assert "10.0.0.6" in records
+        assert "10.0.0.1" in records
+        assert "10.0.0.6" not in records
+    finally:
+        if orig_cap is not None:
+            app.state.rate_limit_max_tracked_ips = orig_cap
+        elif hasattr(app.state, "rate_limit_max_tracked_ips"):
+            delattr(app.state, "rate_limit_max_tracked_ips")
+        if hasattr(app.state, "rate_limit_records"):
+            app.state.rate_limit_records.clear()
+
+
+def test_rate_limiting_no_bypass_via_high_cardinality_burst(client: TestClient) -> None:
+    # Verify that a high-cardinality burst of new IPs CANNOT evict an active or rate-limited client
+    # or allow them to regain their request allowance.
+    orig_cap = getattr(app.state, "rate_limit_max_tracked_ips", None)
+    app.state.rate_limit_max_tracked_ips = 5
+    try:
+        if hasattr(app.state, "rate_limit_records"):
+            app.state.rate_limit_records.clear()
+
+        target_ip = "192.168.1.100"
+        # 1. Exhaust target_ip's 60 req/min rate limit
+        got_429 = False
+        for _ in range(65):
+            r = client.get("/health", headers={"X-Forwarded-For": target_ip})
+            if r.status_code == 429:
+                got_429 = True
+                break
+        assert got_429, "Target client should be rate limited"
+
+        # 2. Simulate a high-cardinality burst of distinct new IPs attempting to evict target_ip
+        for i in range(1, 25):
+            client.get("/health", headers={"X-Forwarded-For": f"10.99.0.{i}"})
+
+        # Memory cap must remain strictly bounded <= 5
+        records = app.state.rate_limit_records
+        assert len(records) <= 5
+
+        # 3. Target client MUST still be rate-limited and NOT regain its allowance
+        retry_resp = client.get("/health", headers={"X-Forwarded-For": target_ip})
+        assert retry_resp.status_code == 429, (
+            "Rate-limited client must not regain allowance or bypass limit via high-cardinality IP bursts"
+        )
+        assert target_ip in records
+        assert len(records[target_ip]) >= 60
+    finally:
+        if orig_cap is not None:
+            app.state.rate_limit_max_tracked_ips = orig_cap
+        elif hasattr(app.state, "rate_limit_max_tracked_ips"):
+            delattr(app.state, "rate_limit_max_tracked_ips")
+        if hasattr(app.state, "rate_limit_records"):
+            app.state.rate_limit_records.clear()
+
+
+def test_rate_limiting_stale_ip_pruning_frees_capacity(client: TestClient) -> None:
+    # Verify that when an inactive IP's window expires, it is pruned to free capacity slots for new clients
+    orig_cap = getattr(app.state, "rate_limit_max_tracked_ips", None)
+    app.state.rate_limit_max_tracked_ips = 2
+    try:
+        if hasattr(app.state, "rate_limit_records"):
+            app.state.rate_limit_records.clear()
+
+        # Fill capacity with 2 IPs
+        assert client.get("/health", headers={"X-Forwarded-For": "10.0.0.1"}).status_code == 200
+        assert client.get("/health", headers={"X-Forwarded-For": "10.0.0.2"}).status_code == 200
+        assert len(app.state.rate_limit_records) == 2
+
+        # 3rd IP is rejected when capacity is saturated
+        assert client.get("/health", headers={"X-Forwarded-For": "10.0.0.3"}).status_code == 429
+
+        # Age 10.0.0.1 past 60s
+        app.state.rate_limit_records["10.0.0.1"] = [time.time() - 70.0]
+
+        # 3rd IP can now connect because stale entry 10.0.0.1 is pruned
+        r = client.get("/health", headers={"X-Forwarded-For": "10.0.0.3"})
+        assert r.status_code == 200
+        assert "10.0.0.1" not in app.state.rate_limit_records
+        assert "10.0.0.3" in app.state.rate_limit_records
+        assert len(app.state.rate_limit_records) == 2
     finally:
         if orig_cap is not None:
             app.state.rate_limit_max_tracked_ips = orig_cap

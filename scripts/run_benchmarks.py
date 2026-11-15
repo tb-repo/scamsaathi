@@ -418,7 +418,7 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         "## 4. Key Findings & Rigorous Audit Analysis",
         "",
         "1. **Near-Zero False Alarm Rate:** Legitimate banking notifications (debit notices, e-statements on `.bank.in`) and TRAI designated numbers (1600 service, 1601 courier) achieved 0% false alarms.",
-        f"2. **Non-Devanagari Script Compliance ({pct(m_ag['language_compliance_rate'])}):** All generated responses across English and Hinglish inputs were audited at the character level and confirmed to contain zero Devanagari script leakage.",
+        f"2. **Non-Devanagari Script Compliance ({pct(m_ag['language_compliance_rate'])}):** Across all 50 evaluated benchmark cases, all generated text fields (explanation headline, reasons, uncertainty, advice action items, and clarification questions) were audited at the character level and confirmed to contain zero Devanagari script leakage.",
         f"3. **Evidence-ID Grounding Rate ({pct(m_ag['groundedness'])}):** Generated explanation reasons cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue (measures citation consistency against runtime state, not external factual correctness).",
         "4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with rapid 1930 helpline routing on financial loss for bank lien assistance.",
         "5. **Human-in-the-Loop Value:** Ambiguous messages triggered targeted clarifying questions, providing accurate outcomes upon user resume.",

@@ -17,7 +17,7 @@
 | **Evaluation Pipeline Errors** | 0 | 0 | **0** | 0 | Unhandled exceptions during evaluation |
 | **Official Reporting Guidance** | N/A | N/A | **97.2%** | Active Citizen Defense | Any official channel recommended |
 | **Ambiguous Case Handling** | 100.0% | 0.0% (No Interview) | **66.7%** | Interactive Interview | HITL targeted clarification questions |
-| **Median Latency** | < 5000 ms | 1.6 ms | 74.1 ms | Cached/Fast | End-to-end multi-agent graph |
+| **Median Latency** | < 5000 ms | 1.4 ms | 87.6 ms | Cached/Fast | End-to-end multi-agent graph |
 
 ## 2. Official Citizen Reporting Channel Breakdown
 
@@ -37,7 +37,7 @@
 ## 4. Key Findings & Rigorous Audit Analysis
 
 1. **Near-Zero False Alarm Rate:** Legitimate banking notifications (debit notices, e-statements on `.bank.in`) and TRAI designated numbers (1600 service, 1601 courier) achieved 0% false alarms.
-2. **Non-Devanagari Script Compliance (100.0%):** All generated responses across English and Hinglish inputs were audited at the character level and confirmed to contain zero Devanagari script leakage.
+2. **Non-Devanagari Script Compliance (100.0%):** Across all 50 evaluated benchmark cases, all generated text fields (explanation headline, reasons, uncertainty, advice action items, and clarification questions) were audited at the character level and confirmed to contain zero Devanagari script leakage.
 3. **Evidence-ID Grounding Rate (100.0%):** Generated explanation reasons cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue (measures citation consistency against runtime state, not external factual correctness).
 4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with rapid 1930 helpline routing on financial loss for bank lien assistance.
 5. **Human-in-the-Loop Value:** Ambiguous messages triggered targeted clarifying questions, providing accurate outcomes upon user resume.

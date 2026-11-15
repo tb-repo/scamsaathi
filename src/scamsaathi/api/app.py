@@ -225,17 +225,23 @@ def create_app() -> FastAPI:
         records: dict[str, list[float]] = getattr(app.state, "rate_limit_records", _rate_limit_records)
         max_tracked = getattr(app.state, "rate_limit_max_tracked_ips", _RATE_LIMIT_MAX_TRACKED_IPS)
 
-        # 1. Opportunistic eviction of stale IP keys to prevent unbounded memory growth
-        if len(records) > 200:
-            stale = [ip for ip, timestamps in records.items() if not timestamps or timestamps[-1] <= window_start]
-            for ip in stale:
-                records.pop(ip, None)
+        # 1. Prune expired IP keys whose timestamps have elapsed outside the active window
+        stale = [ip for ip, timestamps in records.items() if not timestamps or timestamps[-1] <= window_start]
+        for ip in stale:
+            records.pop(ip, None)
 
-        # 2. Strict memory bounding: enforce hard cap on active tracked IPs
+        # 2. Strict memory bounding without resetting active clients' counters:
+        # Evicting active clients during a high-cardinality burst would wipe their request counts
+        # and allow rate-limit bypass. Therefore, active clients are never evicted mid-window.
+        # If active tracking capacity is saturated, new untracked clients are rejected with 429
+        # until active windows naturally elapse and release capacity slots.
+        # For horizontally scaled / multi-process production deployments, use an external shared
+        # rate limiter (e.g., Redis fixed-window or sliding-window token bucket).
         if len(records) >= max_tracked and client_ip not in records:
-            # Evict the entry with the oldest recorded activity to enforce a fixed upper memory bound
-            oldest_ip = min(records.keys(), key=lambda k: records[k][-1] if records[k] else 0.0)
-            records.pop(oldest_ip, None)
+            return JSONResponse(
+                status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+                content={"detail": "Too many concurrent clients. Rate limit capacity reached. Please try again shortly."},
+            )
 
         history = [ts for ts in records.get(client_ip, []) if ts > window_start]
         if len(history) >= _RATE_LIMIT_MAX_REQUESTS:

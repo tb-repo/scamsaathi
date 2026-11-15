@@ -112,7 +112,7 @@ Evaluated on the 50-case benchmark dataset across both English and Hinglish inpu
 | **Required Safety Behaviors** | 100.0% | 97.7% | **95.5%** | 1930 recovery, 1098 child safety |
 | **Typology Accuracy (Exact Top-1)** | >= 80.0% | N/A | **97.1%** | Exact primary typology classification |
 | **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Runtime citation consistency against active catalogue (S#, I#, K#, C#) |
-| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Zero Devanagari script leakage in English responses (script-level audit) |
+| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Zero Devanagari script leakage across evaluated response fields in benchmark cases (script-level audit) |
 | **Official Reporting Guidance** | N/A | N/A | **97.2%** | Direct Chakshu & Cyber Crime Portal guidance |
 | **Ambiguous Case Handling** | 100.0% | 0.0% | **66.7%** | Interactive interview triggered on ambiguous text |
 
@@ -173,6 +173,7 @@ uvicorn scamsaathi.api.app:app --host 127.0.0.1 --port 8000 --reload
 ```
 Interactive API docs available at `http://localhost:8000/docs`.
 - Features cryptographic session token ownership verification and automated 24-hour checkpoint TTL cleanup.
+- Includes sliding-window rate limiting (60 req/min) with bounded tracking memory that preserves active clients' counters (no rate-limit bypass under high-cardinality bursts; horizontally scaled deployments should configure a shared distributed limiter such as Redis).
 
 ### 5. Running the Air-Gapped Offline Demo
 

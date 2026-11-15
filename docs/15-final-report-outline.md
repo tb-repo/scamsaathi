@@ -20,7 +20,7 @@ Mobile communication fraud in India has escalated into a national security and s
 
 ### Key Innovations & Architecture
 1. **Multi-Agent Orchestration (LangGraph State Graph):** 9 specialized agents (A1 Extractor, A2 Risk Heuristic, A3 Hybrid Threat Intelligence Retriever, A4 Clarifying Interviewer, A5 Typology Classifier, A6 Risk Scorer, A7 Action Advisory, A8 Explainer, and A9 Safety Guardrail) collaborate across deterministic and probabilistic steps.
-2. **Audited Script Compliance with Multilingual Ingestion:** Understands English, Devanagari Hindi, and romanized Hinglish seamlessly, while strictly outputting all assessments, advice, and questions in English without Devanagari script leakage.
+2. **Audited Script Compliance with Multilingual Ingestion:** Understands English, Devanagari Hindi, and romanized Hinglish seamlessly, while generating response fields (headlines, reasons, advice, and interview questions) audited across benchmark cases for zero Devanagari script leakage.
 3. **Citizen Protection & Government Reporting Integration:** Every scam verdict prioritizes actionable, official reporting channels: DoT's **Chakshu Portal** (`sancharsaathi.gov.in/sfc`) for suspect numbers/messages, the **Cyber Crime Portal** (`cybercrime.gov.in`) for fraud attempts, and the **1930 Helpline** for financial fraud lien assistance.
 4. **Human-in-the-Loop Clarification:** When ambiguous inputs lack conclusive threat signals, the system triggers a targeted, multi-turn interview rather than hallucinating or issuing false alarms.
 5. **Rigorous Privacy & Air-Gapped Offline Defense:** Deterministic PII masking strips phone numbers, account digits, contextual OTPs, and emails *before* state checkpointing or LLM ingestion. A persistent two-tier cache enables complete, air-gapped offline operation.
@@ -152,7 +152,7 @@ Evaluation was conducted against the expanded 50-case benchmark dataset (`data/e
 | **English (EN)** | 20 | 19 | **95.0%** | 10 | 1 | 10.0% |
 | **Hinglish (HI-EN)** | 16 | 16 | **100.0%** | 1 | 0 | **0.0%** |
 
-*Key Takeaway:* ScamSaathi achieved **100.0% recall on Hinglish scams**, demonstrating that its multilingual prompt engineering and localized entity extraction accurately decipher colloquial threats while keeping all generated output strictly compliant with non-Devanagari script requirements (audited for zero Devanagari script leakage in English responses).
+*Key Takeaway:* ScamSaathi achieved **100.0% recall on Hinglish scams**, demonstrating that its multilingual prompt engineering and localized entity extraction accurately decipher colloquial threats while keeping evaluated response fields across benchmark cases (explanation headline, reasons, uncertainty, advice actions, and questions) strictly compliant with non-Devanagari script requirements (audited for zero Devanagari script leakage in English responses).
 
 ---
 
@@ -240,7 +240,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 
 ### Slide 9: Agent A9 Guardrail Defense Layer
 - Real-time post-generation safety gate.
-- Enforces strict non-Devanagari script compliance (audited for zero Devanagari script leakage in English responses).
+- Enforces non-Devanagari script compliance across generated response fields (audited for zero Devanagari script leakage in benchmark cases).
 - Eliminates legal section citations (FR-083) and secret demands (FR-064).
 
 ### Slide 10: Live Demonstration (Scenarios)
