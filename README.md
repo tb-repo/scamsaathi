@@ -140,12 +140,16 @@ Evaluated on the 50-case benchmark dataset across both English and Hinglish inpu
 | **Ambiguous Case Clarification** | 100.0% | 0.0% | **66.7%** | Interactive interview triggered on ambiguous text |
 | **All-Checks Pass Rate** | N/A | 62.0% (31/50) | **90.0% (45/50)** | 45 of 50 cases passed 100% of multi-dimensional criteria (0 pipeline errors) |
 
-> **Audit Note on Benchmark Case Results**: Across all 50 evaluated cases, the pipeline executed with **0 runtime/pipeline errors**. **45 out of 50 cases (90.0%)** passed every core, safety, and typology criterion. The 5 specific criteria failures directly correspond to our measured metrics and serve as targets for future tuning:
-> - `eval_34`: Subtle scam missed (drives the 97.2% recall rate; 35/36 scams detected).
+> **Audit Note on Benchmark Case Results & Metric Gaps**: Across all 50 evaluated cases, the pipeline executed with **0 runtime/pipeline errors**. **45 out of 50 cases (90.0%)** passed every core, safety, and typology criterion. The 5 specific criteria failures directly correspond to our measured metrics:
+> - `eval_34`: Subtle scam missed with LOW score (drives the 97.2% recall rate; 35/36 scams detected).
 > - `eval_38`: Legitimate bank statement false alarm (drives the 9.1% false-alarm rate; 1/11).
 > - `eval_05`: Advisory ordering gap where reporting was outside top 3 actions (drives the 97.7% safety score; 43/44).
 > - `eval_22`: Top-1 typology mismatch (drives the 97.1% top-1 accuracy; 34/35).
 > - `eval_45`: Ambiguous case resolved directly without interview (drives the 66.7% clarification rate; 2/3).
+>
+> *High-Risk Recall Gap*: `check_core()` evaluates binary scam recall (scam cases must receive risk > LOW). In addition to `eval_34`, 8 detected scams received a `MEDIUM` risk level rather than `HIGH` or `CRITICAL`, explaining the 75.0% (27/36) high-risk recall versus the $\ge 90.0\%$ target.
+>
+> *Baseline B0 Comparability Caveat*: Baseline B0's 62.0% (31/50) all-checks pass rate measures only rule-based warning triggering on scams and absence of false alarms on clean messages. Because B0 produces neither typologies nor advice, advice-specific checks are bypassed. By contrast, the Full Agentic pipeline's 90.0% (45/50) rate evaluates the full multi-dimensional suite (warning, 15-typology classification, evidence citations, and official citizen reporting guidance).
 
 ---
 
