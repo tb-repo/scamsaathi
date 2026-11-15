@@ -195,11 +195,11 @@ with st.sidebar:
     st.subheader("📊 Understanding the 0–100 Risk Scale")
     st.markdown(
         """
-        **The score measures threat escalation stage & harm urgency, NOT a percentage probability of safety:**
-        * 🟢 **0–29 | LOW (Legitimate):** Authenticated banking (`.bank.in`) or registered TRAI 1600 series communications.
-        * 🟡 **30–59 | MEDIUM (Scam Lure / Trap):** **Warning!** Unsolicited fraud hook (e.g. fake jobs, lottery, hotel rating tasks). Scammers use this initial hook to lure victims onto Telegram/WhatsApp before demanding deposits.
-        * 🟠 **60–84 | HIGH (Active Scam):** Coercion, fake CBI/police threats, APK malware, or active demands for payments/OTPs.
-        * 🔴 **85–100 | CRITICAL (Immediate Loss):** Money already sent or credentials compromised; urgent 1930 recovery required.
+        **The score reflects detected warning signs and recommended vigilance, NOT a percentage probability:**
+        * 🟢 **0–29 | LOW (Minimal Warning Signals):** No strong threat indicators detected. However, subtle scams can still occur—always verify independently via official channels before sharing sensitive details.
+        * 🟡 **30–59 | MEDIUM (Warning Signs Detected):** Suspicious elements found (such as unsolicited offers, unverified links, or urgent requests). Exercise high caution: do not click links or share data until verified.
+        * 🟠 **60–84 | HIGH (Elevated Threat Indicators):** Strong pressure tactics, impersonation, or credential/payment demands detected. Cease communication immediately.
+        * 🔴 **85–100 | CRITICAL (Urgent Action Required):** Severe risk detected (reported financial loss, compromised accounts, or safety triggers). Follow emergency recovery steps or call 1930 promptly.
         """
     )
 
@@ -370,38 +370,44 @@ if outcome is not None:
             unsafe_allow_html=True,
         )
 
-        # Contextual Citizen Safety Warning Callouts
+        # Contextual Citizen Guidance Callouts
         if level == "MEDIUM":
             st.warning(
-                "⚠️ **Citizen Warning (Scam Lure Detected):** "
-                "A **MEDIUM** score (30–59) indicates active scam lure techniques "
-                "(such as unrealistic daily earnings or moving you to Telegram/WhatsApp). "
-                "**Do NOT take this lightly or assume it is safe because the score is under 60.** "
-                "Scammers use these low-pressure lures to build initial trust before demanding deposits or stealing credentials."
+                "⚠️ **Caution Recommended (Warning Signs Detected):** "
+                "A **MEDIUM** score (30–59) indicates suspicious elements that warrant careful verification "
+                "(such as unsolicited offers, unusual urgency, or off-platform redirects). "
+                "Do not assume a message is safe simply because the score is below 60. "
+                "Verify the sender independently through official directories before engaging or clicking any links."
             )
         elif level == "HIGH":
             st.error(
-                "🚨 **High-Risk Scam Attack in Progress:** "
-                "This message exhibits strong deception patterns (financial demands, threats, or fake authority claims). "
-                "**Do NOT respond, click links, or send any money.**"
+                "🚨 **High Risk Warning (Strong Threat Indicators):** "
+                "This message exhibits strong deception or pressure tactics (such as demands for payments, OTPs, "
+                "or authority impersonation). **Do NOT respond, click links, or transfer funds.**"
             )
         elif level == "CRITICAL":
             st.error(
-                "🚨 **CRITICAL EMERGENCY:** "
-                "Imminent harm or account compromise detected. If you have already transferred money or entered passwords, "
-                "**call 1930 immediately** to freeze beneficiary accounts."
+                "🚨 **Critical Alert (Immediate Action Required):** "
+                "Severe risk signals detected. If you have already transferred funds, shared banking passwords, "
+                "or feel in danger, **call the 1930 National Cyber Crime Helpline immediately** or reach out to official support."
+            )
+        elif level == "LOW":
+            st.info(
+                "ℹ️ **Low Risk Signals Detected:** "
+                "No prominent scam indicators were identified. However, automated triage is advisory and cannot guarantee "
+                "authenticity—always independently verify unknown senders before sharing personal information."
             )
 
         with st.expander("ℹ️ **How to read this Risk Score (0–100 Scale)**"):
             st.markdown(
                 """
-                - **Scores 30 and above (MEDIUM, HIGH, CRITICAL) are ALL scams or dangerous solicitations.** Never assume a score in the 30s is safe to explore.
-                - **The score is an Urgency & Threat Stage Scale, NOT a percentage probability.** A score of 38 does **not** mean a "38% chance of scam / 62% chance of safe job" — it means a **confirmed scam in its pre-attack lure stage**.
-                - **Risk Tiers:**
-                  - 🟢 **LOW (0–29):** Legitimate or verified communication from authenticated institutions (`.bank.in`, TRAI 1600 numbers).
-                  - 🟡 **MEDIUM (30–59):** **Scam Lure / Trap.** Unsolicited job, investment, or task hook. Scammers use this stage to move you to private channels (Telegram/WhatsApp) before demanding deposits.
-                  - 🟠 **HIGH (60–84):** **Active Scam.** Scammer is actively demanding payments, OTPs, PINs, or threatening arrest.
-                  - 🔴 **CRITICAL (85–100):** **Emergency / Loss Recovery.** Financial compromise or money transfer has occurred; immediate 1930 reporting required.
+                - **Advisory Warning Scale, NOT a Probability:** A score of 38 does **not** mean a "38% chance of scam / 62% safe message." It reflects the cumulative weight of detected warning signals and the level of vigilance required.
+                - **Always Verify Independently:**
+                  - 🟢 **LOW (0–29):** Minimal threat signals found. Still exercise standard caution and verify unknown requests.
+                  - 🟡 **MEDIUM (30–59):** Moderate warning signs present. Caution required—do not click unverified links or share private information.
+                  - 🟠 **HIGH (60–84):** Elevated risk with aggressive pressure, payment, or credential requests. Cease contact.
+                  - 🔴 **CRITICAL (85–100):** Severe risk indicators requiring immediate protective or recovery action (such as 1930 reporting).
+                - **Advisory Boundary:** ScamSaathi provides automated triage assistance, not a legal verdict or guarantee. Always rely on verified institutional channels.
                 """
             )
 
