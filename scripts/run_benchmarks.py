@@ -281,6 +281,7 @@ def evaluate_pipeline(
         "total_cases": len(cases),
         "evaluated_cases": evaluated_cases,
         "eval_errors": eval_errors,
+        "all_checks_passed_cases": sum(1 for r in case_results if r["passed"]),
         "scams_total": scams_total,
         "scams_warned": scams_warned,
         "scam_recall_warned": (scams_warned / scams_total) if scams_total else (None if eval_errors else 0.0),
@@ -410,6 +411,12 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         f"| **Ambiguous Case Clarification** | 100.0% | 0.0% (No Interview) | "
         f"**{pct(m_ag['ambiguous_interviewed'] / m_ag['ambiguous_total'])}** | Interactive Interview | Proactive clarification questions on under-specified inputs (measures interview triggering behavior) |"
     )
+    b0_pass_rate = (m_b0.get("all_checks_passed_cases", 0) / m_b0["total_cases"]) if m_b0.get("total_cases") else None
+    ag_pass_rate = (m_ag.get("all_checks_passed_cases", 0) / m_ag["total_cases"]) if m_ag.get("total_cases") else None
+    lines.append(
+        f"| **All-Checks Pass Rate** | N/A | {pct(b0_pass_rate)} ({m_b0.get('all_checks_passed_cases', 0)}/{m_b0.get('total_cases', 0)}) | "
+        f"**{pct(ag_pass_rate)} ({m_ag.get('all_checks_passed_cases', 0)}/{m_ag.get('total_cases', 0)})** | {signed_pp(ag_pass_rate, b0_pass_rate)} | Cases meeting 100% of core, behavior & typology criteria |"
+    )
     lines.append(
         f"| **Median Latency** | < 5000 ms | {m_b0['median_latency_ms']:.1f} ms | "
         f"{m_ag['median_latency_ms']:.1f} ms | Cached/Fast | End-to-end multi-agent graph |"
@@ -507,6 +514,7 @@ def main() -> int:
     print(f"Evidence-ID Grounding Rate:     {pct(agentic_metrics['groundedness'])}")
     print(f"Non-Devanagari Script Compliance: {agentic_metrics['language_compliance_rate']*100:.1f}%")
     print(f"Evaluation Pipeline Errors:     {agentic_metrics['eval_errors']}")
+    print(f"All-Checks Passed Cases:        {agentic_metrics['all_checks_passed_cases']}/{agentic_metrics['total_cases']} ({agentic_metrics['all_checks_passed_cases']/agentic_metrics['total_cases']*100:.1f}%)")
     print("=" * 60)
 
     # 4. Generate Reports

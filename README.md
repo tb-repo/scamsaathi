@@ -138,8 +138,14 @@ Evaluated on the 50-case benchmark dataset across both English and Hinglish inpu
 | **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Zero Devanagari script leakage across evaluated response fields (script-level audit) |
 | **Official Reporting Guidance** | N/A | N/A | **97.2%** | Direct Chakshu (88.9%), Cyber Crime Portal (94.4%), 1930 (100% urgent loss) |
 | **Ambiguous Case Clarification** | 100.0% | 0.0% | **66.7%** | Interactive interview triggered on ambiguous text |
+| **All-Checks Pass Rate** | N/A | 62.0% (31/50) | **90.0% (45/50)** | 45 of 50 cases passed 100% of multi-dimensional criteria (0 pipeline errors) |
 
-> **Audit Note on Safety Performance**: Baseline B0 achieved 100.0% on safety behaviors because its rule set fires template advice whenever a keyword triggers. Full Agentic achieved 97.7% (43/44 required behaviors), with one test case narrowly missing an advisory tag under LLM explanation formatting, keeping our remaining safety gap fully transparent.
+> **Audit Note on Benchmark Case Results**: Across all 50 evaluated cases, the pipeline executed with **0 runtime/pipeline errors**. **45 out of 50 cases (90.0%)** passed every core, safety, and typology criterion. The 5 specific criteria failures directly correspond to our measured metrics and serve as targets for future tuning:
+> - `eval_34`: Subtle scam missed (drives the 97.2% recall rate; 35/36 scams detected).
+> - `eval_38`: Legitimate bank statement false alarm (drives the 9.1% false-alarm rate; 1/11).
+> - `eval_05`: Advisory ordering gap where reporting was outside top 3 actions (drives the 97.7% safety score; 43/44).
+> - `eval_22`: Top-1 typology mismatch (drives the 97.1% top-1 accuracy; 34/35).
+> - `eval_45`: Ambiguous case resolved directly without interview (drives the 66.7% clarification rate; 2/3).
 
 ---
 

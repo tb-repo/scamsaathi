@@ -146,8 +146,16 @@ Evaluation was conducted against the expanded 50-case benchmark dataset (`data/e
 | **Official Reporting Guidance Rate** | N/A | N/A | **97.2%** | Citizen Protection | Active Value-Add |
 | **Required Safety Behaviors** | 100.0% | 100.0% | **97.7%** | 43/44 Behaviors Met | -2.3 pp Gap Reported |
 | **Ambiguous Case Clarification** | 100.0% | 0.0% | **66.7%** | Interactive Clarification | Triggering Behavior |
+| **All-Checks Pass Rate** | N/A | 62.0% (31/50) | **90.0% (45/50)** | **+28.0 pp** | 45/50 cases met 100% of criteria |
 | **Hinglish Scam Recall** | $\ge 90.0\%$ | 50.0% | **100.0%** | **+50.0 pp** | **Perfect Recall** |
-| **Median Execution Latency** | $< 5000\text{ ms}$ | 2.7 ms | **132.4 ms** (Cached) | Instantaneous | Production Ready |
+| **Median Execution Latency** | $< 5000\text{ ms}$ | 5.4 ms | **191.9 ms** (Cached) | Instantaneous | Production Ready |
+
+> **Evaluation Rigor Note on Case-Level Results**: Across the 50 evaluated cases, execution completed with **0 pipeline/runtime errors**. **45 out of 50 cases (90.0%)** passed every core, safety, and typology assertion check. The 5 specific case criteria failures provide actionable insight into model boundaries and tuning targets:
+> - `eval_34`: 1 subtle digital arrest scam missed, accounting for the 97.2% scam recall (35/36 scams detected).
+> - `eval_38`: 1 false alarm on a legitimate bank statement, accounting for the 9.1% false-alarm rate (1/11).
+> - `eval_05`: 1 safety behavior gap where official reporting was ranked outside the top 3 recommended actions, accounting for the 97.7% safety score (43/44).
+> - `eval_22`: 1 top-1 typology mismatch, accounting for the 97.1% top-1 accuracy (34/35).
+> - `eval_45`: 1 ambiguous case resolved directly rather than triggering interview questions, accounting for the 66.7% clarification rate (2/3).
 
 ### 5.2 Language Slice Breakdown
 
