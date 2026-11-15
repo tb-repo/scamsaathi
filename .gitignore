@@ -222,3 +222,4 @@ __marimo__/
 
 # Capstone submission folder (internal slides, outlines, and presentation deliverables)
 submission/
+.codex-presentation-build/
