@@ -2,10 +2,10 @@
 
 | Field | Value |
 |---|---|
-| Document set version | 0.1 |
-| Last updated | 2026-11-11 |
+| Document set version | 1.0 (Capstone Submission & Defense Release) |
+| Last updated | 2026-11-15 |
 | Owner | Thiagarajan Baskarasubramanian (project lead / author) |
-| Status | Draft for review |
+| Status | Approved (Final Submission) |
 
 ## How to use this set
 

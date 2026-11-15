@@ -132,7 +132,11 @@ def evaluate_pipeline(
 
             all_failures = core_failures + beh_failures + typ_failures
             is_pass = len(all_failures) == 0
+            if is_agentic and runner is not None and outcome is not None:
+                runner.clear_session(outcome.thread_id, purge_checkpoint=True)
         except Exception as exc:
+            if is_agentic and runner is not None and outcome is not None:
+                runner.clear_session(outcome.thread_id, purge_checkpoint=True)
             elapsed_ms = (time.perf_counter() - start_t) * 1000.0
             latencies.append(elapsed_ms)
             eval_errors += 1

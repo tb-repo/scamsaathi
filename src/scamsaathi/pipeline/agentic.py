@@ -7,6 +7,7 @@ they reach LangGraph, because LangGraph stores resume values in the checkpoint.
 
 from __future__ import annotations
 
+import logging
 import time
 import uuid
 from dataclasses import dataclass, field
@@ -21,6 +22,8 @@ from scamsaathi.agents.guardrails import GuardrailAgent
 from scamsaathi.graph.builder import build_graph
 from scamsaathi.schemas import AdviceBundle, Explanation, IntelResult, RiskScore, Signal
 from scamsaathi.tools.pii_masker import mask
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -155,8 +158,8 @@ class AgentRunner:
             if hasattr(self.checkpointer, "delete_thread"):
                 try:
                     self.checkpointer.delete_thread(thread_id)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.warning("checkpointer_delete_thread_failed", extra={"thread_id": thread_id, "error": str(exc)})
             if hasattr(self.checkpointer, "storage") and isinstance(self.checkpointer.storage, dict):
                 self.checkpointer.storage.pop(thread_id, None)
             if hasattr(self.checkpointer, "writes") and isinstance(self.checkpointer.writes, dict):

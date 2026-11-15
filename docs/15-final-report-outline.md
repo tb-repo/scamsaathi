@@ -14,7 +14,7 @@
 
 ## 1. Executive Summary
 
-Mobile communication fraud in India has escalated into a national security and socio-economic crisis. The Ministry of Home Affairs reported citizen cyber-fraud losses in India of **₹22,495 crore in 2025** across thousands of citizen complaints (Source: Ministry of Home Affairs, Press Information Bureau (PIB) Press Release dated 21 August 2026, PRID 2301973, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2301973&lang=1&reg=48), driven by sophisticated social engineering vectors including "Digital Arrest" coercion, APK malware downloads disguised as utility updates or courier tracking, and fraudulent task-investment schemes. Existing commercial call/SMS filter apps rely on static crowdsourced blocklists, offering zero defense against newly provisioned SIMs, contextual psychological manipulation, or ambiguous caller requests.
+Mobile communication fraud in India has escalated into a national security and socio-economic crisis. The Ministry of Home Affairs reported citizen cyber-fraud losses in India of **₹22,495 crore in 2025** across thousands of citizen complaints (Source: Ministry of Home Affairs, Press Information Bureau (PIB) Press Release dated 21 August 2026, PRID 2301973, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2301973&lang=1&reg=48), driven by sophisticated social engineering vectors including "Digital Arrest" coercion, APK malware downloads disguised as utility updates or courier tracking, and fraudulent task-investment schemes. Existing commercial call/SMS filter apps rely primarily on static crowdsourced blocklists, which offer limited defense against newly provisioned SIMs, contextual psychological manipulation, or ambiguous caller requests.
 
 **ScamSaathi** is an agentic, privacy-first mobile scam defense assistant engineered specifically for Indian citizens. Operating as a stateful, multi-agent directed graph coordinated via **LangGraph**, ScamSaathi evaluates pasted suspicious SMS messages, WhatsApp chats, or phone call descriptions.
 
@@ -110,13 +110,13 @@ ScamSaathi incorporates domain knowledge compiled from official advisories (DoT,
 
 | ID | Typology Name | Core Modus Operandi | Verified Defense & Guidance |
 |:---|:---|:---|:---|
-| **SC-01** | Digital Arrest / Police Coercion | Video call impersonating CBI/ED/Police claiming narcotics parcel or money laundering. | Real police never arrest via Skype/WhatsApp. Report to 1930 & `cybercrime.gov.in`. |
-| **SC-02** | KYC / Bank Account Phishing | SMS claiming PAN/KYC expired; links to credential-harvesting fake portal. | Banks never send non-`.bank.in` links for KYC. Report to Chakshu. |
-| **SC-03** | Electricity / Utility Disconnection | Urgent threat of power cut at 9:30 PM; instructions to call personal number or install APK. | Power DISCOMs never collect dues via personal WhatsApp or APK. |
-| **SC-04** | Fake QR Code / UPI Reversal | Scammer sends QR code claiming user will "receive" refund by scanning and entering PIN. | Entering UPI PIN always deducts money; PIN is never needed to receive money. |
-| **SC-05** | Part-Time Task / Telegram Job | YouTube like/review task paying ₹150, followed by frozen "prepaid crypto tasks". | Advance-deposit job schemes are 100% illegal fraud. Cease contact immediately. |
+| **SC-01** | Digital Arrest / Police Coercion | Video call impersonating CBI/ED/Police claiming narcotics parcel or money laundering. | Law enforcement agencies officially advise that formal police procedures never involve virtual arrests or interrogations via Skype or WhatsApp video calls. Report to 1930 & `cybercrime.gov.in`. |
+| **SC-02** | KYC / Bank Account Phishing | SMS claiming PAN/KYC expired; links to credential-harvesting fake portal. | Banks officially advise customers that genuine KYC notifications never direct users to non-`.bank.in` domains. Report suspicious links to Chakshu. |
+| **SC-03** | Electricity / Utility Disconnection | Urgent threat of power cut at 9:30 PM; instructions to call personal number or install APK. | Power distribution utilities officially advise that disconnection notices and bill collections are never handled via personal WhatsApp accounts or sideloaded APKs. |
+| **SC-04** | Fake QR Code / UPI Reversal | Scammer sends QR code claiming user will "receive" refund by scanning and entering PIN. | Entering a UPI PIN always deducts money; a PIN is never required to receive incoming funds. |
+| **SC-05** | Part-Time Task / Telegram Job | YouTube like/review task paying ₹150, followed by frozen "prepaid crypto tasks". | Advance-deposit requirements and frozen task deposits are primary indicators of fraudulent task-investment schemes. Cease contact immediately. |
 | **SC-06** | Malicious APK / Courier Tracking | SMS about undelivered parcel asking user to download `.apk` support app. | Sideloaded APKs hijack SMS permissions and steal 2FA OTPs. |
-| **SC-07** | Customs Clearance / Foreign Gift | Foreign acquaintance sends luxury gift, customs agent demands clearance fee. | Real customs duties are paid directly via ICEGATE portal, never via UPI/personal accounts. |
+| **SC-07** | Customs Clearance / Foreign Gift | Foreign acquaintance sends luxury gift, customs agent demands clearance fee. | Indian Customs officially advises that import duties are payable through the official ICEGATE portal, never to personal UPI handles or bank accounts. |
 | **SC-08** | Lottery / KBC Lucky Draw | SMS/WhatsApp claiming ₹25 Lakh lottery win; requires registration fee. | Advance-fee lottery is prohibited under Indian law. Report to Chakshu. |
 | **SC-09** | Loan App Extortion (Instant Loan) | Predatory app accesses phone contacts, demands usurious interest with blackmail. | Only borrow from RBI-registered NBFCs. Report harassment to Cyber Crime Portal. |
 | **SC-10** | Aadhaar / Biometric Update | Phishing links claiming Aadhaar will be locked unless updated immediately. | Official updates only occur on `myaadhaar.uidai.gov.in` or physical enrolment centers. |
@@ -253,11 +253,13 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 - **Scenario 3:** Genuine Bank Transaction Alert (`.bank.in` domain -> LOW 0, Zero False Alarm).
 
 ### Slide 11: Benchmark Results vs Baseline B0
-- **Scam Recall:** 97.2% vs 44.4% (+52.8 pp gain).
-- **Hinglish Recall:** 100.0%.
+- **Scam Recall:** 97.2% vs 47.2% (+50.0 pp gain).
+- **High-Risk Recall:** 75.0% vs 25.0% (+50.0 pp gain; 27/36 high-risk threats correctly escalated).
+- **Required Safety Behaviors:** 97.7% (43/44 behaviors met; -2.3 pp gap reported).
+- **Hinglish Recall:** 100.0% (16/16 scams detected).
 - **Typology Accuracy:** 97.1%.
 - **Evidence-ID Grounding Rate:** 100.0% (runtime citation consistency against active catalogue).
-- **False Alarm Rate:** 9.1%.
+- **False Alarm Rate:** 9.1% (0.0% on banking).
 
 ### Slide 12: Cost & Production Viability
 - Total Capstone Evaluation Spend: ₹19.45 (internal test execution across development cycles).
@@ -313,4 +315,4 @@ This ensures the scammer's infrastructure is dismantled before other citizens ar
 
 ## 10. Conclusion
 
-ScamSaathi demonstrates that agentic AI architectures—combining stateful graph coordination, domain-specific threat intelligence, deterministic guardrails, and human-in-the-loop clarification—deliver substantial improvements in safety, accuracy, and citizen protection over traditional rule-based or single-prompt LLM systems. With a **97.2% scam recall**, **9.1% false alarm rate**, **100% evidence-ID citation consistency**, and an internal test execution spend under **₹20**, ScamSaathi provides a robust functional agentic prototype and reference template for mobile scam defense in India, validated under internal benchmark evaluation.
+ScamSaathi demonstrates that agentic AI architectures—combining stateful graph coordination, domain-specific threat intelligence, deterministic guardrails, and human-in-the-loop clarification—deliver substantial improvements in safety, accuracy, and citizen protection over traditional rule-based or single-prompt LLM systems. With a **97.2% scam recall**, **75.0% high-risk recall**, **9.1% false alarm rate**, **97.7% required safety behavior pass rate**, **100% evidence-ID citation consistency**, and an internal evaluation spend under **₹20**, ScamSaathi provides a robust functional agentic prototype and reference template for mobile scam defense in India, validated on an internal 50-case benchmark.

@@ -82,6 +82,7 @@ def main() -> int:
                 print(f"       > {contact.name}: {contact.value}")
         for error in outcome.errors:
             print(f"       note: {error}")
+        runner.clear_session(outcome.thread_id, purge_checkpoint=True)
 
     def rate(key: str) -> str:
         return f"{totals[key + '_ok']}/{totals[key + '_total']}"

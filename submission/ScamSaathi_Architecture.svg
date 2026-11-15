@@ -1,0 +1,221 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080" role="img" aria-labelledby="title desc">
+  <title id="title">ScamSaathi current implementation architecture</title>
+  <desc id="desc">Cloud-agnostic component architecture showing user interfaces, ScamSaathi runtime, data stores, AI providers, security boundaries, and official reporting guidance.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#f5f8fc"/><stop offset="1" stop-color="#edf2f8"/></linearGradient>
+    <linearGradient id="navy" x1="0" x2="1"><stop offset="0" stop-color="#183a63"/><stop offset="1" stop-color="#245b91"/></linearGradient>
+    <filter id="shadow" x="-15%" y="-20%" width="130%" height="150%"><feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#18314e" flood-opacity=".10"/></filter>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#5a7797"/></marker>
+    <marker id="arrowStart" markerWidth="10" markerHeight="10" refX="2" refY="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#5a7797"/></marker>
+    <marker id="arrowBlue" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#2477c8"/></marker>
+    <marker id="arrowPurple" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#8057b2"/></marker>
+    <marker id="arrowPurpleStart" markerWidth="10" markerHeight="10" refX="2" refY="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#8057b2"/></marker>
+    <style>
+      text{font-family:Inter,Segoe UI,Arial,sans-serif;fill:#18324c}
+      .title{font-size:36px;font-weight:700;letter-spacing:-.5px}.subtitle{font-size:16px;fill:#60758b}
+      .zone-title{font-size:17px;font-weight:700;letter-spacing:.7px}.zone-sub{font-size:12px;fill:#71859a}
+      .card-title{font-size:15px;font-weight:700}.agent-label{font-size:11px;font-weight:700;fill:#2c6fa8}.body{font-size:12px;fill:#526980}.small{font-size:11px;fill:#60758b}
+      .tag{font-size:10px;font-weight:700;letter-spacing:.5px}.pill{font-size:11px;font-weight:600}
+      .number{font-size:11px;font-weight:700;fill:#fff}.edge-label{font-size:10px;fill:#536b83;font-weight:600}
+    </style>
+  </defs>
+  <rect width="1920" height="1080" fill="url(#bg)"/>
+
+  <!-- Header -->
+  <text x="54" y="63" class="title">ScamSaathi | Current implementation architecture</text>
+  <text x="56" y="92" class="subtitle">Cloud-agnostic prototype view · shared Python pipeline · separate Streamlit and FastAPI processes</text>
+  <rect x="1541" y="39" width="321" height="38" rx="19" fill="#e5edf7" stroke="#c7d6e6"/>
+  <circle cx="1563" cy="58" r="5" fill="#31845f"/>
+  <text x="1577" y="62" class="pill" fill="#38556f">IMPLEMENTED STATE · NOV 2026</text>
+
+  <!-- Architectural zone boundaries -->
+  <rect x="42" y="132" width="254" height="802" rx="18" fill="#f8fbff" stroke="#b8c9dc" stroke-width="1.5"/>
+  <text x="63" y="164" class="zone-title">ACCESS &amp; EXPERIENCE</text>
+  <text x="63" y="184" class="zone-sub">Untrusted user input boundary</text>
+
+  <rect x="320" y="132" width="1060" height="802" rx="20" fill="#ffffff" stroke="#6d8fb2" stroke-width="2"/>
+  <rect x="338" y="146" width="270" height="27" rx="13" fill="#eaf1f8"/>
+  <text x="353" y="165" class="zone-title" font-size="14">SCAMSAATHI APPLICATION BOUNDARY</text>
+  <text x="1100" y="164" class="zone-sub">Python runtime · single-instance prototype</text>
+
+  <rect x="1404" y="132" width="474" height="493" rx="18" fill="#fffafb" stroke="#cc8991" stroke-width="1.7" stroke-dasharray="8 6"/>
+  <text x="1427" y="164" class="zone-title" fill="#813843">EXTERNAL SERVICES</text>
+  <text x="1427" y="184" class="zone-sub">Separate provider trust boundary · masked prompts only</text>
+
+  <rect x="1404" y="646" width="474" height="288" rx="18" fill="#f8fbff" stroke="#b8c9dc" stroke-width="1.5"/>
+  <text x="1427" y="679" class="zone-title">USER-DIRECTED REPORTING</text>
+  <text x="1427" y="699" class="zone-sub">Guidance and links only · no report is submitted by the app</text>
+
+  <!-- Connections, behind components -->
+  <path d="M270 284H338V268H370" fill="none" stroke="#5a7797" stroke-width="2.4" marker-start="url(#arrowStart)" marker-end="url(#arrow)"/>
+  <path d="M270 575H338V282H370" fill="none" stroke="#5a7797" stroke-width="2.4" marker-start="url(#arrowStart)" marker-end="url(#arrow)"/>
+  <path d="M1332 692H1388V286H1440" fill="none" stroke="#8057b2" stroke-width="2.5" marker-start="url(#arrowPurpleStart)" marker-end="url(#arrowPurple)"/>
+  <path d="M1332 728H1374V510H1440" fill="none" stroke="#8057b2" stroke-width="2.1" stroke-dasharray="7 5" marker-start="url(#arrowPurpleStart)" marker-end="url(#arrowPurple)"/>
+  <path d="M1332 493H1388V748H1440" fill="none" stroke="#2477c8" stroke-width="2.1" stroke-dasharray="7 5" marker-end="url(#arrowBlue)"/>
+  <path d="M457 630V519" fill="none" stroke="#94a9be" stroke-width="1.7" marker-end="url(#arrow)"/>
+  <path d="M652 630V519" fill="none" stroke="#94a9be" stroke-width="1.7" marker-end="url(#arrow)"/>
+  <path d="M847 630V519" fill="none" stroke="#94a9be" stroke-width="1.7" marker-end="url(#arrow)"/>
+  <path d="M847 519V585H1241V630" fill="none" stroke="#8057b2" stroke-width="1.7" stroke-dasharray="5 4" marker-end="url(#arrowPurple)"/>
+  <path d="M1042 519V604H1270V630" fill="none" stroke="#8057b2" stroke-width="1.7" stroke-dasharray="5 4" marker-end="url(#arrowPurple)"/>
+  <path d="M1315 280H1356V612H1042V630" fill="none" stroke="#94a9be" stroke-width="1.5" stroke-dasharray="4 4" marker-start="url(#arrowStart)" marker-end="url(#arrow)"/>
+  <path d="M847 759V773H1374V382H1440" fill="none" stroke="#8057b2" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#arrowPurple)"/>
+  <path d="M544 510H560M739 510H755M934 510H950M1129 510H1145" fill="none" stroke="#5a7797" stroke-width="2" marker-end="url(#arrow)"/>
+  <path d="M457 280V314" fill="none" stroke="#5a7797" stroke-width="1.8" marker-end="url(#arrow)"/>
+
+  <!-- Access components -->
+  <g filter="url(#shadow)">
+    <rect x="66" y="215" width="206" height="137" rx="14" fill="#fff" stroke="#c8d6e4"/>
+    <circle cx="101" cy="253" r="18" fill="#e8f1fb"/>
+    <circle cx="101" cy="247" r="6" fill="#376d9e"/><path d="M88 267c2-9 24-9 26 0" fill="none" stroke="#376d9e" stroke-width="3" stroke-linecap="round"/>
+    <text x="128" y="250" class="card-title">Citizen</text>
+    <text x="88" y="296" class="body">Pastes a message or describes</text><text x="88" y="314" class="body">a call / suspicious situation.</text>
+    <rect x="87" y="326" width="101" height="18" rx="9" fill="#edf5ff"/><text x="98" y="339" class="tag" fill="#376d9e">NO DEVICE ACCESS</text>
+
+    <rect x="66" y="382" width="206" height="153" rx="14" fill="#fff" stroke="#8bb4dc" stroke-width="1.4"/>
+    <rect x="86" y="401" width="30" height="30" rx="7" fill="#e6f2ff"/><path d="M92 409h18M92 415h18M92 421h12" stroke="#347ab6" stroke-width="2" stroke-linecap="round"/>
+    <text x="127" y="414" class="card-title">Streamlit web UI</text>
+    <text x="87" y="453" class="body">Paste-only assessment, follow-up</text><text x="87" y="471" class="body">questions, result and Clear action.</text>
+    <text x="87" y="510" class="small">Calls AgentRunner directly</text>
+
+    <rect x="66" y="565" width="206" height="153" rx="14" fill="#fff" stroke="#8bb4dc" stroke-width="1.4"/>
+    <rect x="86" y="584" width="30" height="30" rx="7" fill="#e6f2ff"/><path d="M92 594h18M92 600h18M92 606h11" stroke="#347ab6" stroke-width="2" stroke-linecap="round"/>
+    <text x="127" y="597" class="card-title">FastAPI REST API</text>
+    <text x="87" y="636" class="body">Assess / resume endpoints, schema</text><text x="87" y="654" class="body">validation, CORS and session token.</text>
+    <text x="87" y="693" class="small">Supports external API clients</text>
+
+    <rect x="66" y="749" width="206" height="145" rx="14" fill="#f1f6fb" stroke="#c8d6e4"/>
+    <text x="87" y="781" class="card-title">Separate entry processes</text>
+    <text x="87" y="810" class="body">Both instantiate the same Python</text><text x="87" y="828" class="body">pipeline with their own runner and</text><text x="87" y="846" class="body">checkpoint store.</text>
+  </g>
+
+  <!-- Runtime orchestration and capability modules -->
+  <g filter="url(#shadow)">
+    <rect x="370" y="205" width="962" height="75" rx="14" fill="url(#navy)"/>
+    <circle cx="404" cy="242" r="17" fill="#ffffff" fill-opacity=".16"/>
+    <path d="M395 242h18M404 233v18M398 236l12 12M410 236l-12 12" stroke="#fff" stroke-width="1.5" opacity=".95"/>
+    <text x="435" y="237" font-size="17" font-weight="700" fill="#fff">A0 Orchestrator · AgentRunner + LangGraph</text>
+    <text x="435" y="258" font-size="12" fill="#d8e8f8">Conditional routing · resumable clarification · per-request LLM call limits</text>
+    <rect x="1137" y="225" width="170" height="34" rx="17" fill="#ffffff" fill-opacity=".15"/>
+    <text x="1159" y="247" font-size="11" font-weight="700" fill="#fff">LIVE · CACHED · OFFLINE</text>
+
+    <rect x="370" y="314" width="174" height="205" rx="13" fill="#f2f7fc" stroke="#b6c9dc"/>
+    <circle cx="394" cy="339" r="13" fill="#2c6fa8"/><text x="390.5" y="343" class="number">1</text>
+    <text x="415" y="343" class="card-title">Input pipeline</text>
+    <text x="387" y="376" class="agent-label">A1 · Intake</text>
+    <text x="387" y="396" class="small">Masks PII; detects language</text><text x="387" y="412" class="small">and input mode.</text>
+    <line x1="387" y1="439" x2="527" y2="439" stroke="#d7e2ed"/>
+    <text x="387" y="462" class="agent-label">A2 · Signal extraction</text>
+    <text x="387" y="480" class="small">Finds entities and behaviour</text><text x="387" y="496" class="small">signals with evidence spans.</text>
+
+    <rect x="565" y="314" width="174" height="205" rx="13" fill="#f2f7fc" stroke="#b6c9dc"/>
+    <circle cx="589" cy="339" r="13" fill="#2c6fa8"/><text x="585.5" y="343" class="number">2</text>
+    <text x="610" y="343" class="card-title">Threat &amp; typology</text>
+    <text x="582" y="376" class="agent-label">A3 · Threat intelligence</text>
+    <text x="582" y="396" class="small">Checks entities against local</text><text x="582" y="412" class="small">lists and domain rules.</text>
+    <line x1="582" y1="430" x2="722" y2="430" stroke="#d7e2ed"/>
+    <text x="582" y="451" class="agent-label">A4 · Pattern classifier</text>
+    <text x="582" y="469" class="small">Retrieves KB evidence and</text><text x="582" y="485" class="small">classifies typologies when</text><text x="582" y="501" class="small">further reasoning is needed.</text>
+
+    <rect x="760" y="314" width="174" height="205" rx="13" fill="#f2f7fc" stroke="#b6c9dc"/>
+    <circle cx="784" cy="339" r="13" fill="#2c6fa8"/><text x="780.5" y="343" class="number">3</text>
+    <text x="805" y="343" class="card-title">Clarification</text>
+    <text x="777" y="376" class="agent-label">A5 · Interview</text>
+    <text x="777" y="396" class="small">Asks concise questions when</text><text x="777" y="412" class="small">important facts are missing.</text>
+    <line x1="777" y1="439" x2="917" y2="439" stroke="#d7e2ed"/>
+    <text x="777" y="462" class="small">Pauses for the user, then</text><text x="777" y="479" class="small">resumes or completes a</text><text x="777" y="496" class="small">best-effort assessment.</text>
+
+    <rect x="955" y="314" width="174" height="205" rx="13" fill="#f2f7fc" stroke="#b6c9dc"/>
+    <circle cx="979" cy="339" r="13" fill="#2c6fa8"/><text x="975.5" y="343" class="number">4</text>
+    <text x="1000" y="343" class="card-title">Risk &amp; guidance</text>
+    <text x="972" y="376" class="agent-label">A6 · Risk scoring</text><text x="972" y="392" class="small">Deterministic 0–100 score</text><text x="972" y="406" class="small">and safety overrides.</text>
+    <text x="972" y="429" class="agent-label">A7 · Explanation</text><text x="972" y="445" class="small">Links reasons to evidence IDs.</text>
+    <text x="972" y="468" class="agent-label">A8 · Advisory &amp; action</text><text x="972" y="484" class="small">Prioritizes safe steps and</text><text x="972" y="500" class="small">official reporting channels.</text>
+
+    <rect x="1150" y="314" width="182" height="205" rx="13" fill="#fff7ef" stroke="#e0b078"/>
+    <circle cx="1174" cy="339" r="13" fill="#c87824"/><text x="1170.5" y="343" class="number">5</text>
+    <text x="1195" y="343" class="card-title">Output guardrail</text>
+    <text x="1167" y="376" class="agent-label">A9 · Guardrail &amp; privacy</text>
+    <text x="1167" y="396" class="small">Checks PII, unsafe claims,</text><text x="1167" y="412" class="small">contacts, evidence and risk</text><text x="1167" y="428" class="small">consistency.</text>
+    <line x1="1167" y1="439" x2="1315" y2="439" stroke="#ecd9c5"/>
+    <text x="1167" y="462" class="small">A9 runs after the graph and</text><text x="1167" y="479" class="small">sanitizes the final response.</text>
+  </g>
+
+  <!-- Local services and data layer -->
+  <text x="370" y="567" class="zone-title">LOCAL DATA &amp; PLATFORM SERVICES</text>
+  <text x="1112" y="567" class="zone-sub">Masked state · no vector database</text>
+  <g filter="url(#shadow)">
+    <rect x="370" y="630" width="174" height="129" rx="12" fill="#fbf9ff" stroke="#b9a9d2"/>
+    <path d="M391 654c0-7 30-7 30 0v22c0 7-30 7-30 0zM391 654c0 7 30 7 30 0M391 665c0 7 30 7 30 0" fill="none" stroke="#76559d" stroke-width="1.7"/>
+    <text x="431" y="659" class="card-title">Raw input vault</text>
+    <text x="387" y="704" class="body">In-process originals for</text><text x="387" y="722" class="body">local checks and masking;</text><text x="387" y="740" class="small">removed after invocation.</text>
+
+    <rect x="565" y="630" width="174" height="129" rx="12" fill="#fbf9ff" stroke="#b9a9d2"/>
+    <path d="M586 650h28v26h-28zM591 656h18M591 662h18M591 668h12" fill="none" stroke="#76559d" stroke-width="1.7"/>
+    <text x="622" y="659" class="card-title">Threat intel DB</text>
+    <text x="582" y="704" class="body">SQLite: blocklist, allowlist,</text><text x="582" y="722" class="body">official domains and local</text><text x="582" y="740" class="small">entity checks.</text>
+
+    <rect x="760" y="630" width="174" height="129" rx="12" fill="#fbf9ff" stroke="#b9a9d2"/>
+    <path d="M782 651h26v25h-26zM787 657h16M787 663h16M787 669h10" fill="none" stroke="#76559d" stroke-width="1.7"/>
+    <text x="816" y="659" class="card-title">Knowledge base</text>
+    <text x="777" y="704" class="body">Versioned local files;</text><text x="777" y="722" class="body">BM25 + optional Gemini</text><text x="777" y="740" class="small">dense vectors, fused by RRF.</text>
+
+    <rect x="955" y="630" width="174" height="129" rx="12" fill="#fbf9ff" stroke="#b9a9d2"/>
+    <path d="M977 650c0-6 28-6 28 0v7c0 6-28 6-28 0zM977 657v8c0 6 28 6 28 0v-8M977 665v8c0 6 28 6 28 0v-8" fill="none" stroke="#76559d" stroke-width="1.7"/>
+    <text x="1014" y="659" class="card-title">Session state</text>
+    <text x="972" y="704" class="body">UI: memory saver, 30m</text><text x="972" y="722" class="body">lazy cleanup. API: SQLite,</text><text x="972" y="740" class="small">24h TTL, hourly cleanup.</text>
+
+    <rect x="1150" y="630" width="182" height="129" rx="12" fill="#fbf9ff" stroke="#b9a9d2"/>
+    <path d="M1172 653h28v22h-28zM1178 648h16M1178 680h16" fill="none" stroke="#76559d" stroke-width="1.7"/>
+    <text x="1208" y="659" class="card-title">LLM operations</text>
+    <text x="1167" y="704" class="small">Hashed-prompt cache</text><text x="1167" y="722" class="small">Request / daily caps; retries</text><text x="1167" y="740" class="small">Schema checks; telemetry</text>
+  </g>
+
+  <!-- Cross-cutting security -->
+  <rect x="370" y="793" width="962" height="92" rx="13" fill="#edf7f2" stroke="#9bc9b0"/>
+  <text x="393" y="821" class="zone-title" fill="#286a4c">CROSS-CUTTING SECURITY &amp; OPERATIONS</text>
+  <text x="393" y="849" class="body">Mask before model prompts</text>
+  <circle cx="558" cy="845" r="3" fill="#6f9b82"/>
+  <text x="574" y="849" class="body">No device scraping</text>
+  <circle cx="719" cy="845" r="3" fill="#6f9b82"/>
+  <text x="735" y="849" class="body">Session ownership and cleanup</text>
+  <circle cx="963" cy="845" r="3" fill="#6f9b82"/>
+  <text x="979" y="849" class="body">Cost controls and provider fallback</text>
+  <text x="393" y="871" class="small">Offline uses cache and deterministic fallback; pattern masking may miss names and addresses.</text>
+
+  <!-- Third-party model services -->
+  <g filter="url(#shadow)">
+    <rect x="1440" y="218" width="402" height="195" rx="14" fill="#fff" stroke="#d8b9bd"/>
+    <circle cx="1473" cy="253" r="17" fill="#f8e8ea"/><path d="M1465 253c4-9 12-9 16 0-4 9-12 9-16 0z" fill="none" stroke="#a1444e" stroke-width="1.7"/>
+    <text x="1501" y="250" class="card-title">Google Gemini API</text>
+    <text x="1462" y="286" class="body">Classification, clarification and explanation</text>
+    <text x="1462" y="306" class="body">Optional dense retrieval embeddings</text>
+    <rect x="1462" y="336" width="344" height="48" rx="9" fill="#fcf1f2"/>
+    <text x="1476" y="356" class="small">Masked text only for generation.</text><text x="1476" y="373" class="small">Embedding requests are an optional direct path.</text>
+
+    <rect x="1440" y="438" width="402" height="145" rx="14" fill="#fff" stroke="#d8b9bd"/>
+    <circle cx="1473" cy="472" r="17" fill="#f8e8ea"/><path d="M1464 472h18M1473 463v18" stroke="#a1444e" stroke-width="1.8"/>
+    <text x="1501" y="469" class="card-title">Groq API</text>
+    <text x="1462" y="505" class="body">Configured fallback provider through</text><text x="1462" y="524" class="body">the LLM gateway when available.</text>
+    <text x="1462" y="558" class="small">Provider availability depends on configuration.</text>
+  </g>
+
+  <!-- Official reporting guidance -->
+  <g filter="url(#shadow)">
+    <rect x="1440" y="719" width="188" height="94" rx="12" fill="#fff" stroke="#b8c9dc"/>
+    <text x="1457" y="748" class="card-title">DoT Chakshu</text><text x="1457" y="771" class="small">Suspicious communication</text><text x="1457" y="791" class="small">sancharsaathi.gov.in/sfc</text>
+    <rect x="1642" y="719" width="200" height="94" rx="12" fill="#fff" stroke="#b8c9dc"/>
+    <text x="1659" y="748" class="card-title">Cyber Crime Portal</text><text x="1659" y="771" class="small">Report cybercrime online</text><text x="1659" y="791" class="small">cybercrime.gov.in</text>
+    <rect x="1440" y="829" width="402" height="74" rx="12" fill="#fff" stroke="#b8c9dc"/>
+    <text x="1457" y="858" class="card-title">Financial loss: call 1930 and contact your bank</text>
+    <text x="1457" y="881" class="small">Use verified channels. Banks / law enforcement decide on holds or freezes.</text>
+  </g>
+
+  <!-- Footer / legend -->
+  <line x1="52" y1="969" x2="1868" y2="969" stroke="#d3deea"/>
+  <text x="56" y="1001" class="small">BOUNDARIES</text>
+  <rect x="143" y="988" width="24" height="14" rx="3" fill="#fff" stroke="#6d8fb2" stroke-width="1.5"/><text x="176" y="1000" class="small">ScamSaathi application</text>
+  <rect x="337" y="988" width="24" height="14" rx="3" fill="#fffafb" stroke="#cc8991" stroke-width="1.5" stroke-dasharray="4 3"/><text x="370" y="1000" class="small">External provider trust zone</text>
+  <line x1="574" y1="995" x2="622" y2="995" stroke="#5a7797" stroke-width="2" marker-end="url(#arrow)"/><text x="633" y="1000" class="small">Data / control path</text>
+  <line x1="781" y1="995" x2="829" y2="995" stroke="#8057b2" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrowPurple)"/><text x="841" y="1000" class="small">Optional / external path</text>
+  <text x="1860" y="1037" text-anchor="end" class="small">Architecture reflects the repository implementation; it does not represent an AWS deployment.</text>
+</svg>

@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Status | Proposed |
+| Status | Accepted (Implemented in Phase 5 / Phase 8) |
 | Date | 2026-11-11 |
 | Deciders | Thiagarajan Baskarasubramanian |
 

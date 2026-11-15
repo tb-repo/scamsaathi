@@ -26,7 +26,7 @@
 | ID | Requirement | Priority | Story |
 |---|---|---|---|
 | FR-001 | Accept free-text input up to a configured maximum length (default 4,000 characters). | MUST | US-1, US-2 |
-| FR-002 | Detect input language among English, Hinglish, and Hindi (Devanagari); route unsupported languages to a graceful "limited support" response. | MUST | US-1 |
+| FR-002 | Detect input language (English, romanized Hinglish); route unsupported languages or pure Devanagari script to a graceful "limited support" guidance response (full Devanagari Hindi support is a stretch goal / COULD per project charter). | MUST (EN/Hinglish) / COULD (Devanagari) | US-1 |
 | FR-003 | Classify input mode: pasted message, call/situation description, or question about a specific entity (URL, number, UPI ID). | SHOULD | US-1, US-2 |
 | FR-004 | Reject empty or oversized input with a clear error. | MUST | US-1 |
 | FR-005 | Accept an optional screenshot and extract text by OCR. | COULD | US-1 |

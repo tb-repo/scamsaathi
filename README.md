@@ -49,6 +49,10 @@
 
 ## 🏗️ Multi-Agent Architecture
 
+<p align="center">
+  <img src="submission/ScamSaathi_Architecture.svg" alt="ScamSaathi Current Implementation Architecture" width="100%">
+</p>
+
 The core pipeline is orchestrated via a LangGraph state graph consisting of 9 specialized agents plus a deterministic post-graph safety barrier:
 
 ```
