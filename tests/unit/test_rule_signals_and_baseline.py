@@ -49,6 +49,7 @@ def test_signals_have_evidence_from_masked_text() -> None:
 
 
 def test_situation_detection() -> None:
+    # Positive reporting detections
     assert rule_signals.detect_situation("I already paid Rs 5000")["money_sent"]
     assert rule_signals.detect_situation("I shared the OTP with him")["credentials_shared"]
     assert rule_signals.detect_situation("maine paise bhej diye")["money_sent"]
@@ -57,6 +58,42 @@ def test_situation_detection() -> None:
     )["credentials_shared"]
     assert rule_signals.detect_situation(
         "abhi account se 40000 cut hone ka message aaya hai"
+    )["money_sent"]
+    paid_kyc = (
+        "I followed a bank KYC link from a text and entered my banking password and "
+        "one-time code. ₹18,000 has now left my account. What should I do immediately?"
+    )
+    sit_paid_kyc = rule_signals.detect_situation(paid_kyc)
+    assert sit_paid_kyc["money_sent"]
+    assert sit_paid_kyc["credentials_shared"]
+    assert sit_paid_kyc["link_clicked"]
+
+    # Negative / false-positive guard tests (negations, hypotheticals, routine bank alerts)
+    assert not rule_signals.detect_situation("I have not shared my OTP")["credentials_shared"]
+    assert not rule_signals.detect_situation("I did not enter my password")["credentials_shared"]
+    assert not rule_signals.detect_situation("Maine OTP nahi bataya")["credentials_shared"]
+    assert not rule_signals.detect_situation(
+        "If I entered my password and OTP, what should I do?"
+    )["credentials_shared"]
+    assert not rule_signals.detect_situation("What if I shared my PIN?")["credentials_shared"]
+    assert not rule_signals.detect_situation(
+        "Agar maine password de diya to kya hoga?"
+    )["credentials_shared"]
+    assert not rule_signals.detect_situation("I have not sent any money")["money_sent"]
+    assert not rule_signals.detect_situation("I haven't paid anything")["money_sent"]
+    assert not rule_signals.detect_situation("Maine paise nahi bheje")["money_sent"]
+    assert not rule_signals.detect_situation(
+        "If money left my account, what will happen?"
+    )["money_sent"]
+    assert not rule_signals.detect_situation("Do not click on suspicious links")["link_clicked"]
+    assert not rule_signals.detect_situation(
+        "HDFC Bank: INR 1,450.00 debited from your account XX4820 for AMAZON purchase"
+    )["money_sent"]
+    assert not rule_signals.detect_situation(
+        "Dear Customer, your account XX1234 has been debited with INR 5,000.00"
+    )["money_sent"]
+    assert not rule_signals.detect_situation(
+        "Salary of INR 82,500 credited to your account XX5120"
     )["money_sent"]
     assert not any(rule_signals.detect_situation("Got a message about my parcel").values())
 

@@ -135,23 +135,78 @@ def _credential_requests(text: str) -> list[re.Match[str]]:
     return hits
 
 
+_PRE_NEG_OR_HYPO: Final = re.compile(
+    r"\b(?:not|n't|never|neither|no|did not|didn't|have not|haven't|has not|hasn't|was not|wasn't|"
+    r"refused|avoided|declined|without|if|what if|suppose|assuming|whether|in case|agar|yadi|kya hoga agar)\b",
+    re.I,
+)
+_POST_NEG: Final = re.compile(r"\b(?:nahi|nahin|na|mat|kabhi nahi|not)\b", re.I)
+
+# Routine bank transactional notice addressed in second person ("your account/card")
+_BANK_TX_NOTICE: Final = re.compile(
+    r"\b(?:your (?:a/c|acct|account|card|balance)|credited to your|debited from your|spent on your|"
+    r"avl bal|inr\s*[\d,.]+\s*debited)\b",
+    re.I,
+)
+
+# First-person money sent or loss: user reporting money left *their* account or they transferred/sent it
 _MONEY_SENT: Final = re.compile(
     r"\bi (?:have )?(?:already )?(?:sent|paid|transferred|deposited)\b|"
-    r"\bmoney (?:was |got |has been )?(?:debited|deducted)\b|"
+    r"\b(?:(?:₹|rs\.?|inr|\$)?\s*[\d,]+|money|amount|funds?)\b.{0,30}?\b(?:left|gone from|taken from|stolen from|cut from|debited from|deducted from)\b.{0,15}?\b(?:my account|my bank)\b|"
+    r"\b(?:left|gone|taken|debited|deducted)\b.{0,20}?\bfrom my account\b|"
     r"\bmaine (?:paise|paisa|payment) (?:bhej|de|kar) di(?:ye|ya)\b|\bpaise kat gaye\b|"
     r"\b(?:account se|paise|paisa)\b.{0,30}?\b(?:cut|kat)\b.{0,15}?\b(?:gaye|gaya|hone|ho gaya)\b",
     re.I,
 )
 _CREDS_SHARED: Final = re.compile(
-    rf"\bi (?:have )?(?:already )?(?:shared|gave|told|entered|sent) (?:the |my |him |her |them )?"
-    rf"{_SECRET}\b|"
-    rf"\bmaine\b.{{0,60}}?\b{_SECRET}\b.{{0,20}}?\b(?:bata|de|bhej) di(?:ya|ye)\b",
+    rf"(?:\bi (?:have )?(?:already )?|\band )?(?:shared|gave|told|entered|sent|provided|typed in)\b.{{0,25}}?\b{_SECRET}\b|"
+    rf"\bmaine\b.{{0,60}}?\b{_SECRET}\b.{{0,20}}?\b(?:bata|de|bhej|enter kar|daal) di(?:ya|ye)\b",
     re.I | re.S,
 )
-_LINK_CLICKED: Final = re.compile(r"\bi (?:have )?(?:already )?(?:clicked|opened|tapped)\b", re.I)
+_LINK_CLICKED: Final = re.compile(
+    r"\bi (?:have )?(?:already )?(?:clicked|opened|tapped|followed|visited)\b|"
+    r"\blink (?:par|pe) (?:click|open|tap) kiya\b",
+    re.I,
+)
 _APP_INSTALLED: Final = re.compile(
     r"\bi (?:have )?(?:already )?(?:installed|downloaded)\b|\bapp install kar (?:liya|diya)\b", re.I
 )
+
+
+def _is_negated_or_hypothetical(text: str, start: int, end: int) -> bool:
+    before = text[max(0, start - 45) : start]
+    after = text[end : min(len(text), end + 35)]
+    return bool(_PRE_NEG_OR_HYPO.search(before) or _POST_NEG.search(after))
+
+
+def _check_money_sent(text: str) -> bool:
+    if _BANK_TX_NOTICE.search(text) and not re.search(r"\bmy account\b", text, re.I):
+        return False
+    for m in _MONEY_SENT.finditer(text):
+        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+            return True
+    return False
+
+
+def _check_creds_shared(text: str) -> bool:
+    for m in _CREDS_SHARED.finditer(text):
+        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+            return True
+    return False
+
+
+def _check_link_clicked(text: str) -> bool:
+    for m in _LINK_CLICKED.finditer(text):
+        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+            return True
+    return False
+
+
+def _check_app_installed(text: str) -> bool:
+    for m in _APP_INSTALLED.finditer(text):
+        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+            return True
+    return False
 
 
 # Child-safety screen (docs/16 section 10; POCSO Act 2012 ss.11, 19). Both a minor indicator
@@ -179,10 +234,10 @@ def detect_situation(text: str) -> dict[str, bool]:
     """What the user says has already happened (feeds the scorer's safety floors)."""
     return {
         "child_involved": detect_child_safety(text),
-        "money_sent": bool(_MONEY_SENT.search(text)),
-        "credentials_shared": bool(_CREDS_SHARED.search(text)),
-        "link_clicked": bool(_LINK_CLICKED.search(text)),
-        "app_installed": bool(_APP_INSTALLED.search(text)),
+        "money_sent": _check_money_sent(text),
+        "credentials_shared": _check_creds_shared(text),
+        "link_clicked": _check_link_clicked(text),
+        "app_installed": _check_app_installed(text),
     }
 
 
