@@ -19,7 +19,7 @@
 
 ## 📌 Executive Summary
 
-According to data from a presentation on the Citizen Financial Cyber Fraud Reporting and Management System (CFCFRMS) during a national cybercrime conference covered by the Press Information Bureau (*PIB Press Release dated 21 August 2026, PRID 2301973*), Indian citizens reported **₹22,495 crore** in financial cyber fraud losses across **28.15 lakh complaints** in 2025. The presentation data highlighted that **76% of reported financial losses** were concentrated in fake investment and trading scams, alongside rampant digital arrest intimidation, part-time job fraud, and phishing messages.
+According to data from a presentation on the Citizen Financial Cyber Fraud Reporting and Management System (CFCFRMS) during a PIB-covered media workshop (*PIB Press Release dated 21 August 2026, PRID 2301973*), Indian citizens reported **₹22,495 crore** in financial cyber fraud losses across **28.15 lakh complaints** in 2025. The presentation data highlighted that **76% of reported financial losses** were concentrated in fake investment and trading scams, alongside rampant digital arrest intimidation, part-time job fraud, and phishing messages.
 
 Traditional defense tools fail because:
 1. **Static keyword filters & regex** miss evolving social engineering tactics and trigger high false alarm rates on legitimate banking alerts (`.bank.in`).
