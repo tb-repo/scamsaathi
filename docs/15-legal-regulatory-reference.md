@@ -1,4 +1,4 @@
-# 16. Legal and Regulatory Reference (India)
+# 15. Legal and Regulatory Reference (India)
 
 | Field | Value |
 |---|---|
@@ -293,7 +293,7 @@ The exact Gazette publication date is not printed on the copy (it says "to be pu
 | EM on 34A (p.50) | Calls from 140xx **cannot be termed spam**: the system is opt-out, so the customer is treated as agreeing until they register a DND preference. 1600xx is allotted strictly to regulated entities. **1601xx** is being rolled out by a Direction of 10 Aug 2026, first for **utilities, logistics and courier** services. TRAI has seen trusted institutions, including TRAI, falsely attached to numbers through crowd-sourced tagging, which can enable fraud | **Two corrections** (section 13.3). Supports the curated, non-crowd-sourced blocklist design |
 | Reg. 23(1)(c), new (p.6) | Appeal to the Appellate Authority within 15 days of the resolution, or, if there is no resolution within 15 days of complaining, within the next 15 days; through any UCC complaint mode | 90-day item; **not shown to users yet** |
 | Reg. 25(2), (3) (p.7) | A complaint without the sender's complete telephone number or header is closed. Complaints after 7 days are recorded as reports, not complaints | Advice now says "sender's number or SMS header" |
-| Schedule II (pp.13-15) | **FULLY BLOCK is removed**; existing FULLY BLOCK preferences move to BLOCK PROMO within 15 days. Opt out of all promotional categories with 50 / BLOCK PROMO / *1909*50#, or by category 1 to 8. Opt back in with 90 to 98 (*#1909*90# and so on). BLOCK PROMO never blocks transactional, service or government messages | Advice never quoted USSD codes, so no change. Doc 16 section 12.1 marked |
+| Schedule II (pp.13-15) | **FULLY BLOCK is removed**; existing FULLY BLOCK preferences move to BLOCK PROMO within 15 days. Opt out of all promotional categories with 50 / BLOCK PROMO / *1909*50#, or by category 1 to 8. Opt back in with 90 to 98 (*#1909*90# and so on). BLOCK PROMO never blocks transactional, service or government messages | Advice never quoted USSD codes, so no change. Doc 15 section 12.1 marked |
 | Reg. 2(k) and EM (pp.1, 18-20) | TCCCPR "consent" only covers permission for calls and SMS. It is separate from DPDP consent, and nothing in TCCCPR exempts a sender from DPDP | Doc note; FR-084 notice is about DPDP |
 | Reg. 2(bh), 2(bt) (pp.2-3) | OTPs for app login, password reset and two-factor authentication are now **service** messages; "apps login" was removed from transactional | Header suffix explanation unchanged (it describes the suffix, not the content) |
 | Reg. 21A(5), 25(5)-(6) (pp.4, 9) | Staged action against senders: KYC re-verification, then physical KYC with a 15-day bar on outgoing services, then one-year disconnection, blacklisting and device blocking. Action is triggered by 5 or more AI-flagged CLIs in 10 days, or 3 or more complaints plus an AI flag (or 5 or more complaints) in 10 days | Operator duties; no app logic |

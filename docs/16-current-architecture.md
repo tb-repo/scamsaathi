@@ -1,4 +1,4 @@
-# ScamSaathi Current Architecture
+# 16. Current Architecture View
 
 **Implementation view**  
 This diagram reflects the current code paths. The Streamlit UI and FastAPI API are separate entry points into the same Python pipeline; the Streamlit UI calls `AgentRunner` directly and does not call the FastAPI service.

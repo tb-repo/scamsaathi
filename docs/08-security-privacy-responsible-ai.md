@@ -78,7 +78,7 @@ Retention and cleanup differ across interfaces to reflect user interaction patte
 
 Open point: confirm applicable notice/consent wording with current Indian legal text if the prototype is ever opened to real users. For the capstone demo, use synthetic data only (A-3).
 
-Update 2026-11-12: the DPDP Act, 2023 and DPDP Rules, 2025 (notified 13 Nov 2025, phased to May 2027) are mapped against this design in document 16 section 5. Input is paste-only, and the app never reads device SMS, call logs or contacts (ADR-009, FR-080).
+Update 2026-11-12: the DPDP Act, 2023 and DPDP Rules, 2025 (notified 13 Nov 2025, phased to May 2027) are mapped against this design in document 15 section 5. Input is paste-only, and the app never reads device SMS, call logs or contacts (ADR-009, FR-080).
 
 ### 4.1 PII masking policy
 

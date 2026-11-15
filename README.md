@@ -338,9 +338,10 @@ scamsaathi/
 │   ├── 03-requirements.md  # Functional (FR) & Non-Functional (NFR) specs
 │   ├── 04-architecture.md  # Detailed system architecture & component boundaries
 │   ├── 08-security-privacy-responsible-ai.md # DPDP Act compliance & threat model
-│   ├── 11-adr/             # Architectural Decision Records (ADR-001 to ADR-006)
+│   ├── 11-adr/             # Architectural Decision Records (ADR-001 to ADR-009)
 │   ├── 14-user-deployment-demo-guide.md # Deployment & live demo instructions
-│   ├── 17-current-architecture.md       # Architecture walkthrough
+│   ├── 15-legal-regulatory-reference.md # Legal & regulatory reference
+│   ├── 16-current-architecture.md       # Architecture walkthrough
 │   └── ScamSaathi_Architecture.svg      # Full implementation architecture diagram
 ├── reports/                # Benchmark evaluation reports & run metadata
 │   ├── benchmark_report.md # Generated Markdown benchmark evaluation report

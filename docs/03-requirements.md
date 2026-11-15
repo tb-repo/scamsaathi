@@ -104,7 +104,7 @@
 | FR-076 | Enforce a per-request LLM call cap and a daily call/cost budget. | MUST | US-8 |
 | FR-077 | Collect optional user feedback (helpful / not helpful, was it a scam). | COULD | US-8 |
 
-### 2.9 Regulatory (added 2026-11-12, see document 16 and ADR-009)
+### 2.9 Regulatory (added 2026-11-12, see document 15 and ADR-009)
 
 | ID | Requirement | Priority | Story |
 |---|---|---|---|
@@ -113,8 +113,8 @@
 | FR-082 | Treat a claim to be a bank, regulated financial entity, or government body made from an ordinary mobile number or an international number as a risk signal. | SHOULD | US-1 |
 | FR-083 | Do not state applicable law sections, charges, or punishments in user assessments; complaint drafts contain facts only. | MUST | US-5 |
 | FR-084 | Show a data-use notice before the first analysis: what is processed, what is sent to the AI provider (masked text), what is kept and for how long. | MUST | US-6 |
-| FR-085 | Route reporting by situation: spam to 1909 (call or SMS, or the TRAI DND app, within 7 days) and Chakshu "Report Spam (UCC)", suspected fraud to Chakshu, money lost to 1930 and NCRP. Implemented 2026-11-12; 1909 added 2026-11-13 (doc 16 sections 11, 12). | SHOULD | US-4 |
-| FR-086 | Recognise TRAI DLT sender headers with a type suffix (-P, -S, -T, -G) and explain the type as information only. Never score, tag, or label a header; assess the content on its own signals. Added 2026-11-13 (doc 16 section 12.2). | SHOULD | US-1 |
+| FR-085 | Route reporting by situation: spam to 1909 (call or SMS, or the TRAI DND app, within 7 days) and Chakshu "Report Spam (UCC)", suspected fraud to Chakshu, money lost to 1930 and NCRP. Implemented 2026-11-12; 1909 added 2026-11-13 (doc 15 sections 11, 12). | SHOULD | US-4 |
+| FR-086 | Recognise TRAI DLT sender headers with a type suffix (-P, -S, -T, -G) and explain the type as information only. Never score, tag, or label a header; assess the content on its own signals. Added 2026-11-13 (doc 15 section 12.2). | SHOULD | US-1 |
 | FR-087 | Do not offer an in-app "report spam" option or keep spam reports; point users to official channels only (1909, TRAI DND app, Chakshu). Added 2026-11-13 (TCCCPR Third Amendment 2026). | MUST | US-4 |
 
 ## 3. Non-functional requirements
@@ -169,7 +169,7 @@ See document 01 (constraints CON-1 to CON-5) and document 12 (assumptions).
 | FR-072 to FR-076 | LLM gateway (04, 06) | UT-LLM-01 to UT-LLM-08 |
 | NFR-001 to NFR-004 | Telemetry (04) | PERF-01 to PERF-03 |
 | NFR-018 to NFR-020 | Scorer, guardrail, evaluation harness (05, 06, 09) | EV- suite, SEC-03, MR-01 |
-| FR-080 to FR-087 | Doc 16, ADR-009; entities and intel tools, advisory, UI | UT-REG-01..05 and TRAI tests in `tests/unit/test_legal_review_features.py` |
+| FR-080 to FR-087 | Doc 15, ADR-009; entities and intel tools, advisory, UI | UT-REG-01..05 and TRAI tests in `tests/unit/test_legal_review_features.py` |
 
 ## 6. Acceptance criteria (examples)
 

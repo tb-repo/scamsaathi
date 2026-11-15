@@ -27,9 +27,8 @@ Documents are numbered in reading order. Requirements (03) drive design (04 to 0
 | 12 | [Risk, Issues and Challenges Log](12-risk-issues-log.md) | Risks, issues, assumptions, open questions | Living |
 | 13 | [Implementation Log](13-implementation-log.md) | Chronological build journal | Living |
 | 14 | [User, Deployment and Demo Guide](14-user-deployment-demo-guide.md) | Setup, run, demo script | Living |
-| 15 | Final Report and Presentation Outline | Capstone certification submission package | Submission Package |
-| 16 | [Legal and Regulatory Reference](16-legal-regulatory-reference.md) | Indian laws, TRAI/DoT/I4C/MeitY rules, and how they shape the app | Living |
-| 17 | [Current Architecture View](17-current-architecture.md) | Full implementation diagram (SVG) and component walkthrough | Living |
+| 15 | [Legal and Regulatory Reference](15-legal-regulatory-reference.md) | Indian laws, TRAI/DoT/I4C/MeitY rules, and how they shape the app | Stable |
+| 16 | [Current Architecture View](16-current-architecture.md) | Full implementation diagram (SVG) and component walkthrough | Stable |
 | - | [CHANGELOG](../CHANGELOG.md) | Versioned change history | Living |
 
 ## Conventions

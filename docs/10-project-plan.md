@@ -23,7 +23,7 @@ Spec-driven, iterative. Each phase ends with a demonstrable increment, updated d
 | P6 | Guardrails and API/UI | Guardrail agent, FastAPI, UI, report generator | Security tests pass, UI usable at 360 px | 3 to 4 days |
 | P7 | Evaluation | Dataset, harness, baselines, report | Test split run, error analysis | 3 to 4 days |
 | P8 | Hardening and demo | Cache for demo, rehearsals, polish, deployment notes | Demo rehearsed in live, cached, offline | 2 days |
-| P9 | Final report and presentation | Document 15 completed, slides | Submission ready | 2 to 3 days |
+| P9 | Final review and release | Documentation finalized, release verification | Release ready | 2 to 3 days |
 
 Total estimate: about 5 to 6 weeks part-time. Estimates are planning guesses by the author, to be revised after P1 using actual velocity.
 
@@ -44,7 +44,7 @@ gantt
     section Validate
     P7 Evaluation               :7, 8
     P8 Hardening and demo       :8, 9
-    P9 Final report             :9, 10
+    P9 Final review & release   :9, 10
 ```
 
 (The Gantt shows a conservative sequential view of 10 relative units. Overlaps are expected, which is how the 5 to 6 week estimate arises.)
@@ -58,7 +58,7 @@ gantt
 5. Agents: nodes, prompts, graph, routers.
 6. Interface: API, UI, report generator.
 7. Quality: tests, dataset, evaluation, security checks.
-8. Delivery: demo, final report, presentation.
+8. Delivery: demo, release verification, review.
 
 Detailed tasks will be generated in `.kiro/specs/*/tasks.md` after approval of this documentation.
 

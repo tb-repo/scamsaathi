@@ -65,14 +65,13 @@ Scams such as UPI collect-request fraud, OTP and KYC phishing, "digital arrest" 
 
 | ID | Deliverable | Location |
 |---|---|---|
-| D-1 | Documentation set (01 to 15) | `docs/` |
+| D-1 | Documentation set (01 to 16) | `docs/` |
 | D-2 | Kiro spec files (requirements, design, tasks) | `.kiro/specs/` |
 | D-3 | Working application (agents, tools, API, UI) | `src/scamsaathi/` |
 | D-4 | Knowledge base, synthetic dataset, blocklists | `data/` |
 | D-5 | Automated tests and evaluation harness | `tests/` |
 | D-6 | Evaluation report | `docs/09-test-evaluation-strategy.md` and `reports/` |
 | D-7 | Demo script and recorded fallback demo | `docs/14-user-deployment-demo-guide.md` |
-| D-8 | Final report and presentation | Capstone submission package |
 
 ## 6. Success criteria
 
