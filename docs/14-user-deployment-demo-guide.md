@@ -34,7 +34,7 @@ pip install -r requirements.txt -r requirements-dev.txt
 # Or for the authoritative locked environment:
 # pip install -r requirements.lock
 
-# 4. Verify test suite (248 passing tests)
+# 4. Verify test suite (268 passing tests)
 python -m pytest tests
 
 # 5. Configure environment variables
@@ -71,6 +71,15 @@ python -m uvicorn scamsaathi.api.app:app --host 127.0.0.1 --port 8000 --reload
   - `POST /assess` (Initial message assessment)
   - `POST /resume` (Submit clarification answers or skip)
   - `DELETE /session/{thread_id}` (Privacy-preserving session clearance)
+
+#### Interface Privacy & Session Retention Policies
+- **Streamlit Web Application**:
+  - Raw unmasked text is held in an in-memory vault solely during graph execution and popped immediately once analysis completes.
+  - Completed assessments (`outcome.status == "complete"`) immediately purge checkpoints and in-memory PII mappings.
+  - Paused interviews (`needs_followup`) remain active for 30 minutes; any subsequent interaction after 30 minutes of inactivity purges the session and resets the input widget. Clicking "Clear" purges immediately.
+- **FastAPI REST Backend**:
+  - Completed assessments (`outcome.status == "complete"`) immediately purge SQLite `session_meta`, `checkpoints`, and `writes` records upon response creation (`session_token` returned as `null`).
+  - Paused sessions (`needs_followup`) are retained in SQLite protected by a cryptographically random ownership token (`X-Session-Token`) with an automated 24-hour TTL cleanup. Clients can immediately delete active threads via `DELETE /session/{thread_id}`.
 
 ### Option C: CLI Multi-Scenario Demo Runner
 Evaluates 15 representative real-world scenarios across all risk categories:

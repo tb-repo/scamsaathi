@@ -45,7 +45,7 @@ ScamSaathi never contacts the official reporting channels itself. It only tells 
 | Agents/nodes | See document 05 | Python, LLM calls |
 | Tools | Deterministic functions and retrievers, see document 06 | Python |
 | LLM Gateway | Provider abstraction, retries, cache, budget, masking enforcement | Python (google-genai or LangChain adapters) |
-| Knowledge base | Scam typologies, advisories, official contacts | Chroma or FAISS (ADR-004) |
+| Knowledge base | Scam typologies, advisories, official contacts | In-memory Hybrid BM25 + Gemini Embeddings (ADR-004) |
 | Relational store | Blocklists, allowlists, sessions, feedback | SQLite |
 | Telemetry | Structured logs, traces, cost | Python logging, optional LangSmith |
 | Evaluation harness | Offline batch runs and metrics | pytest + scripts |
@@ -180,7 +180,7 @@ Exact model IDs are set in configuration after confirmation in AI Studio (open q
 
 | Store | Content | Persistence |
 |---|---|---|
-| Vector store (Chroma/FAISS) | Typology chunks, advisories, official contact entries | Built from `data/kb/`, rebuildable |
+| In-memory KB (BM25 + Vectors) | Typology chunks, advisories, official contact entries | Built from `data/kb/`, rebuildable (ADR-004) |
 | SQLite `intel.db` | `blocklist`, `allowlist`, `official_domains` | Seeded from `data/intel/` |
 | SQLite `sessions.db` | Checkpoints with masked text only, TTL 24 h | Local file, git-ignored |
 | SQLite `feedback.db` | Optional feedback records (no raw text) | Local file, git-ignored |
@@ -192,7 +192,7 @@ Exact model IDs are set in configuration after confirmation in AI Studio (open q
 flowchart LR
     subgraph Laptop[Developer laptop: Windows, 16 GB, CPU only]
         UI2[Streamlit/Gradio] --> API2[FastAPI + LangGraph]
-        API2 --> CH[(Chroma)]
+        API2 --> KB[(In-Memory KB: BM25/Vectors)]
         API2 --> SQ[(SQLite)]
         API2 --> CA[(LLM cache)]
     end
@@ -211,7 +211,7 @@ Optional: deploy to a free-tier host for a shareable demo link. Secrets via envi
 | LLM SDK | Google Gen AI SDK or LangChain Google adapter | Decide during spike, record in ADR-001 addendum |
 | API | FastAPI + Uvicorn | |
 | UI | Streamlit or Gradio | ADR-005 |
-| Vector store | Chroma (default) | ADR-004 |
+| Vector store / KB | In-memory Hybrid BM25 + Gemini Embeddings (no vector DB) | ADR-004 |
 | DB | SQLite | |
 | Testing | pytest, pytest-asyncio, hypothesis (optional) | |
 | Lint/format | ruff, mypy | |

@@ -8,29 +8,33 @@
 | Submission Date | November 14, 2026 |
 | Version | 1.0 (Final Submission & Defense Release) |
 | Repository | `scamsaathi` |
-| Primary Stack | Python 3.13, LangGraph 1.2, Google GenAI SDK (Gemini 3.5 Flash-Lite & 3.8 Flash), Groq Fallback, ChromaDB, FastAPI, Streamlit |
+| Primary Stack | Python 3.11+, LangGraph 1.2, Google GenAI SDK (Gemini 3.5 Flash-Lite & 3.8 Flash), Groq Fallback, In-Memory Hybrid BM25 & Gemini Embeddings (no vector DB per ADR-004), FastAPI, Streamlit |
 
 ---
 
 ## 1. Executive Summary
 
-Mobile communication fraud in India has escalated into a national security and socio-economic crisis. The Indian Cyber Crime Coordination Centre (I4C) reports severe citizen financial losses across thousands of reported complaints annually (I4C citizen reporting data), driven by sophisticated social engineering vectors including "Digital Arrest" coercion, APK malware downloads disguised as utility updates or courier tracking, and fraudulent task-investment schemes. Existing commercial call/SMS filter apps rely on static crowdsourced blocklists, offering zero defense against newly provisioned SIMs, contextual psychological manipulation, or ambiguous caller requests.
+Mobile communication fraud in India has escalated into a national security and socio-economic crisis. The Ministry of Home Affairs reported citizen cyber-fraud losses in India of **₹22,495 crore in 2025** across thousands of citizen complaints (Source: Ministry of Home Affairs, Press Information Bureau (PIB) Press Release dated 21 August 2026, PRID 2301973, https://www.pib.gov.in/PressReleasePage.aspx?PRID=2301973&lang=1&reg=48), driven by sophisticated social engineering vectors including "Digital Arrest" coercion, APK malware downloads disguised as utility updates or courier tracking, and fraudulent task-investment schemes. Existing commercial call/SMS filter apps rely on static crowdsourced blocklists, offering zero defense against newly provisioned SIMs, contextual psychological manipulation, or ambiguous caller requests.
 
 **ScamSaathi** is an agentic, privacy-first mobile scam defense assistant engineered specifically for Indian citizens. Operating as a stateful, multi-agent directed graph coordinated via **LangGraph**, ScamSaathi evaluates pasted suspicious SMS messages, WhatsApp chats, or phone call descriptions.
 
 ### Key Innovations & Architecture
 1. **Multi-Agent Orchestration (LangGraph State Graph):** 9 specialized agents (A1 Extractor, A2 Risk Heuristic, A3 Hybrid Threat Intelligence Retriever, A4 Clarifying Interviewer, A5 Typology Classifier, A6 Risk Scorer, A7 Action Advisory, A8 Explainer, and A9 Safety Guardrail) collaborate across deterministic and probabilistic steps.
-2. **Audited Script Compliance with Multilingual Ingestion:** Understands English, Devanagari Hindi, and romanized Hinglish seamlessly, while generating response fields (headlines, reasons, advice, and interview questions) audited across benchmark cases for zero Devanagari script leakage.
+2. **Audited Script Compliance with Multilingual Ingestion:** Evaluates pasted messages in English and romanized Hinglish (Devanagari Hindi is a stretch goal out of project scope per charter), while prompts request English output and all generated response fields (headlines, reasons, advice, and interview questions) are audited across benchmark cases for zero Devanagari script leakage.
 3. **Citizen Protection & Government Reporting Integration:** Every scam verdict prioritizes actionable, official reporting channels: DoT's **Chakshu Portal** (`sancharsaathi.gov.in/sfc`) for suspect numbers/messages, the **Cyber Crime Portal** (`cybercrime.gov.in`) for fraud attempts, and the **1930 Helpline** for financial fraud reporting and bank coordination assistance.
 4. **Human-in-the-Loop Clarification:** When ambiguous inputs lack conclusive threat signals, the system triggers a targeted, multi-turn interview rather than hallucinating or issuing false alarms.
 5. **Rigorous Privacy & Air-Gapped Offline Defense:** Deterministic PII masking strips phone numbers, account digits, contextual OTPs, and emails *before* state checkpointing or LLM ingestion. A persistent two-tier cache enables complete, air-gapped offline operation.
 
 ### Benchmark Results (50 Comprehensive Test Cases)
-- **Scam Detection Recall:** **97.2%** (vs Baseline B0 Rule-based: 44.4%, a **+52.8 pp** improvement).
+- **Scam Detection Recall:** **97.2%** (vs Baseline B0 Rule-based: 47.2%, a **+50.0 pp** improvement).
+- **High-Risk Recall (HIGH/CRITICAL):** **75.0%** (27/36 high-risk threats correctly escalated vs Baseline B0: 25.0%, a **+50.0 pp** improvement).
 - **Hinglish Scam Recall:** **100.0%** (16/16 scams detected).
 - **False Alarm Rate:** **9.1%** (Exceeds <= 10.0% target; genuine banking notices on `.bank.in` and TRAI 1600 series numbers achieved **0.0%** false alarms).
+- **Required Safety Behaviors:** **97.7%** (43/44 behaviors met; Baseline B0: 100.0%, transparently reporting a -2.3 pp gap).
 - **Typology Classification Accuracy:** **97.1%** (Exceeds >= 80.0% target).
 - **Evidence-ID Grounding Rate:** **100.0%** (All reasoning strictly grounded in verified evidence IDs from runtime catalogue).
+- **Official Reporting Guidance:** **97.2%** (Chakshu 88.9%, Cyber Crime Portal 94.4%, 1930 Helpline 100.0% on applicable urgent loss cases).
+- **Ambiguous Case Clarification:** **66.7%** (Proactive clarifying interview triggered on ambiguous text).
 - **Internal Test API Spend:** **₹19.45** (Total internal evaluation and test execution spend, well under ₹50 project cap).
 
 ---
@@ -38,19 +42,16 @@ Mobile communication fraud in India has escalated into a national security and s
 ## 2. Problem Statement & Indian Threat Landscape
 
 ### 2.1 The Crisis of Mobile Communication Scams
-Scammers exploit the digital literacy gap in India by combining psychological pressure (fear, urgency, greed, or curiosity) with localized infrastructure spoofing.
+Scammers exploit the digital literacy gap in India by combining psychological pressure (fear, urgency, greed, or curiosity) with localized infrastructure spoofing. According to official data from the Ministry of Home Affairs released via the Press Information Bureau (PIB, 21 August 2026, PRID 2301973), reported citizen cyber-fraud losses in India reached **₹22,495 crore in 2025**.
 
-```mermaid
-pie title Indian Mobile Scam Vectors (I4C 2025-2026 Data)
-    "Digital Arrest & Police Impersonation" : 32
-    "Fake Job & Task Investment Fraud" : 26
-    "Utility / Electricity Disconnection" : 18
-    "Banking / KYC Phishing & APKs" : 14
-    "Courier / Customs & Sextortion" : 10
-```
+Official advisories from the Indian Cyber Crime Coordination Centre (I4C), Reserve Bank of India (RBI), and Department of Telecommunications (DoT) highlight four prominent mobile scam patterns that dominate citizen complaints:
+1. **Digital Arrest & Police Impersonation**: Coercive video/voice calls impersonating law enforcement, CBI, or customs to extort money under threat of immediate arrest.
+2. **Fake Job & Task-Investment Schemes**: Advance-fee fraud promising returns for social media reviews or crypto deposits on Telegram.
+3. **Utility & Disconnection Threats**: Urgent electricity cut-off notices demanding immediate contact with a personal mobile number or sideloading an APK.
+4. **Banking / KYC Phishing & Malicious APKs**: Fake courier or KYC links delivering malware that hijacks SMS permissions and steals 2FA credentials.
 
 ### 2.2 Why Traditional Single-Prompt LLMs & Rule Systems Fail
-- **Rule/Blocklist Baselines (B0):** Achieve only 44.4% recall because attackers cycle virtual numbers (VoIP, 10-digit mobile SIM mules) and shorten URLs to evade static pattern matchers.
+- **Rule/Blocklist Baselines (B0):** Achieve only 47.2% recall because attackers cycle virtual numbers (VoIP, 10-digit mobile SIM mules) and shorten URLs to evade static pattern matchers.
 - **Single-Prompt LLMs (B1):** Suffer from hallucination, inconsistent risk scales, inability to pause for missing evidence, risk of leaking personal data (PII) to remote LLMs, and jailbreak susceptibility under prompt injection.
 
 ---
@@ -93,7 +94,7 @@ flowchart TD
 | **Masker** | Deterministic | Regex / Rule Engine | Replaces phones, accounts, UPI IDs, emails, and contextual OTPs with consistent anonymized tokens (`<PHONE_1>`, `<OTP_1>`). Names and street addresses are disclosed as masking limitations. |
 | **A1: Extractor** | Hybrid | Gemini 3.5 Flash-Lite + Rules | Extracts structural entities (domains, APKs, UPI IDs, amounts) and psychological signals (urgency, legal threats, authority claims). |
 | **A2: Risk Heuristic** | Deterministic | Pure Python | Computes rule-based risk bounds and detects emergency money-loss conditions. |
-| **A3: Threat Retriever** | Deterministic | SQLite + ChromaDB RAG | Matches extracted entities against official blocklists, TRAI designated series (140, 1600, 1601), and RBI `.bank.in` registries. |
+| **A3: Threat Retriever** | Deterministic | SQLite + In-Memory Hybrid RAG (BM25 + Gemini Embeddings, no vector DB per ADR-004) | Matches extracted entities against official blocklists, TRAI designated series (140, 1600, 1601), and RBI `.bank.in` registries. |
 | **A4: Interviewer** | Agentic Loop | Gemini 3.5 Flash-Lite | Formulates max 2-3 precise clarifying questions on missing risk indicators (e.g. *"Did the caller demand money or ask you to install an app?"*). |
 | **A5: Classifier** | Agentic | Gemini 3.8 Flash | Classifies input against the 15 national scam typologies (SC-01 to SC-15) with primary and secondary assignments. |
 | **A6: Risk Scorer** | Deterministic | Mathematical Model | Computes final risk score (0-100) and assigns categorical band (LOW, MEDIUM, HIGH, CRITICAL). Caps LLM influence to prevent jailbreaks. |
@@ -135,15 +136,18 @@ Evaluation was conducted against the expanded 50-case benchmark dataset (`data/e
 
 | Metric | Target (Doc 09) | Baseline B0 (Rules) | Full Agentic Pipeline | Absolute Gain | Status |
 |:---|:---:|:---:|:---:|:---:|:---:|
-| **Scam Detection Recall** | $\ge 95.0\%$ | 44.4% | **97.2%** | **+52.8 pp** | **Target Exceeded** |
-| **High-Risk Recall (HIGH/CRITICAL)** | $\ge 90.0\%$ | 22.2% | **72.2%** | **+50.0 pp** | Substantial Gain |
+| **Scam Detection Recall** | $\ge 95.0\%$ | 47.2% | **97.2%** | **+50.0 pp** | **Target Exceeded** |
+| **High-Risk Recall (HIGH/CRITICAL)** | $\ge 90.0\%$ | 25.0% | **75.0%** | **+50.0 pp** | 27/36 Threats Escalated |
 | **False Alarm Rate (Legit > LOW)** | $\le 10.0\%$ | 0.0% | **9.1%** | +9.1 pp (0.0% on Banking) | **Target Met** |
 | **Top-1 Typology Accuracy** | $\ge 80.0\%$ | N/A | **97.1%** | Core AI Capability | **Target Exceeded** |
+| **Typology Top-3 Coverage** | $\ge 90.0\%$ | N/A | **97.1%** | Multi-label Coverage | **Target Exceeded** |
 | **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Runtime Citation Consistency | **Target Met** |
-| **Official Reporting Guidance Rate** | N/A | N/A | **94.4%** | Citizen Protection | Active Value-Add |
-| **Required Safety Behaviors** | 100.0% | 97.7% | **95.5%** | Robust Triage | Highly Compliant |
+| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Character-level Audit | **Target Met** |
+| **Official Reporting Guidance Rate** | N/A | N/A | **97.2%** | Citizen Protection | Active Value-Add |
+| **Required Safety Behaviors** | 100.0% | 100.0% | **97.7%** | 43/44 Behaviors Met | -2.3 pp Gap Reported |
+| **Ambiguous Case Clarification** | 100.0% | 0.0% | **66.7%** | Interactive Clarification | Triggering Behavior |
 | **Hinglish Scam Recall** | $\ge 90.0\%$ | 50.0% | **100.0%** | **+50.0 pp** | **Perfect Recall** |
-| **Median Execution Latency** | $< 5000\text{ ms}$ | 1.2 ms | **102.5 ms** (Cached) | Instantaneous | Production Ready |
+| **Median Execution Latency** | $< 5000\text{ ms}$ | 2.7 ms | **132.4 ms** (Cached) | Instantaneous | Production Ready |
 
 ### 5.2 Language Slice Breakdown
 
@@ -289,7 +293,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 **Answer:** ScamSaathi incorporates verified regulatory knowledge. The Reserve Bank of India (RBI) mandates that scheduled commercial banks transition their digital services to the `.bank.in` domain (e.g., `sbi.bank.in`, `hdfc.bank.in`). Agent A3 cross-references extracted domains against our verified official registry. If a message contains a verified `.bank.in` domain and lacks coercive urgency or secret demands, it is assigned a LOW risk score (0/100) without triggering unnecessary alarm.
 
 ### Q3: Why is all user-facing output formatted in English, even when inputs are in Hinglish?
-**Answer:** Indian citizens receive fraud messages in diverse regional dialects and colloquial scripts (e.g., Devanagari Hindi, romanized Hinglish). While ScamSaathi's ingestion layer understands all of these, generating explanations in colloquial Hinglish introduces ambiguity, translation drift, and potential guardrail bypasses. Enforcing standard English output audited for non-Devanagari script compliance ensures clarity, precise guidance, and consistent guardrail verification.
+**Answer:** The project scope focuses on mobile SMS, WhatsApp, and call transcripts in English and romanized Hinglish (Devanagari Hindi is a stretch goal out of project scope per charter). While the pipeline evaluates both English and Hinglish inputs, system prompts request English output to avoid translation ambiguity and ensure consistent guardrail verification, and all evaluated response fields are audited across benchmark cases for zero Devanagari script leakage.
 
 ### Q4: How is ScamSaathi's API spend kept under ₹20 for the entire capstone?
 **Answer:** ScamSaathi uses a tiered model architecture (ADR-001):
@@ -299,7 +303,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 - Furthermore, identical inputs are cached in `.cache/llm/`, reducing repeat assessment costs to zero.
 
 ### Q5: How does ScamSaathi help prevent future scams beyond advising the user?
-**Answer:** ScamSaathi incorporates an active citizen defense paradigm. In 94.4% of scam cases, the advisory agent places official reporting channels in the top 3 recommended actions:
+**Answer:** ScamSaathi incorporates an active citizen defense paradigm. In 97.2% of scam cases, the advisory agent places official reporting channels in the top recommended actions:
 1. **Chakshu Portal:** Users are guided to submit the scammer's phone number, WhatsApp link, and message screenshot to the Department of Telecommunications to trigger nationwide blacklisting.
 2. **Cyber Crime Suspect Registry:** Directs users to log suspect bank accounts and UPI handles.
 3. **1930 Helpline:** Provides prompt reporting and bank coordination guidance within the golden hour to facilitate citizen reporting (where lien/freeze decisions rest with authorized banking and law enforcement officials).

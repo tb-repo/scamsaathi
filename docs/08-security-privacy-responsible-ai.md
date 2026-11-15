@@ -55,10 +55,26 @@ flowchart LR
 |---|---|
 | Data minimisation | Collect only the text needed. No account creation. No device identifiers |
 | Purpose limitation | Text used only to produce the assessment |
-| Storage limitation | Raw text never stored; masked checkpoints expire in 24 h; logs rolling 7 days |
+| Storage limitation | Raw text never stored; completed assessments purged immediately; paused sessions expire in 30 min (UI) or 24 h (API); logs rolling 7 days |
 | Transparency | UI states what is sent to an external AI service (masked text) and what is stored |
 | Security safeguards | Masking, access to keys through environment only, local stores |
-| User control | "Clear my session" action deletes checkpoints for that session |
+| User control | "Clear" button in UI and `DELETE /session/{thread_id}` endpoint delete checkpoints for that session |
+
+### 4.0 Interface-specific retention and cleanup behavior (DPDP Principle 4 / 6)
+
+Retention and cleanup differ across interfaces to reflect user interaction patterns accurately:
+
+1. **Streamlit Web Application (`streamlit_app.py`)**:
+   - **In-Memory Vault**: Raw unmasked text exists strictly in an in-memory vault during the execution turn and is popped immediately when the outcome is returned.
+   - **Immediate Completed Outcome Purge**: When an assessment or resumed interview finishes (`outcome.status == "complete"`), the graph checkpoint and in-memory PII mappings are purged immediately from memory (`runner.clear_session(thread_id, purge_checkpoint=True)`), and `st.session_state.thread_id` is reset.
+   - **Paused Session Inactivity TTL**: For ambiguous cases awaiting clarification (`status == "needs_followup"`), checkpoints and PII mappings remain in memory to support resumption. On the next user interaction after **30 minutes of inactivity**, the UI automatically purges the runner session, clears the stored outcome, and resets the input text area widget.
+   - **User Erasure Action**: The "Clear" button resets all session state, purges in-memory runner mappings and checkpoints, and clears the input widget.
+
+2. **FastAPI REST Service (`app.py`)**:
+   - **Immediate Completed Outcome Purge**: For completed assessments (`status == "complete"`), SQLite `session_meta`, `checkpoints`, and `writes` records are purged atomically before the response is returned. `session_token` in the response is set to `null`.
+   - **Paused Clarification Retention**: For ambiguous cases requiring follow-up questions (`status == "needs_followup"`), SQLite retains checkpoint records accompanied by a cryptographically random ownership token (`X-Session-Token`). Callers must present this token to resume or delete the active thread.
+   - **24-Hour TTL & Background Purge**: Active/paused sessions expire after **24 hours**. An hourly background task and lazy assessment checks prune stale sessions; attempting to resume an expired session returns `410 Gone` and rolls back all records immediately.
+   - **Right to Erasure Endpoint**: Callers can invoke `DELETE /session/{thread_id}` with their session token to immediately and atomically purge any active session from SQLite storage.
 
 Open point: confirm applicable notice/consent wording with current Indian legal text if the prototype is ever opened to real users. For the capstone demo, use synthetic data only (A-3).
 
