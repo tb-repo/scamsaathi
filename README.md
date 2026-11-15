@@ -19,7 +19,7 @@
 
 ## 📌 Executive Summary
 
-India lost **₹22,495 crore** to cyber fraud in 2024–2026 (*Ministry of Home Affairs, Press Information Bureau Press Release dated 21 August 2026, PRID 2301973*). Over **69% of reported cases** originate through unsolicited mobile channels: SMS phishing, WhatsApp investment traps, part-time job offers, electricity disconnection threats, and digital arrest extortion.
+In 2025, Indian citizens reported **₹22,495 crore** in cyber fraud losses across **28.15 lakh complaints** on the Citizen Financial Cyber Fraud Reporting and Management System (*Ministry of Home Affairs, Press Information Bureau Press Release dated 21 August 2025, PRID 2301973*). The official data indicates that **76% of reported financial losses** stemmed from fake investment and trading scams, alongside rampant digital arrest intimidation, part-time job fraud, and phishing messages.
 
 Traditional defense tools fail because:
 1. **Static keyword filters & regex** miss evolving social engineering tactics and trigger high false alarm rates on legitimate banking alerts (`.bank.in`).
@@ -28,7 +28,7 @@ Traditional defense tools fail because:
 **ScamSaathi** solves this with a **Deterministic-First Agentic Architecture**:
 - **Deterministic Pre-Screen & Rules Engine**: Checks official TRAI service codes (1600/1601), authenticated banking domains (`.bank.in`, `.gov.in`), and known malicious URLs before LLMs are invoked.
 - **Privacy-by-Design Masking**: Replaces phone numbers, bank accounts, UPI IDs, emails, and contextual OTPs with local tokens before prompts leave the machine.
-- **Stateful Multi-Agent Reasoning (LangGraph)**: Employs 9 specialized agents to extract psychological urgency signals, classify against the 15 Indian cyber fraud typologies (I4C SC-01 through SC-15), score risk (0–100) within bounded delta limits, and cite deterministic evidence IDs (`S#`, `I#`, `K#`, `C#`).
+- **Stateful Multi-Agent Reasoning (LangGraph)**: Employs 9 specialized agents to extract psychological urgency signals, classify against 15 curated cyber fraud typologies (SC-01 through SC-15), score risk (0–100) within bounded delta limits, and cite deterministic evidence IDs (`S#`, `I#`, `K#`, `C#`).
 - **Human-in-the-Loop (HITL) Clarification**: Triggers targeted multi-question follow-ups on ambiguous reports rather than hallucinating answers.
 - **Official Citizen Recovery Guidance**: Directly routes victims to the **DoT Chakshu Facility**, the **National Cyber Crime Reporting Portal**, and the **1930 Financial Fraud Helpline** for golden-hour loss mitigation.
 
@@ -52,7 +52,7 @@ The ScamSaathi architecture strictly separates access, application execution, ex
    - **Threat Intel DB**: SQLite-backed verification of TRAI 1600/1601 series, designated bank domains (`.bank.in`), and URL reputation.
    - **Feature Extractor**: Identifies urgent financial coercion, authority impersonation, and structural suspicious patterns.
    - **Deterministic Prescreen**: Applies fast-path rules and calculates deterministic baseline scores.
-   - **Classifier Agent**: Maps threats to I4C typologies (SC-01 to SC-15) and enforces bounded delta constraints ($\pm 15$ max variance from baseline).
+   - **Classifier Agent**: Maps threats to 15 curated typologies (SC-01 to SC-15) and enforces bounded delta constraints ($\pm 15$ max variance from baseline).
    - **Question Planner & HITL Node**: Pauses graph execution with LangGraph `interrupt()` when ambiguous reports require user clarification.
    - **Deterministic Scorer**: Calculates calibrated 0–100 risk score and enforces mandatory safety floors (`apk_attachment`, `urgent_recovery`, `child_safety`).
    - **Explainer & Advice Agents**: Synthesizes evidence-grounded explanations citing runtime IDs (`S#`, `I#`, `K#`, `C#`) and verified emergency contacts.
@@ -138,33 +138,33 @@ The ScamSaathi architecture strictly separates access, application execution, ex
 
 ---
 
-## 📋 The 15 Indian Cyber Fraud Typologies (I4C Taxonomy)
+## 📋 The 15 Supported Cyber Fraud Typologies (ScamSaathi Knowledge Base)
 
-ScamSaathi's knowledge base and classification agents are aligned with the Indian Cyber Crime Coordination Centre (I4C) taxonomy:
+ScamSaathi classifies incoming messages against a curated 15-category mobile scam taxonomy modeled on prevailing Indian cyber threats and public advisories (`data/kb/typologies`):
 
-| Code | Typology Name | Primary Attack Channels | Psychological Vector | Primary Defense Guidance |
+| Code | Typology Name | Primary Attack Channels | Typical Manipulation Signals | Primary Defense Guidance |
 | :---: | :--- | :--- | :--- | :--- |
-| **SC-01** | KYC / Account Deactivation | SMS, WhatsApp, IVR | Urgency & Fear of Disruption | Bank official app / DoT Chakshu |
-| **SC-02** | Electricity / Utility Cutoff | SMS, WhatsApp | Immediate Panic & Urgency | Official Discom Portal / Chakshu |
-| **SC-03** | Part-Time Job / Task Scam | Telegram, WhatsApp | Financial Greed & Sunk Cost | Cyber Crime Portal / Block Account |
-| **SC-04** | Fake Investment / Stock Trading | WhatsApp Groups, Social Media | Authority Impersonation & Greed | SEBI SCORES / Cyber Crime Portal |
-| **SC-05** | Digital Arrest / Police Scam | Video Calls (Skype/WhatsApp) | Severe Fear & Isolation | **Immediate Disconnect** / 1930 / MHA |
-| **SC-06** | Predatory Loan App Blackmail | Malicious APKs, SMS | Shame, Harassment & Extortion | Uninstall APK / Police / Cyber Crime |
-| **SC-07** | Customs / FedEx Courier Trap | Phone Calls, IVR, SMS | Legal Threat & Fear of Contraband | Verify on official courier site / Chakshu |
-| **SC-08** | Lottery / KBC Lucky Draw | WhatsApp, SMS | Sudden Wealth & Excitement | Never pay advance fees / Chakshu |
-| **SC-09** | Sextortion / Video Call Extortion | WhatsApp, Video Calls | Blackmail & Acute Panic | **Do Not Pay** / 1930 / Cyber Crime |
-| **SC-10** | Fake Tech Support (AnyDesk) | SMS, Google Ads, Phone | Confusion & False Relief | Never install screen share / Disconnect |
-| **SC-11** | Aadhaar / PAN Linking Phishing | SMS, Phishing URLs | Compliance Fear & Deadline Panic | Official UIDAI / Income Tax Portal |
-| **SC-12** | Credit Card Reward Points Expiry | SMS, Shortened URLs | Loss Aversion & Urgency | Bank official portal / Never share OTP |
-| **SC-13** | Matrimonial / Romance Fraud | Matrimonial Sites, Social Media | Emotional Trust & Vulnerability | Never transfer money / Report profile |
-| **SC-14** | Traffic E-Challan APK Phishing | SMS, Fake Vahan URLs | Fear of Legal Fine / Impoundment | Official Parivahan (`echallan.parivahan.gov.in`) |
-| **SC-15** | SIM Swap / e-SIM Upgradation | SMS, Impersonation Calls | Fear of Telecom Disconnection | Physical Telecom Store / Never forward SMS |
+| **SC-01** | Digital Arrest / Fake Law Enforcement | Video Calls (Skype/WhatsApp), IVR | Claims of CBI/ED/Police, "stay on call", fake warrants | **Immediate Disconnect** / 1930 / MHA |
+| **SC-02** | KYC / Account Block Phishing | SMS, WhatsApp, IVR | Bank impersonation, urgent deactivation, phishing link | Bank official app / DoT Chakshu |
+| **SC-03** | OTP / Credential Theft (Vishing) | Phone Calls, SMS | Urgent request for OTP, PIN, CVV, or netbanking login | Never share OTP / Bank helpline |
+| **SC-04** | UPI Collect / QR "Receive Money" Scam | WhatsApp, Olx/Marketplaces | Unexpected collect request, "enter PIN to receive funds" | Decline request / Never enter PIN |
+| **SC-05** | Fake Job / Task-Based Part-Time Work | Telegram, WhatsApp | YouTube like tasks, prepaid orders, Telegram groups | Cyber Crime Portal / Freeze transfers |
+| **SC-06** | Predatory Loan App Blackmail | Malicious APKs, SMS | Instant loan without KYC, contacts access, extortion | Uninstall APK / Cyber Crime / Police |
+| **SC-07** | Courier / Customs Parcel Trap | Phone Calls, IVR, SMS | Held package (FedEx/DHL), drugs/contraband claim | Verify on courier portal / Chakshu |
+| **SC-08** | Lottery / Prize / Gift Advance Fee | WhatsApp, SMS | KBC / lucky draw winner, advance processing fee | Never pay fee / Chakshu |
+| **SC-09** | Investment / Trading / Crypto Fraud | WhatsApp Groups, Social Media | Guaranteed high returns, VIP trading tips, fake dashboard | SEBI SCORES / 1930 / Cyber Crime |
+| **SC-10** | Utility Bill / SIM Disconnection Scam | SMS, WhatsApp | "Power cut tonight", "SIM blocked within 24h", call officer | Official Discom / Telecom store |
+| **SC-11** | Remote Access / Fake Customer Support | SMS, Google Ads, Phone | Remote screen-sharing apps (AnyDesk, TeamViewer) | Never install app / Disconnect |
+| **SC-12** | Impersonation / Romance Scam | Social Media, Matrimonial | Emergency distress story from friend/relative or love interest | Independent voice check / Never send funds |
+| **SC-13** | Online Money Gaming / Betting Scam | Social Media, Telegram | Color-prediction apps, betting IDs, deposit to withdraw | Block app / Cyber Crime Portal |
+| **SC-14** | Sextortion / Morphed-Image Blackmail | WhatsApp, Video Calls | Video call blackmail, threat to share morphed images | **Do Not Pay** / 1930 / Cyber Crime |
+| **SC-15** | Money Mule / Account & SIM Renting | Telegram, Social Media | Commission to receive transfers or rent bank/SIM credentials | Reject offer / Report to Cyber Crime |
 
 ---
 
 ## 📊 Empirical Benchmark Evaluation
 
-Rigorous evaluation across the authoritative 50-case benchmark dataset (`reports/benchmark_report.md`):
+Evaluation across the internal 50-case benchmark dataset (`reports/benchmark_report.md`):
 
 | Evaluation Metric | Target | Baseline B0 (Rules) | Full Agentic (Ours) | Delta / Achievement | Verification Level |
 | :--- | :---: | :---: | :---: | :---: | :--- |
