@@ -81,3 +81,27 @@ def test_baseline_output_is_masked_and_traceable(intel_db: IntelDB) -> None:
     for contribution in result.risk.contributions:
         assert set(contribution.evidence_ids) <= known_ids
     assert result.risk.level in {"HIGH", "CRITICAL"}  # blocklisted number => floor
+
+
+def test_evaluate_pipeline_handles_runner_exception_without_unbound_local() -> None:
+    from scripts.run_benchmarks import evaluate_pipeline
+
+    case = Case(
+        id="test_exc_case",
+        text="Suspicious message",
+        label="scam",
+        language="en",
+        typologies=["SC-01"],
+        required=["report_channel"],
+    )
+
+    class FailingRunner:
+        def assess(self, text: str) -> None:
+            raise RuntimeError("Synthetic runner failure")
+
+    metrics = evaluate_pipeline([case], runner=FailingRunner(), is_agentic=True)  # type: ignore[arg-type]
+    assert metrics["eval_errors"] == 1
+    assert metrics["cases"][0]["eval_error"] is True
+    assert metrics["behaviour_ok"] == 0
+    assert metrics["behaviour_total"] == 1
+

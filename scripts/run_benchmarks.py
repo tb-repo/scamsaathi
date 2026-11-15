@@ -68,6 +68,8 @@ def evaluate_pipeline(
     by_lang: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
     case_results: list[dict[str, Any]] = []
 
+    eval_errors = 0
+
     for idx, case in enumerate(cases, 1):
         if idx % 5 == 0 or idx == len(cases):
             print(f"  [{idx:2d}/{len(cases)}] Evaluating case: {case.id} ({case.language}, {case.label})", flush=True)
@@ -80,7 +82,11 @@ def evaluate_pipeline(
         typologies: list[str] = []
         explanation = None
         is_pass = False
+        is_eval_error = False
         all_failures: list[str] = []
+        core_failures: list[str] = []
+        beh_failures: list[str] = []
+        typ_failures: list[str] = []
 
         try:
             if is_agentic:
@@ -118,14 +124,20 @@ def evaluate_pipeline(
         except Exception as exc:
             elapsed_ms = (time.perf_counter() - start_t) * 1000.0
             latencies.append(elapsed_ms)
-            print(f"  [ERROR] Case {case.id} exception: {type(exc).__name__}: {exc}", flush=True)
+            eval_errors += 1
+            is_eval_error = True
+            err_msg = f"Exception: {type(exc).__name__}: {exc}"
+            print(f"  [ERROR] Case {case.id} exception: {err_msg}", flush=True)
             risk = RiskScore(level="LOW", value=0, contributions=[], overrides=[])
             advice = None
             intel = []
             typologies = []
             explanation = None
             outcome = None
-            all_failures = [f"Exception: {type(exc).__name__}"]
+            core_failures = [err_msg]
+            beh_failures = [err_msg]
+            typ_failures = [err_msg]
+            all_failures = [err_msg]
             is_pass = False
 
         # Metrics collection
@@ -231,6 +243,7 @@ def evaluate_pipeline(
             "risk_level": risk.level,
             "risk_score": risk.value,
             "passed": is_pass,
+            "eval_error": is_eval_error,
             "failures": all_failures,
             "latency_ms": elapsed_ms,
             "typologies_pred": typologies if is_agentic else [],
@@ -240,6 +253,7 @@ def evaluate_pipeline(
     return {
         "is_agentic": is_agentic,
         "total_cases": len(cases),
+        "eval_errors": eval_errors,
         "scams_total": scams_total,
         "scams_warned": scams_warned,
         "scam_recall_warned": (scams_warned / scams_total) if scams_total else 0.0,
@@ -329,6 +343,10 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
     lines.append(
         f"| **Non-Devanagari Script Compliance** | 100.0% | 100.0% | "
         f"**{pct(m_ag['language_compliance_rate'])}** | Script-level Audit | Zero Devanagari script leakage in English responses |"
+    )
+    lines.append(
+        f"| **Evaluation Pipeline Errors** | 0 | {m_b0['eval_errors']} | "
+        f"**{m_ag['eval_errors']}** | {m_ag['eval_errors'] - m_b0['eval_errors']} | Unhandled exceptions during evaluation |"
     )
     lines.append(
         f"| **Official Reporting Guidance** | N/A | N/A | "
@@ -434,6 +452,7 @@ def main() -> int:
     print(f"  - 1930 Financial Helpline:    {agentic_metrics['reporting_1930_rate']*100:.1f}%")
     print(f"Evidence-ID Grounding Rate:     {pct(agentic_metrics['groundedness'])}")
     print(f"Non-Devanagari Script Compliance: {agentic_metrics['language_compliance_rate']*100:.1f}%")
+    print(f"Evaluation Pipeline Errors:     {agentic_metrics['eval_errors']}")
     print("=" * 60)
 
     # 4. Generate Reports

@@ -90,7 +90,7 @@ flowchart TD
 
 | Agent Node | Execution Type | Model / Engine | Core Responsibility |
 |:---|:---:|:---:|:---|
-| **Masker** | Deterministic | Regex / Rule Engine | Replaces phones, accounts, names, and OTPs with consistent anonymized tokens (`<PHONE_1>`, `<URL_1>`). Prevents PII leakage. |
+| **Masker** | Deterministic | Regex / Rule Engine | Replaces phones, accounts, UPI IDs, emails, and contextual OTPs with consistent anonymized tokens (`<PHONE_1>`, `<OTP_1>`). Names and street addresses are disclosed as masking limitations. |
 | **A1: Extractor** | Hybrid | Gemini 3.5 Flash-Lite + Rules | Extracts structural entities (domains, APKs, UPI IDs, amounts) and psychological signals (urgency, legal threats, authority claims). |
 | **A2: Risk Heuristic** | Deterministic | Pure Python | Computes rule-based risk bounds and detects emergency money-loss conditions. |
 | **A3: Threat Retriever** | Deterministic | SQLite + ChromaDB RAG | Matches extracted entities against official blocklists, TRAI designated series (140, 1600, 1601), and RBI `.bank.in` registries. |
@@ -135,14 +135,14 @@ Evaluation was conducted against the expanded 50-case benchmark dataset (`data/e
 
 | Metric | Target (Doc 09) | Baseline B0 (Rules) | Full Agentic Pipeline | Absolute Gain | Status |
 |:---|:---:|:---:|:---:|:---:|:---:|
-| **Scam Detection Recall** | $\ge 95.0\%$ | 44.4% | **97.2%** | **+52.8%** | **Target Exceeded** |
-| **High-Risk Recall (HIGH/CRITICAL)** | $\ge 90.0\%$ | 22.2% | **72.2%** | **+50.0%** | Substantial Gain |
-| **False Alarm Rate (Legit > LOW)** | $\le 10.0\%$ | 0.0% | **9.1%** | 0.0% on Banking | **Target Met** |
+| **Scam Detection Recall** | $\ge 95.0\%$ | 44.4% | **97.2%** | **+52.8 pp** | **Target Exceeded** |
+| **High-Risk Recall (HIGH/CRITICAL)** | $\ge 90.0\%$ | 22.2% | **72.2%** | **+50.0 pp** | Substantial Gain |
+| **False Alarm Rate (Legit > LOW)** | $\le 10.0\%$ | 0.0% | **9.1%** | +9.1 pp (0.0% on Banking) | **Target Met** |
 | **Top-1 Typology Accuracy** | $\ge 80.0\%$ | N/A | **97.1%** | Core AI Capability | **Target Exceeded** |
-| **Reason Groundedness** | 100.0% | N/A | **100.0%** | Zero Hallucination | **Target Met** |
+| **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Runtime Citation Consistency | **Target Met** |
 | **Official Reporting Guidance Rate** | N/A | N/A | **94.4%** | Citizen Protection | Active Value-Add |
 | **Required Safety Behaviors** | 100.0% | 97.7% | **95.5%** | Robust Triage | Highly Compliant |
-| **Hinglish Scam Recall** | $\ge 90.0\%$ | 50.0% | **100.0%** | **+50.0%** | **Perfect Recall** |
+| **Hinglish Scam Recall** | $\ge 90.0\%$ | 50.0% | **100.0%** | **+50.0 pp** | **Perfect Recall** |
 | **Median Execution Latency** | $< 5000\text{ ms}$ | 1.2 ms | **102.5 ms** (Cached) | Instantaneous | Production Ready |
 
 ### 5.2 Language Slice Breakdown
@@ -186,8 +186,7 @@ Development, unit testing, integration verification, and the 50-case benchmark e
 | **Cumulative Project Total** | **199** | **285,600** | **53,700** | **₹19.45** |
 
 - **Budget Allocated:** ₹500.00 prepaid balance.
-- **Total Spent:** **₹19.45** (Under 4% of allocated budget).
-- **Average Cost per Scam Assessment:** ~**₹0.04** (0.04 INR), making city-scale or telco-scale deployment economically viable.
+- **Total Spent:** **₹19.45** (Under 4% of allocated budget; internal evaluation spend across development and benchmark test runs only).
 
 ### 7.2 Air-Gapped Offline Execution
 By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resilience against internet connectivity loss or upstream API outages:
@@ -203,7 +202,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 - **Value Proposition:** An intelligent, privacy-preserving multi-agent assistant that deciphers mobile communication scams in English and Hinglish, providing evidence-backed risk analysis and direct government reporting actions.
 
 ### Slide 2: The National Emergency
-- Over ₹11,200 Crore lost in India to mobile scams (2025).
+- Severe financial losses and widespread coercion reported across India (I4C citizen complaints).
 - Social engineering vectors: Digital Arrest, Electricity bills, Malicious APKs, Part-time job traps.
 - The failure of traditional blocklist apps: Cannot detect new SIMs or context-rich threats.
 
@@ -232,7 +231,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 - Seamless guidance to:
   - **Chakshu Portal** (`sancharsaathi.gov.in/sfc`) for reporting malicious communications.
   - **National Cyber Crime Suspect Registry** (`cybercrime.gov.in`).
-  - **1930 Helpline** for golden-hour financial freeze.
+  - **1930 Helpline** for golden-hour reporting and bank lien assistance.
 
 ### Slide 8: Privacy by Design & DPDP Compliance
 - Automatic PII redaction of phones, account digits, UPI IDs, emails, and contextual OTPs (names and street addresses disclosed as limitations).
@@ -250,15 +249,14 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 - **Scenario 3:** Genuine Bank Transaction Alert (`.bank.in` domain -> LOW 0, Zero False Alarm).
 
 ### Slide 11: Benchmark Results vs Baseline B0
-- **Scam Recall:** 97.2% vs 44.4% (+52.8% gain).
+- **Scam Recall:** 97.2% vs 44.4% (+52.8 pp gain).
 - **Hinglish Recall:** 100.0%.
 - **Typology Accuracy:** 97.1%.
-- **Reason Groundedness:** 100.0%.
+- **Evidence-ID Grounding Rate:** 100.0% (runtime citation consistency against active catalogue).
 - **False Alarm Rate:** 9.1%.
 
 ### Slide 12: Cost & Production Viability
 - Total Capstone Evaluation Spend: ₹19.45 (internal test execution across development cycles).
-- Cost per assessment: ~₹0.04.
 - Dual-tier Gemini architecture (Flash-Lite for fast tasks, 3.8 Flash for reasoning) with Groq fallback.
 
 ### Slide 13: Offline Defense & High Availability
@@ -310,5 +308,4 @@ This ensures the scammer's infrastructure is dismantled before other citizens ar
 
 ## 10. Conclusion
 
-ScamSaathi demonstrates that agentic AI architectures—combining stateful graph coordination, domain-specific threat intelligence, deterministic guardrails, and human-in-the-loop clarification—deliver substantial improvements in safety, accuracy, and citizen protection over traditional rule-based or single-prompt LLM systems. With a **97.2% scam recall**, **9.1% false alarm rate**, **100% evidence-ID citation consistency**, and an operating cost of **₹0.04 per request**, ScamSaathi provides a robust, production-grade template for mobile scam defense in India.
-```mermaid
+ScamSaathi demonstrates that agentic AI architectures—combining stateful graph coordination, domain-specific threat intelligence, deterministic guardrails, and human-in-the-loop clarification—deliver substantial improvements in safety, accuracy, and citizen protection over traditional rule-based or single-prompt LLM systems. With a **97.2% scam recall**, **9.1% false alarm rate**, **100% evidence-ID citation consistency**, and an internal test execution spend under **₹20**, ScamSaathi provides a robust, production-grade template for mobile scam defense in India.

@@ -14,9 +14,10 @@
 | **Typology Top-3 Coverage** | >= 90.0% | N/A (Rules) | **97.1%** | Multi-label Coverage | Primary in top 3 predicted typologies |
 | **Evidence-ID Grounding Rate** | 100.0% | N/A | **100.0%** | Runtime Citation Consistency | Measures evidence-ID catalogue citation consistency against runtime state, not factual correctness |
 | **Non-Devanagari Script Compliance** | 100.0% | 100.0% | **100.0%** | Script-level Audit | Zero Devanagari script leakage in English responses |
+| **Evaluation Pipeline Errors** | 0 | 0 | **0** | 0 | Unhandled exceptions during evaluation |
 | **Official Reporting Guidance** | N/A | N/A | **97.2%** | Active Citizen Defense | Any official channel recommended |
 | **Ambiguous Case Handling** | 100.0% | 0.0% (No Interview) | **66.7%** | Interactive Interview | HITL targeted clarification questions |
-| **Median Latency** | < 5000 ms | 1.3 ms | 77.0 ms | Cached/Fast | End-to-end multi-agent graph |
+| **Median Latency** | < 5000 ms | 2.3 ms | 157.7 ms | Cached/Fast | End-to-end multi-agent graph |
 
 ## 2. Official Citizen Reporting Channel Breakdown
 

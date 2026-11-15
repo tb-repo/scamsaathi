@@ -14,7 +14,7 @@
 | **Primary LLMs** | Google Gemini (gemini-3.5-flash-lite / gemini-3.8-flash) |
 | **Fallback LLMs** | Groq (llama-3.3-70b-versatile) with Circuit-Breaker Gateway |
 | **Scope** | Mobile SMS, WhatsApp, and call transcripts in English & Hinglish |
-| **Test Suite** | 258 Unit & Integration Tests (100% Passing) |
+| **Test Suite** | 259 Unit & Integration Tests (100% Passing) |
 | **Evaluation** | 50-Case Comprehensive Benchmark (97.2% Scam Recall, 0% False Alarms on Banking) |
 
 > ⚠️ **Important Safety Disclaimer**: ScamSaathi provides risk assessments and safety guidance, not legal advice or definitive investigative verdicts. Automated masking protects phone numbers, accounts, UPI IDs, emails, and contextual OTPs, but pattern matching cannot reliably redact personal names or street addresses. Always verify independently through official channels.
@@ -191,7 +191,7 @@ python scripts/run_benchmarks.py
 
 ## 🧪 Testing & Verification
 
-Run the full pytest suite (258 unit and integration tests):
+Run the full pytest suite (259 unit and integration tests):
 
 ```bash
 pytest -v
@@ -239,7 +239,7 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
-├── tests/                  # 258 unit and integration tests
+├── tests/                  # 259 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies
 ├── requirements-dev.txt    # Development and test dependencies

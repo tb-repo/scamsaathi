@@ -198,7 +198,11 @@ def create_app() -> FastAPI:
     async def rate_limit_middleware(request: Request, call_next: Any) -> Response:
         if request.method == "OPTIONS":
             return await call_next(request)
-        client_ip = request.client.host if request.client else "unknown"
+        forwarded_for = request.headers.get("X-Forwarded-For")
+        if forwarded_for:
+            client_ip = forwarded_for.split(",")[0].strip()
+        else:
+            client_ip = request.client.host if request.client else "unknown"
         now = time.time()
         window_start = now - _RATE_LIMIT_WINDOW_SECONDS
 
@@ -342,10 +346,7 @@ def create_app() -> FastAPI:
                 )
             stored_token, last_accessed = row
             if time.time() - last_accessed > 86400.0:
-                state.sqlite_conn.execute("DELETE FROM checkpoints WHERE thread_id = ?", (req.thread_id,))
-                state.sqlite_conn.execute("DELETE FROM writes WHERE thread_id = ?", (req.thread_id,))
-                state.sqlite_conn.execute("DELETE FROM session_meta WHERE thread_id = ?", (req.thread_id,))
-                state.sqlite_conn.commit()
+                _purge_session_records(state.sqlite_conn, req.thread_id)
                 raise HTTPException(
                     status_code=status.HTTP_410_GONE,
                     detail="Session has expired (24-hour TTL) and has been pruned.",

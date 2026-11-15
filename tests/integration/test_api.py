@@ -132,6 +132,10 @@ def test_resume_expired_session_returns_410(client: TestClient) -> None:
     )
     state.sqlite_conn.commit()
 
+    # Populate in-memory session mapping to verify runner cleanup on 410 expiry
+    if state.runner is not None:
+        state.runner._session_mappings[custom_thread_id] = {"<PHONE_1>": "9876543210"}
+
     # Attempt to resume expired session -> returns 410 Gone
     resume_resp = client.post(
         "/resume",
@@ -140,10 +144,16 @@ def test_resume_expired_session_returns_410(client: TestClient) -> None:
     assert resume_resp.status_code == 410
     assert "expired" in resume_resp.json()["detail"].lower()
 
-    # Verify session_meta and checkpoints are pruned
+    # Verify session_meta, checkpoints, writes and in-memory runner mappings are pruned immediately
     cur = state.sqlite_conn.cursor()
     cur.execute("SELECT thread_id FROM session_meta WHERE thread_id = ?", (custom_thread_id,))
     assert cur.fetchone() is None
+    cur.execute("SELECT thread_id FROM checkpoints WHERE thread_id = ?", (custom_thread_id,))
+    assert cur.fetchone() is None
+    cur.execute("SELECT thread_id FROM writes WHERE thread_id = ?", (custom_thread_id,))
+    assert cur.fetchone() is None
+    if state.runner is not None:
+        assert custom_thread_id not in state.runner._session_mappings
 
 
 def test_assess_metadata_write_failure_fails_closed(client: TestClient) -> None:
