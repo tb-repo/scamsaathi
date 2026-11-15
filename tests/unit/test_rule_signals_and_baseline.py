@@ -76,7 +76,13 @@ def test_situation_detection() -> None:
         "I have not shared my OTP, but I gave the caller my banking password."
     )["credentials_shared"]
     assert rule_signals.detect_situation(
+        "I have not shared my OTP, and I gave the caller my banking password."
+    )["credentials_shared"]
+    assert rule_signals.detect_situation(
         "What if I shared my OTP? I now confirm I shared it with the caller."
+    )["credentials_shared"]
+    assert rule_signals.detect_situation(
+        "If I shared my OTP, I actually did share it with the caller."
     )["credentials_shared"]
     assert rule_signals.detect_situation(
         "Your account was debited INR 500; I already transferred another INR 2,000 to the fraudster."

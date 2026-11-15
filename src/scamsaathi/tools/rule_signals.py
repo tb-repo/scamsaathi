@@ -135,9 +135,9 @@ def _credential_requests(text: str) -> list[re.Match[str]]:
     return hits
 
 
-# Clause boundary: punctuation, linebreaks, or contrastive conjunctions
-_CLAUSE_BOUNDARY: Final = re.compile(
-    r"(?:[.!?;:\n]+|\b(?:but|however|although|though|whereas|while|lekin|magar|parantu|kintu)\b)",
+# Predicate / clause boundary: punctuation (including comma, colon, semicolon, dash) or conjunctions
+_PREDICATE_BOUNDARY: Final = re.compile(
+    r"(?:[.!?;:,\n—–-]+|\b(?:and|or|but|however|although|though|whereas|while|then|so|lekin|magar|parantu|kintu|aur|ya)\b)",
     re.I,
 )
 
@@ -146,7 +146,7 @@ _PRE_NEG_OR_HYPO: Final = re.compile(
     r"refused|avoided|declined|without|if|what if|suppose|assuming|whether|in case|agar|yadi|kya hoga agar)\b",
     re.I,
 )
-_POST_NEG: Final = re.compile(r"^\W*(?:nahi|nahin|na|mat|kabhi nahi)\b", re.I)
+_POST_NEG: Final = re.compile(r"^\W*(?:nahi|nahin|na|mat|kabhi nahi)\b|\b(?:nahi|nahin|na|mat|kabhi nahi)$", re.I)
 
 # Routine bank transactional notice addressed in second person ("your account/card")
 _BANK_TX_NOTICE: Final = re.compile(
@@ -165,65 +165,77 @@ _MONEY_SENT: Final = re.compile(
     re.I,
 )
 _CREDS_SHARED: Final = re.compile(
-    rf"(?:\bi (?:have )?(?:already )?|\band )?(?:shared|gave|told|entered|sent|provided|typed in)\b.{{0,25}}?\b{_SECRET}\b|"
-    rf"\bi (?:now )?(?:confirm )?(?:that )?(?:i )?(?:shared|gave|told|provided)\b.{{0,20}}?\bit\b.{{0,20}}?\b(?:with (?:the )?(?:caller|him|her|them|scammer|fraudster))\b|"
+    rf"\b(?:did share|shared|gave|told|entered|sent|provided|typed in)\b.{{0,25}}?\b{_SECRET}\b|"
+    rf"\b(?:did share|shared|gave|told|provided)\b.{{0,20}}?\bit\b.{{0,25}}?\b(?:with (?:the )?(?:caller|him|her|them|scammer|fraudster))\b|"
     rf"\bmaine\b.{{0,60}}?\b{_SECRET}\b.{{0,20}}?\b(?:bata|de|bhej|enter kar|daal) di(?:ya|ye)\b",
     re.I | re.S,
 )
 _LINK_CLICKED: Final = re.compile(
+    r"\b(?:clicked|opened|tapped|followed|visited)\b.{0,25}?(?:link|url|website|site|portal)\b|"
     r"\bi (?:have )?(?:already )?(?:clicked|opened|tapped|followed|visited)\b|"
     r"\blink (?:par|pe) (?:click|open|tap) kiya\b",
     re.I,
 )
 _APP_INSTALLED: Final = re.compile(
-    r"\bi (?:have )?(?:already )?(?:installed|downloaded)\b|\bapp install kar (?:liya|diya)\b", re.I
+    r"\b(?:installed|downloaded)\b.{0,25}?(?:app|apk)\b|"
+    r"\bi (?:have )?(?:already )?(?:installed|downloaded)\b|\bapp install kar (?:liya|diya)\b",
+    re.I,
 )
 
 
-def _get_clause_bounds(text: str, match_start: int, match_end: int) -> tuple[int, int]:
-    """Find the start and end of the clause containing the match without crossing clause boundaries."""
-    clause_start = 0
-    for b in _CLAUSE_BOUNDARY.finditer(text[:match_start]):
-        clause_start = b.end()
-    clause_end = len(text)
-    m = _CLAUSE_BOUNDARY.search(text[match_end:])
+def _get_predicate_bounds(text: str, match_start: int, match_end: int) -> tuple[int, int]:
+    """Find the start and end of the predicate containing the match without crossing clause boundaries."""
+    pred_start = 0
+    for b in _PREDICATE_BOUNDARY.finditer(text[:match_start]):
+        pred_start = b.end()
+    pred_end = len(text)
+    m = _PREDICATE_BOUNDARY.search(text[match_end:])
     if m:
-        clause_end = match_end + m.start()
-    return clause_start, clause_end
+        pred_end = match_end + m.start()
+    return pred_start, pred_end
 
 
-def _is_negated_or_hypothetical(text: str, start: int, end: int) -> bool:
-    """Check for negations or hypotheticals strictly within the same clause as the match."""
-    clause_start, clause_end = _get_clause_bounds(text, start, end)
-    before_in_clause = text[clause_start:start]
-    after_in_clause = text[end:clause_end]
-    return bool(_PRE_NEG_OR_HYPO.search(before_in_clause) or _POST_NEG.search(after_in_clause))
+def _is_negated_or_hypothetical(text: str, match: re.Match[str]) -> bool:
+    """Check for negations or hypotheticals strictly within the same predicate as the match."""
+    start, end = match.start(), match.end()
+    pred_start, pred_end = _get_predicate_bounds(text, start, end)
+    before_in_pred = text[pred_start:start]
+    after_in_pred = text[end:pred_end]
+    matched_text = match.group(0)
+
+    if _PRE_NEG_OR_HYPO.search(before_in_pred):
+        return True
+    if _PRE_NEG_OR_HYPO.search(matched_text):
+        return True
+    if _POST_NEG.search(after_in_pred):
+        return True
+    return False
 
 
 def _check_money_sent(text: str) -> bool:
     for m in _MONEY_SENT.finditer(text):
-        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+        if not _is_negated_or_hypothetical(text, m):
             return True
     return False
 
 
 def _check_creds_shared(text: str) -> bool:
     for m in _CREDS_SHARED.finditer(text):
-        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+        if not _is_negated_or_hypothetical(text, m):
             return True
     return False
 
 
 def _check_link_clicked(text: str) -> bool:
     for m in _LINK_CLICKED.finditer(text):
-        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+        if not _is_negated_or_hypothetical(text, m):
             return True
     return False
 
 
 def _check_app_installed(text: str) -> bool:
     for m in _APP_INSTALLED.finditer(text):
-        if not _is_negated_or_hypothetical(text, m.start(), m.end()):
+        if not _is_negated_or_hypothetical(text, m):
             return True
     return False
 
