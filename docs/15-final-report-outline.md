@@ -271,7 +271,8 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 
 ### Slide 15: Conclusion & Future Roadmap
 - Successfully built, tested, and benchmarked an end-to-end agentic AI defense system.
-- Future work: Direct telco network integration, on-device SLM execution, and regional Indian audio ingestion.
+- Future work: Direct telco network integration, on-device SLM execution, regional Indian audio ingestion, and an opt-in privacy-conscious citizen feedback loop (storing structured labels without raw messages to safely expand benchmark evaluation).
+- Concurrency scaling: Migration from single-connection SQLite serialization to connection-per-request pooling (WAL mode) or managed PostgresSaver/RedisSaver for enterprise throughput.
 - Q&A Session.
 
 ---
@@ -301,7 +302,7 @@ By leveraging SQLite caching in `.cache/llm/`, ScamSaathi demonstrates 100% resi
 **Answer:** ScamSaathi incorporates an active citizen defense paradigm. In 94.4% of scam cases, the advisory agent places official reporting channels in the top 3 recommended actions:
 1. **Chakshu Portal:** Users are guided to submit the scammer's phone number, WhatsApp link, and message screenshot to the Department of Telecommunications to trigger nationwide blacklisting.
 2. **Cyber Crime Suspect Registry:** Directs users to log suspect bank accounts and UPI handles.
-3. **1930 Helpline:** Provides rapid reporting guidance within the golden hour to assist banks in placing liens on defrauded accounts.
+3. **1930 Helpline:** Provides prompt reporting and bank coordination guidance within the golden hour to facilitate citizen reporting (where lien/freeze decisions rest with authorized banking and law enforcement officials).
 This ensures the scammer's infrastructure is dismantled before other citizens are harmed.
 
 ---

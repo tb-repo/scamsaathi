@@ -25,7 +25,7 @@
 
 1. **Deterministic-First Agentic Defense**:
    - **Deterministic Rules & Threat Intel**: URL blocklists, TRAI designated service series (1600/1601), `.bank.in` / `.gov.in` domain legitimacy verification, and keyword signal extraction run deterministically before LLM invocation.
-   - **Bounded LLM Reasoning**: LLMs classify Indian cyber fraud typologies (I4C SC-01 through SC-10) and explain social engineering tactics within bounded score delta limits.
+   - **Bounded LLM Reasoning**: LLMs classify Indian cyber fraud typologies (I4C SC-01 through SC-15) and explain social engineering tactics within bounded score delta limits.
    - **Deterministic Safety Floors**: Overrides enforce strict minimum risk scores and safety actions for critical indicators (e.g. `apk_attachment`, `urgent_recovery`, `child_safety`).
 
 2. **Privacy by Design (DPDP Act Aligned)**:

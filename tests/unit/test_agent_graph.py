@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 import re
 import sqlite3
+import time
 from collections.abc import Callable
 from datetime import date
 from pathlib import Path
@@ -518,5 +519,26 @@ def test_runner_session_mappings_lifecycle(make_runner: Callable[..., Any]) -> N
     final = runner2.resume(first.thread_id, {"answers": {first.questions[0]["fact"]: True}})
     assert final.status == "complete"
     assert first.thread_id not in runner2._session_mappings
-    assert runner2.ctx.vault.get(first.thread_id) is None
+
+
+def test_runner_cleanup_abandoned_sessions(make_runner: Callable[..., Any]) -> None:
+    runner, _ = make_runner({
+        "extract": ['{"signals": []}'],
+        "classify": [_ask(["asked_for_secret"])],
+        "explain": [good_explain],
+    })
+    first = runner.assess("Someone called me about my parcel")
+    assert first.status == "needs_followup"
+    assert first.thread_id in runner._session_mappings
+    assert first.thread_id in runner._session_created_at
+
+    # Fast-forward creation time past 1800s
+    runner._session_created_at[first.thread_id] = time.time() - 2000.0
+
+    # Pruning removes the abandoned session
+    pruned = runner.cleanup_abandoned_sessions(max_age_seconds=1800.0)
+    assert pruned == 1
+    assert first.thread_id not in runner._session_mappings
+    assert first.thread_id not in runner._session_created_at
+    assert runner.ctx.vault.get(first.thread_id) is None
 

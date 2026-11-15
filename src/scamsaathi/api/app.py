@@ -304,7 +304,12 @@ def create_app() -> FastAPI:
         session_token = secrets.token_urlsafe(32)
         now = time.time()
 
-        # Synchronize access to shared SQLite connection and checkpointer to avoid transaction interleaving
+        # Architecture Tradeoff Note:
+        # Serializing assess/resume/cleanup under state.db_lock guarantees 100% SQLite transaction
+        # integrity and checkpointer isolation across concurrent FastAPI worker threads on a single connection.
+        # For high-throughput production scaling, migrate from a single shared SQLite connection to
+        # connection-per-request pooling (WAL mode) or a multi-tenant concurrency-safe checkpointer
+        # (e.g., PostgresSaver / RedisSaver) to avoid serializing model invocation latency across concurrent requests.
         with state.db_lock:
             if state.sqlite_conn is not None:
                 cleanup_expired_sessions(state.sqlite_conn)
@@ -376,7 +381,12 @@ def create_app() -> FastAPI:
 
         token_to_verify = req.session_token or x_session_token
 
-        # Synchronize access to shared SQLite connection and checkpointer to avoid transaction interleaving
+        # Architecture Tradeoff Note:
+        # Serializing assess/resume/cleanup under state.db_lock guarantees 100% SQLite transaction
+        # integrity and checkpointer isolation across concurrent FastAPI worker threads on a single connection.
+        # For high-throughput production scaling, migrate from a single shared SQLite connection to
+        # connection-per-request pooling (WAL mode) or a multi-tenant concurrency-safe checkpointer
+        # (e.g., PostgresSaver / RedisSaver) to avoid serializing model invocation latency across concurrent requests.
         with state.db_lock:
             if state.sqlite_conn is not None:
                 cur = state.sqlite_conn.cursor()
@@ -442,7 +452,12 @@ def create_app() -> FastAPI:
 
         token_to_verify = x_session_token or token
 
-        # Synchronize access to shared SQLite connection and checkpointer to avoid transaction interleaving
+        # Architecture Tradeoff Note:
+        # Serializing assess/resume/cleanup under state.db_lock guarantees 100% SQLite transaction
+        # integrity and checkpointer isolation across concurrent FastAPI worker threads on a single connection.
+        # For high-throughput production scaling, migrate from a single shared SQLite connection to
+        # connection-per-request pooling (WAL mode) or a multi-tenant concurrency-safe checkpointer
+        # (e.g., PostgresSaver / RedisSaver) to avoid serializing model invocation latency across concurrent requests.
         with state.db_lock:
             if state.sqlite_conn is not None:
                 cur = state.sqlite_conn.cursor()

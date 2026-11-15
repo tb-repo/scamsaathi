@@ -138,13 +138,15 @@ def _credential_requests(text: str) -> list[re.Match[str]]:
 _MONEY_SENT: Final = re.compile(
     r"\bi (?:have )?(?:already )?(?:sent|paid|transferred|deposited)\b|"
     r"\bmoney (?:was |got |has been )?(?:debited|deducted)\b|"
-    r"\bmaine (?:paise|paisa|payment) (?:bhej|de|kar) di(?:ye|ya)\b|\bpaise kat gaye\b",
+    r"\bmaine (?:paise|paisa|payment) (?:bhej|de|kar) di(?:ye|ya)\b|\bpaise kat gaye\b|"
+    r"\b(?:account se|paise|paisa)\b.{0,30}?\b(?:cut|kat)\b.{0,15}?\b(?:gaye|gaya|hone|ho gaya)\b",
     re.I,
 )
 _CREDS_SHARED: Final = re.compile(
     rf"\bi (?:have )?(?:already )?(?:shared|gave|told|entered|sent) (?:the |my |him |her |them )?"
-    rf"{_SECRET}\b|\bmaine {_SECRET} (?:bata|de|bhej) diya\b",
-    re.I,
+    rf"{_SECRET}\b|"
+    rf"\bmaine\b.{{0,60}}?\b{_SECRET}\b.{{0,20}}?\b(?:bata|de|bhej) di(?:ya|ye)\b",
+    re.I | re.S,
 )
 _LINK_CLICKED: Final = re.compile(r"\bi (?:have )?(?:already )?(?:clicked|opened|tapped)\b", re.I)
 _APP_INSTALLED: Final = re.compile(

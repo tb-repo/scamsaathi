@@ -7,6 +7,7 @@ they reach LangGraph, because LangGraph stores resume values in the checkpoint.
 
 from __future__ import annotations
 
+import time
 import uuid
 from dataclasses import dataclass, field
 from typing import Any, Literal
@@ -51,12 +52,14 @@ class AgentRunner:
         self.guardrail = GuardrailAgent(ctx)
         self.graph = build_graph(ctx, checkpointer or InMemorySaver())
         self._session_mappings: dict[str, dict[str, str]] = {}
+        self._session_created_at: dict[str, float] = {}
 
     def _config(self, thread_id: str) -> Any:
         return {"configurable": {"thread_id": thread_id},
                 "recursion_limit": self.ctx.routing.recursion_limit}
 
     def assess(self, text: str, thread_id: str | None = None) -> AssessmentOutcome:
+        self.cleanup_abandoned_sessions()
         text = (text or "").strip()
         if not text:
             raise ValueError("input text is empty")
@@ -69,6 +72,7 @@ class AgentRunner:
             self.graph.invoke({"request_id": thread_id}, self._config(thread_id))
             if raw.mask is not None:
                 self._session_mappings[thread_id] = dict(raw.mask.mapping)
+                self._session_created_at[thread_id] = time.time()
             outcome = self.outcome(thread_id)
             if outcome.status != "needs_followup":
                 self.clear_session(thread_id)
@@ -142,6 +146,15 @@ class AgentRunner:
 
     def clear_session(self, thread_id: str) -> bool:
         """Purge in-memory PII mappings and vault entries for the session (DPDP principle 6)."""
+        self._session_created_at.pop(thread_id, None)
         popped = self._session_mappings.pop(thread_id, None) is not None
         self.ctx.vault.pop(thread_id)
         return popped
+
+    def cleanup_abandoned_sessions(self, max_age_seconds: float = 1800.0) -> int:
+        """Purge in-memory sessions abandoned in needs_followup past max_age_seconds."""
+        now = time.time()
+        expired = [tid for tid, ts in self._session_created_at.items() if now - ts > max_age_seconds]
+        for tid in expired:
+            self.clear_session(tid)
+        return len(expired)

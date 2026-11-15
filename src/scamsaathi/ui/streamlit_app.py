@@ -5,6 +5,8 @@ Agentic AI Assistant for Mobile Scam Defense in India.
 
 from __future__ import annotations
 
+import time
+
 import streamlit as st
 
 from scamsaathi.agents.context import build_context
@@ -151,19 +153,38 @@ with st.sidebar:
         st.caption(f"**Fallback Provider:** `Groq ({settings.groq_model_fast})`")
 
 
-# Session state initialization
+# Session state initialization & Inactivity TTL (FR-084)
+STREAMLIT_INACTIVITY_TTL_SECONDS = 1800.0  # 30-minute inactivity TTL for in-memory PII retention
+
+now = time.time()
+if "last_active_time" not in st.session_state:
+    st.session_state.last_active_time = now
+
 if "thread_id" not in st.session_state:
     st.session_state.thread_id = None
 if "outcome" not in st.session_state:
     st.session_state.outcome = None
-if "input_text" not in st.session_state:
-    st.session_state.input_text = ""
+if "user_text_input" not in st.session_state:
+    st.session_state.user_text_input = ""
+if "last_selected_scenario" not in st.session_state:
+    st.session_state.last_selected_scenario = "Select a pre-built scenario..."
 
-# Handle scenario load
-if selected_scenario and DEMO_SCENARIOS[selected_scenario]:
-    st.session_state.input_text = DEMO_SCENARIOS[selected_scenario]
+# Inactivity TTL cleanup: purge abandoned runner session if inactive > 30 minutes
+if st.session_state.thread_id and (now - st.session_state.last_active_time > STREAMLIT_INACTIVITY_TTL_SECONDS):
+    runner.clear_session(st.session_state.thread_id)
     st.session_state.thread_id = None
     st.session_state.outcome = None
+    st.session_state.last_active_time = now
+
+# Handle scenario selection change: purge old runner session and load new text
+if selected_scenario != st.session_state.last_selected_scenario:
+    st.session_state.last_selected_scenario = selected_scenario
+    if st.session_state.thread_id:
+        runner.clear_session(st.session_state.thread_id)
+    st.session_state.thread_id = None
+    st.session_state.outcome = None
+    st.session_state.user_text_input = DEMO_SCENARIOS.get(selected_scenario, "")
+    st.session_state.last_active_time = now
 
 # Main Screen
 st.title("🛡️ ScamSaathi")
@@ -171,7 +192,7 @@ st.markdown("##### Assess any suspicious SMS, WhatsApp message, or phone call fo
 
 user_text = st.text_area(
     "Paste message or call details below:",
-    value=st.session_state.input_text,
+    key="user_text_input",
     height=140,
     placeholder="Paste the SMS, WhatsApp text, or caller conversation here...",
 )
@@ -181,13 +202,20 @@ with col_btn1:
     analyze_clicked = st.button("🔍 Check Scam Risk", type="primary", use_container_width=True)
 with col_btn2:
     if st.button("🗑️ Clear", use_container_width=True):
-        st.session_state.input_text = ""
-        st.session_state.outcome = None
+        if st.session_state.thread_id:
+            runner.clear_session(st.session_state.thread_id)
         st.session_state.thread_id = None
+        st.session_state.outcome = None
+        st.session_state.user_text_input = ""
+        st.session_state.last_active_time = time.time()
         st.rerun()
 
 # Run Assessment
 if analyze_clicked and user_text.strip():
+    # Purge any previous session from runner before initiating a new assessment
+    if st.session_state.thread_id:
+        runner.clear_session(st.session_state.thread_id)
+    st.session_state.last_active_time = time.time()
     with st.spinner("Analyzing message with threat intelligence & agent reasoning..."):
         try:
             outcome = runner.assess(user_text.strip())
@@ -229,12 +257,14 @@ if outcome is not None:
                     }
                     resumed = runner.resume(outcome.thread_id, {"answers": structured_answers})
                     st.session_state.outcome = resumed
+                    st.session_state.last_active_time = time.time()
                     st.rerun()
         with col_sub2:
             if st.button("Skip / Give Best Guess", use_container_width=True):
                 with st.spinner("Completing assessment..."):
                     resumed = runner.resume(outcome.thread_id, "skip")
                     st.session_state.outcome = resumed
+                    st.session_state.last_active_time = time.time()
                     st.rerun()
 
     # Complete Assessment

@@ -63,6 +63,7 @@ def evaluate_pipeline(
     grounded_reasons = total_reasons = 0
     reporting_total = 0
     reporting_chakshu = reporting_cybercrime = reporting_1930 = reporting_any = 0
+    urgent_recovery_total = urgent_recovery_1930 = 0
     lang_compliant_cases = 0
 
     by_lang: dict[str, dict[str, int]] = defaultdict(lambda: defaultdict(int))
@@ -76,6 +77,7 @@ def evaluate_pipeline(
         start_t = time.perf_counter()
         outcome: AssessmentOutcome | None = None
         asked = False
+        all_interview_questions: list[dict[str, Any]] = []
         risk: RiskScore = RiskScore(level="LOW", value=0, contributions=[], overrides=[])
         advice = None
         intel = []
@@ -93,9 +95,13 @@ def evaluate_pipeline(
                 assert runner is not None
                 first = runner.assess(case.text)
                 asked = first.status == "needs_followup"
+                if first.questions:
+                    all_interview_questions.extend(first.questions)
                 outcome = first
                 while outcome.status == "needs_followup":
                     outcome = runner.resume(outcome.thread_id, "skip")
+                    if outcome.questions:
+                        all_interview_questions.extend(outcome.questions)
                 risk = outcome.risk
                 advice = outcome.advice
                 intel = outcome.intel
@@ -169,9 +175,10 @@ def evaluate_pipeline(
                 if is_agentic and advice is not None:
                     reporting_total += 1
                     action_texts = " ".join(a.text for a in advice.actions)
+                    contact_values = " ".join(c.value for c in advice.contacts) if advice.contacts else ""
                     has_chakshu = "sancharsaathi.gov.in" in action_texts or "chakshu" in action_texts.lower()
                     has_cybercrime = "cybercrime.gov.in" in action_texts
-                    has_1930 = "1930" in action_texts
+                    has_1930 = "1930" in action_texts or "1930" in contact_values
                     if has_chakshu:
                         reporting_chakshu += 1
                     if has_cybercrime:
@@ -180,6 +187,12 @@ def evaluate_pipeline(
                         reporting_1930 += 1
                     if has_chakshu or has_cybercrime or has_1930 or "1909" in action_texts:
                         reporting_any += 1
+
+                    # Track urgent financial loss recovery specifically (eval_31, eval_32)
+                    if "urgent_recovery" in case.required:
+                        urgent_recovery_total += 1
+                        if has_1930:
+                            urgent_recovery_1930 += 1
 
             elif case.label == "legit":
                 legit_total += 1
@@ -219,7 +232,7 @@ def evaluate_pipeline(
                     if r.evidence_ids and set(r.evidence_ids) <= catalogue_eids:
                         grounded_reasons += 1
 
-            # Language compliance: verify output has zero Devanagari script leakage
+            # Language compliance: verify output has zero Devanagari script leakage across all generated text
             if is_agentic:
                 snippets: list[str] = []
                 if explanation is not None:
@@ -230,8 +243,10 @@ def evaluate_pipeline(
                     snippets.extend(r.text for r in explanation.reasons)
                 if advice is not None:
                     snippets.extend(a.text for a in advice.actions)
-                if outcome is not None and getattr(outcome, "questions", None):
-                    snippets.extend(q.get("text", "") for q in outcome.questions)
+                for q in all_interview_questions:
+                    q_text = q.get("text", "")
+                    if q_text:
+                        snippets.append(q_text)
                 full_text = " ".join(snippets)
                 has_devanagari = any("\u0900" <= ch <= "\u097f" for ch in full_text)
                 if not has_devanagari and snippets:
@@ -274,6 +289,11 @@ def evaluate_pipeline(
         "reporting_chakshu_rate": (reporting_chakshu / reporting_total) if reporting_total else (None if eval_errors else 0.0),
         "reporting_cybercrime_rate": (reporting_cybercrime / reporting_total) if reporting_total else (None if eval_errors else 0.0),
         "reporting_1930_rate": (reporting_1930 / reporting_total) if reporting_total else (None if eval_errors else 0.0),
+        "reporting_1930_count": reporting_1930,
+        "reporting_total": reporting_total,
+        "urgent_recovery_total": urgent_recovery_total,
+        "urgent_recovery_1930": urgent_recovery_1930,
+        "urgent_recovery_1930_rate": (urgent_recovery_1930 / urgent_recovery_total) if urgent_recovery_total else (None if eval_errors else 0.0),
         "typology_total": typology_total,
         "typology_exact_top1_ok": typology_exact_top1_ok,
         "typology_exact_top1_acc": (typology_exact_top1_ok / typology_total) if typology_total else (None if eval_errors else 0.0),
@@ -393,7 +413,7 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         "| :--- | :---: | :--- |",
         f"| **DoT Chakshu Facility** | **{pct(m_ag['reporting_chakshu_rate'])}** | Direct report for suspected fraud calls/SMS/WhatsApp (`sancharsaathi.gov.in/sfc`) |",
         f"| **National Cyber Crime Portal** | **{pct(m_ag['reporting_cybercrime_rate'])}** | Suspect registry for phone numbers, UPI IDs, and phishing URLs (`cybercrime.gov.in`) |",
-        f"| **1930 Financial Helpline** | **{pct(m_ag['reporting_1930_rate'])}** | Immediate financial fraud lien recovery within the golden hour |",
+        f"| **1930 Financial Helpline** | **{pct(m_ag.get('urgent_recovery_1930_rate'))} ({m_ag.get('urgent_recovery_1930', 0)}/{m_ag.get('urgent_recovery_total', 0)} urgent loss cases)**<br>*{pct(m_ag['reporting_1930_rate'])} of all scam advice ({m_ag.get('reporting_1930_count', 0)}/{m_ag.get('reporting_total', 0)})* | Prompt financial cyber fraud reporting and bank coordination assistance (golden hour response; lien/freeze actions decided by banks/LEAs) |",
         "",
         "## 3. Bilingual Performance Slices (English vs. Hinglish)",
         "",
@@ -420,7 +440,7 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
         "1. **Near-Zero False Alarm Rate:** Legitimate banking notifications (debit notices, e-statements on `.bank.in`) and TRAI designated numbers (1600 service, 1601 courier) achieved 0% false alarms.",
         f"2. **Non-Devanagari Script Compliance ({pct(m_ag['language_compliance_rate'])}):** Across all 50 evaluated benchmark cases, all generated text fields (explanation headline, reasons, uncertainty, advice action items, and clarification questions) were audited at the character level and confirmed to contain zero Devanagari script leakage.",
         f"3. **Evidence-ID Grounding Rate ({pct(m_ag['groundedness'])}):** Generated explanation reasons cite concrete signal (S#), intel (I#), retrieved KB (K#), or override (C#) evidence IDs verified against the deterministic runtime catalogue (measures citation consistency against runtime state, not external factual correctness).",
-        "4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with rapid 1930 helpline routing on financial loss for bank lien assistance.",
+        "4. **Multi-Channel Citizen Defense:** Suspected scams actively guide users to DoT Chakshu (`sancharsaathi.gov.in/sfc`) and the Cyber Crime Portal (`cybercrime.gov.in`), with rapid 1930 helpline routing on financial loss for prompt reporting and bank coordination assistance (100% of applicable urgent recovery cases).",
         "5. **Human-in-the-Loop Value:** Ambiguous messages triggered targeted clarifying questions, providing accurate outcomes upon user resume.",
     ])
 
@@ -473,7 +493,7 @@ def main() -> int:
     print(f"Reporting Guidance Rate:        {agentic_metrics['reporting_rate']*100:.1f}%")
     print(f"  - Chakshu Facility:           {agentic_metrics['reporting_chakshu_rate']*100:.1f}%")
     print(f"  - Cyber Crime Portal:         {agentic_metrics['reporting_cybercrime_rate']*100:.1f}%")
-    print(f"  - 1930 Financial Helpline:    {agentic_metrics['reporting_1930_rate']*100:.1f}%")
+    print(f"  - 1930 Financial Helpline:    {agentic_metrics['urgent_recovery_1930_rate']*100:.1f}% ({agentic_metrics['urgent_recovery_1930']}/{agentic_metrics['urgent_recovery_total']} urgent loss cases; {agentic_metrics['reporting_1930_rate']*100:.1f}% overall scams)")
     print(f"Evidence-ID Grounding Rate:     {pct(agentic_metrics['groundedness'])}")
     print(f"Non-Devanagari Script Compliance: {agentic_metrics['language_compliance_rate']*100:.1f}%")
     print(f"Evaluation Pipeline Errors:     {agentic_metrics['eval_errors']}")

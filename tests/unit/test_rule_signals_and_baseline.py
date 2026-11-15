@@ -52,6 +52,12 @@ def test_situation_detection() -> None:
     assert rule_signals.detect_situation("I already paid Rs 5000")["money_sent"]
     assert rule_signals.detect_situation("I shared the OTP with him")["credentials_shared"]
     assert rule_signals.detect_situation("maine paise bhej diye")["money_sent"]
+    assert rule_signals.detect_situation(
+        "Maine call wale ko apna bank account number aur OTP dono bata diya hai"
+    )["credentials_shared"]
+    assert rule_signals.detect_situation(
+        "abhi account se 40000 cut hone ka message aaya hai"
+    )["money_sent"]
     assert not any(rule_signals.detect_situation("Got a message about my parcel").values())
 
 
@@ -128,6 +134,11 @@ def test_generate_markdown_report_warning_accuracy() -> None:
         "reporting_chakshu_rate": 0.95,
         "reporting_cybercrime_rate": 0.95,
         "reporting_1930_rate": 0.90,
+        "reporting_1930_count": 2,
+        "reporting_total": 36,
+        "urgent_recovery_total": 2,
+        "urgent_recovery_1930": 2,
+        "urgent_recovery_1930_rate": 1.0,
         "typology_total": 36,
         "typology_exact_top1_acc": 0.90,
         "typology_acceptable_top1_acc": 0.95,
