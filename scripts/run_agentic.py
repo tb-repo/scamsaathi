@@ -41,48 +41,52 @@ def main() -> int:
     totals: Counter[str] = Counter()
     passed = live_calls = 0
     for case in cases:
-        first = runner.assess(case.text)
-        asked = first.status == "needs_followup"
-        outcome = first
-        n_questions = 0
-        while outcome.status == "needs_followup":
-            n_questions += len(outcome.questions)
-            outcome = runner.resume(outcome.thread_id, "skip")
-        assert outcome.risk is not None and outcome.explanation is not None
-        core = check_core(case, outcome.risk, asked)
-        behaviours = check_behaviours(case, outcome.risk, outcome.advice, outcome.intel, asked)
-        typology = check_typology(case, outcome.typologies)
-        failures = core + behaviours + typology
-        passed += not failures
-        live_calls += outcome.llm_calls
-        totals[f"{case.label}_total"] += 1
-        totals[f"{case.label}_ok"] += not core
-        if case.required:
-            totals["behaviour_total"] += 1
-            totals["behaviour_ok"] += not behaviours
-        if case.label == "scam" and case.typologies:
-            totals["typology_total"] += 1
-            totals["typology_ok"] += not typology
+        outcome = None
+        try:
+            first = runner.assess(case.text)
+            asked = first.status == "needs_followup"
+            outcome = first
+            n_questions = 0
+            while outcome.status == "needs_followup":
+                n_questions += len(outcome.questions)
+                outcome = runner.resume(outcome.thread_id, "skip")
+            assert outcome.risk is not None and outcome.explanation is not None
+            core = check_core(case, outcome.risk, asked)
+            behaviours = check_behaviours(case, outcome.risk, outcome.advice, outcome.intel, asked)
+            typology = check_typology(case, outcome.typologies)
+            failures = core + behaviours + typology
+            passed += not failures
+            live_calls += outcome.llm_calls
+            totals[f"{case.label}_total"] += 1
+            totals[f"{case.label}_ok"] += not core
+            if case.required:
+                totals["behaviour_total"] += 1
+                totals["behaviour_ok"] += not behaviours
+            if case.label == "scam" and case.typologies:
+                totals["typology_total"] += 1
+                totals["typology_ok"] += not typology
 
-        flags = ("degraded " if outcome.degraded else "") + (
-            f"asked={n_questions} " if n_questions else "")
-        print(f"{'OK  ' if not failures else 'FAIL'} {case.id:<25} {case.label:<9} "
-              f"-> {outcome.risk.level:<8} {outcome.risk.value:>3}  "
-              f"typ={','.join(outcome.typologies) or '-':<13} live_calls={outcome.llm_calls} "
-              f"expl={outcome.explanation_source} lang={outcome.language} {flags}")
-        print(f"       {outcome.explanation.headline}")
-        for failure in failures:
-            print(f"       ** {failure}")
-        if args.verbose and outcome.advice is not None:
-            for reason in outcome.explanation.reasons:
-                print(f"       - {reason.text} {reason.evidence_ids}")
-            for action in outcome.advice.actions:
-                print(f"       {action.priority}. {action.text}")
-            for contact in outcome.advice.contacts:
-                print(f"       > {contact.name}: {contact.value}")
-        for error in outcome.errors:
-            print(f"       note: {error}")
-        runner.clear_session(outcome.thread_id, purge_checkpoint=True)
+            flags = ("degraded " if outcome.degraded else "") + (
+                f"asked={n_questions} " if n_questions else "")
+            print(f"{'OK  ' if not failures else 'FAIL'} {case.id:<25} {case.label:<9} "
+                  f"-> {outcome.risk.level:<8} {outcome.risk.value:>3}  "
+                  f"typ={','.join(outcome.typologies) or '-':<13} live_calls={outcome.llm_calls} "
+                  f"expl={outcome.explanation_source} lang={outcome.language} {flags}")
+            print(f"       {outcome.explanation.headline}")
+            for failure in failures:
+                print(f"       ** {failure}")
+            if args.verbose and outcome.advice is not None:
+                for reason in outcome.explanation.reasons:
+                    print(f"       - {reason.text} {reason.evidence_ids}")
+                for action in outcome.advice.actions:
+                    print(f"       {action.priority}. {action.text}")
+                for contact in outcome.advice.contacts:
+                    print(f"       > {contact.name}: {contact.value}")
+            for error in outcome.errors:
+                print(f"       note: {error}")
+        finally:
+            if outcome is not None:
+                runner.clear_session(outcome.thread_id, purge_checkpoint=True)
 
     def rate(key: str) -> str:
         return f"{totals[key + '_ok']}/{totals[key + '_total']}"

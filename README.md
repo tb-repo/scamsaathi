@@ -12,7 +12,7 @@
 | **Author** | Thiagarajan Baskarasubramanian |
 | **Architecture** | 9-Agent StateGraph with LangGraph & SQLite Checkpointer |
 | **Primary LLMs** | Google Gemini (gemini-3.5-flash-lite / gemini-3.8-flash) |
-| **Fallback LLMs** | Groq (llama-3.3-70b-versatile) with Circuit-Breaker Gateway |
+| **Fallback LLMs** | Groq (`openai/gpt-oss-20b` fast / `openai/gpt-oss-120b` reasoning, configurable to `llama-3.3-70b-versatile`) with Circuit-Breaker Gateway |
 | **Scope** | Mobile SMS, WhatsApp, and call transcripts in English & Hinglish |
 | **Test Suite** | 268 Unit & Integration Tests (100% Passing) |
 | **Evaluation** | 50-Case Comprehensive Benchmark (97.2% Scam Recall, 0% False Alarms on Banking) |

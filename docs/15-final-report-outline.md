@@ -117,14 +117,14 @@ ScamSaathi incorporates domain knowledge compiled from official advisories (DoT,
 | **SC-05** | Part-Time Task / Telegram Job | YouTube like/review task paying ₹150, followed by frozen "prepaid crypto tasks". | Advance-deposit requirements and frozen task deposits are primary indicators of fraudulent task-investment schemes. Cease contact immediately. |
 | **SC-06** | Malicious APK / Courier Tracking | SMS about undelivered parcel asking user to download `.apk` support app. | Sideloaded APKs hijack SMS permissions and steal 2FA OTPs. |
 | **SC-07** | Customs Clearance / Foreign Gift | Foreign acquaintance sends luxury gift, customs agent demands clearance fee. | Indian Customs officially advises that import duties are payable through the official ICEGATE portal, never to personal UPI handles or bank accounts. |
-| **SC-08** | Lottery / KBC Lucky Draw | SMS/WhatsApp claiming ₹25 Lakh lottery win; requires registration fee. | Advance-fee lottery is prohibited under Indian law. Report to Chakshu. |
+| **SC-08** | Lottery / KBC Lucky Draw | SMS/WhatsApp claiming ₹25 Lakh lottery win; requires registration fee. | Demands for registration fees, taxes, or processing charges to claim purported lottery winnings are primary indicators of advance-fee lottery fraud. Report to Chakshu. |
 | **SC-09** | Loan App Extortion (Instant Loan) | Predatory app accesses phone contacts, demands usurious interest with blackmail. | Only borrow from RBI-registered NBFCs. Report harassment to Cyber Crime Portal. |
 | **SC-10** | Aadhaar / Biometric Update | Phishing links claiming Aadhaar will be locked unless updated immediately. | Official updates only occur on `myaadhaar.uidai.gov.in` or physical enrolment centers. |
 | **SC-11** | Pension / Life Certificate (DLC) | Targets senior citizens claiming pension will lapse unless biometric APK is run. | Use official Jeevan Pramaan app or doorstep banking services. |
 | **SC-12** | Investment / Stock Trading Tips | WhatsApp VIP trading groups promising 500% returns on unlisted shares. | Only invest through SEBI-registered brokers. Verify on `sebi.gov.in`. |
-| **SC-13** | Illegal Betting & Color Prediction | Telegram color prediction games with rigged withdrawal locks. | Online gambling and color prediction platforms are illegal and rig payouts. |
+| **SC-13** | Illegal Betting & Color Prediction | Telegram color prediction games with rigged withdrawal locks. | Unregulated color prediction and online betting platforms frequently rig outcomes and freeze user funds upon withdrawal attempts. |
 | **SC-14** | Video Call Blackmail (Sextortion) | Nude WhatsApp video call followed by morphed video extortion by fake police. | Never pay ransom; scammers demand repeated payments. File immediate report on 1930. |
-| **SC-15** | SIM Card / Mule Recruitment | Offer of monthly rental money in exchange for opening bank accounts or registering SIMs. | Operating money mule accounts or surrogate SIMs is a criminal offence under BNS. |
+| **SC-15** | SIM Card / Mule Recruitment | Offer of monthly rental money in exchange for opening bank accounts or registering SIMs. | Law enforcement advisories warn that renting out bank accounts or SIM cards facilitates illicit money laundering and fraud syndicates. Report to 1930. |
 
 ---
 

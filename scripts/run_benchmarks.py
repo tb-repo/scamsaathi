@@ -320,10 +320,11 @@ def evaluate_pipeline(
 
 
 def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[str, Any]) -> str:
+    today_str = datetime.date.today().isoformat()
     lines = [
         "# ScamSaathi: Benchmark & Evaluation Report (Phase 7 & Hardened Rigor)",
         "",
-        "**Generated:** 2026-11-14 | **Evaluation Dataset Size:** 50 Cases",
+        f"**Generated:** {today_str} | **Evaluation Dataset Size:** 50 Cases",
         "",
     ]
 
