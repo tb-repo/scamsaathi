@@ -219,3 +219,6 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Capstone submission folder (internal slides, outlines, and presentation deliverables)
+submission/

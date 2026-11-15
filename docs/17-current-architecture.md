@@ -3,7 +3,7 @@
 **Implementation view**  
 This diagram reflects the current code paths. The Streamlit UI and FastAPI API are separate entry points into the same Python pipeline; the Streamlit UI calls `AgentRunner` directly and does not call the FastAPI service.
 
-![ScamSaathi current implementation architecture](../submission/ScamSaathi_Architecture.svg)
+![ScamSaathi current implementation architecture](ScamSaathi_Architecture.svg)
 
 The SVG is a scalable vector asset suitable for the final report or slide deck. Its component labels, boundaries, arrows, and trust zones remain editable in vector-capable tools.
 

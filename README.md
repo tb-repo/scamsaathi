@@ -1,7 +1,7 @@
 # 🛡️ ScamSaathi (स्कैम साथी)
 
 <p align="center">
-  <img src="submission/ScamSaathi_Architecture.svg" alt="ScamSaathi Multi-Agent Architecture" width="100%" />
+  <img src="docs/ScamSaathi_Architecture.svg" alt="ScamSaathi Multi-Agent Architecture" width="100%" />
 </p>
 
 <p align="center">
@@ -42,7 +42,7 @@ Traditional defense tools fail because:
 
 The ScamSaathi architecture strictly separates access, application execution, external AI gateways, and user-directed reporting into 4 clear architectural zones:
 
-![ScamSaathi Current Implementation Architecture](submission/ScamSaathi_Architecture.svg)
+![ScamSaathi Current Implementation Architecture](docs/ScamSaathi_Architecture.svg)
 
 ### The 4 Architectural Zones
 
@@ -340,7 +340,8 @@ scamsaathi/
 │   ├── 08-security-privacy-responsible-ai.md # DPDP Act compliance & threat model
 │   ├── 11-adr/             # Architectural Decision Records (ADR-001 to ADR-006)
 │   ├── 14-user-deployment-demo-guide.md # Deployment & live demo instructions
-│   └── 15-final-report-outline.md       # Executive final report outline
+│   ├── 17-current-architecture.md       # Architecture walkthrough
+│   └── ScamSaathi_Architecture.svg      # Full implementation architecture diagram
 ├── reports/                # Benchmark evaluation reports & run metadata
 │   ├── benchmark_report.md # Generated Markdown benchmark evaluation report
 │   └── benchmark_run_meta.json # Detailed per-case metrics & execution metadata
@@ -362,8 +363,6 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
-├── submission/             # Architecture diagrams, slides & final deliverables
-│   └── ScamSaathi_Architecture.svg # Full implementation architecture diagram
 ├── tests/                  # 268 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies

@@ -72,7 +72,7 @@ Scams such as UPI collect-request fraud, OTP and KYC phishing, "digital arrest" 
 | D-5 | Automated tests and evaluation harness | `tests/` |
 | D-6 | Evaluation report | `docs/09-test-evaluation-strategy.md` and `reports/` |
 | D-7 | Demo script and recorded fallback demo | `docs/14-user-deployment-demo-guide.md` |
-| D-8 | Final report and presentation | `docs/15-final-report-outline.md` |
+| D-8 | Final report and presentation | Capstone submission package |
 
 ## 6. Success criteria
 
