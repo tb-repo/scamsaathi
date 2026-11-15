@@ -1,10 +1,6 @@
 # 🛡️ ScamSaathi (स्कैम साथी)
 
 <p align="center">
-  <img src="docs/ScamSaathi_Architecture.svg" alt="ScamSaathi Multi-Agent Architecture" width="100%" />
-</p>
-
-<p align="center">
   <strong>An Agentic AI Assistant for Mobile Scam Defense in India</strong><br>
   <em>Protecting citizens against SMS, WhatsApp, and call scams through deterministic guardrails, privacy-preserving multi-agent reasoning, and official recovery guidance.</em>
 </p>
