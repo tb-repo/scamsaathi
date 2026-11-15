@@ -83,22 +83,80 @@ def test_assess_and_resume_ambiguous_case(client: TestClient) -> None:
         assert resume_data["status"] == "complete"
         assert resume_data["risk_level"] is not None
 
-        # 3. Unauthorized delete attempt fails
-        bad_del = client.delete(f"/session/{thread_id}?token=wrong_token")
-        assert bad_del.status_code == 403
+        # 3. Completed resume outcome immediately purges session from SQLite storage (DPDP storage limitation)
+        assert resume_data.get("session_token") is None
+        assert state.sqlite_conn is not None
+        cur = state.sqlite_conn.cursor()
+        cur.execute("SELECT thread_id FROM session_meta WHERE thread_id = ?", (thread_id,))
+        assert cur.fetchone() is None
+        cur.execute("SELECT thread_id FROM checkpoints WHERE thread_id = ?", (thread_id,))
+        assert cur.fetchone() is None
+        cur.execute("SELECT thread_id FROM writes WHERE thread_id = ?", (thread_id,))
+        assert cur.fetchone() is None
+        if state.runner is not None:
+            assert thread_id not in state.runner._session_mappings
 
-        # 4. Authorized delete succeeds
+        # 4. Attempting to delete the already-completed and purged session returns 404
         del_resp = client.delete(f"/session/{thread_id}?token={session_token}")
-        assert del_resp.status_code == 200
-        assert del_resp.json()["status"] == "cleared"
+        assert del_resp.status_code == 404
     else:
         assert data["status"] == "complete"
 
 
+def test_delete_active_session_ownership_and_lifecycle(client: TestClient) -> None:
+    vague_text = "They called about my parcel."
+    resp = client.post("/assess", json={"text": vague_text})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "needs_followup"
+    thread_id = data["thread_id"]
+    session_token = data["session_token"]
+    assert session_token is not None
+
+    # 1. Unauthorized delete attempt fails
+    bad_del = client.delete(f"/session/{thread_id}?token=wrong_token")
+    assert bad_del.status_code == 403
+
+    # 2. Authorized delete succeeds
+    del_resp = client.delete(f"/session/{thread_id}?token={session_token}")
+    assert del_resp.status_code == 200
+    assert del_resp.json()["status"] == "cleared"
+
+    # 3. Subsequent delete attempt returns 404
+    del_again = client.delete(f"/session/{thread_id}?token={session_token}")
+    assert del_again.status_code == 404
+
+
+def test_assess_completed_purges_immediately(client: TestClient) -> None:
+    custom_thread_id = "test_completed_purge_999"
+    kyc_sms = (
+        "SBI Alert: Dear customer your SBI YONO account has been blocked today. "
+        "Update KYC immediately at http://sbi-kyc-update.example/pan. Share OTP to verify."
+    )
+    resp = client.post("/assess", json={"text": kyc_sms, "thread_id": custom_thread_id})
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["status"] == "complete"
+    assert data.get("session_token") is None
+
+    # Verify session records (metadata and checkpoints) are purged immediately upon complete outcome
+    assert state.sqlite_conn is not None
+    cur = state.sqlite_conn.cursor()
+    cur.execute("SELECT thread_id FROM session_meta WHERE thread_id = ?", (custom_thread_id,))
+    assert cur.fetchone() is None
+    cur.execute("SELECT thread_id FROM checkpoints WHERE thread_id = ?", (custom_thread_id,))
+    assert cur.fetchone() is None
+    cur.execute("SELECT thread_id FROM writes WHERE thread_id = ?", (custom_thread_id,))
+    assert cur.fetchone() is None
+    if state.runner is not None:
+        assert custom_thread_id not in state.runner._session_mappings
+
+
 def test_assess_rejects_duplicate_session_id(client: TestClient) -> None:
     custom_thread_id = "test_custom_thread_123456"
-    resp1 = client.post("/assess", json={"text": "Hello, please verify your account", "thread_id": custom_thread_id})
+    resp1 = client.post("/assess", json={"text": "They called about my parcel.", "thread_id": custom_thread_id})
     assert resp1.status_code == 200
+    assert resp1.json()["status"] == "needs_followup"
     token = resp1.json()["session_token"]
 
     # Second attempt with same thread_id is rejected with 409 Conflict
@@ -193,10 +251,12 @@ def test_delete_session_database_failure_fails_closed(client: TestClient) -> Non
     custom_thread_id = "test_atomic_del_thread_123"
     resp = client.post(
         "/assess",
-        json={"text": "Hello verification needed", "thread_id": custom_thread_id},
+        json={"text": "They called about my parcel.", "thread_id": custom_thread_id},
     )
     assert resp.status_code == 200
+    assert resp.json()["status"] == "needs_followup"
     token = resp.json()["session_token"]
+    assert token is not None
 
     state.sqlite_conn.execute("DROP TRIGGER IF EXISTS fail_delete_test;")
     state.sqlite_conn.commit()
@@ -225,10 +285,12 @@ def test_delete_session_via_header_token(client: TestClient) -> None:
     custom_thread_id = "test_header_token_del_123"
     resp = client.post(
         "/assess",
-        json={"text": "Custom verification request", "thread_id": custom_thread_id},
+        json={"text": "They called about my parcel.", "thread_id": custom_thread_id},
     )
     assert resp.status_code == 200
+    assert resp.json()["status"] == "needs_followup"
     token = resp.json()["session_token"]
+    assert token is not None
 
     # Delete using X-Session-Token header instead of query param
     del_resp = client.delete(
@@ -379,10 +441,12 @@ def test_resume_expired_session_purge_failure_fails_closed(client: TestClient) -
     custom_thread_id = "test_exp_fail_purge_123"
     resp = client.post(
         "/assess",
-        json={"text": "Courier parcel notification", "thread_id": custom_thread_id},
+        json={"text": "They called about my parcel.", "thread_id": custom_thread_id},
     )
     assert resp.status_code == 200
+    assert resp.json()["status"] == "needs_followup"
     token = resp.json()["session_token"]
+    assert token is not None
 
     # Age the session past 24h
     state.sqlite_conn.execute(
@@ -467,9 +531,10 @@ def test_concurrent_assess_resume_and_cleanup(client: TestClient) -> None:
 
     assert not errors, f"Concurrent operations encountered errors: {errors}"
 
-    # Clean up base threads
+    # Clean up base threads if any remain
     for tid, token in base_threads.items():
-        client.delete(f"/session/{tid}", headers={"X-Session-Token": token})
+        if token:
+            client.delete(f"/session/{tid}", headers={"X-Session-Token": token})
 
 
 

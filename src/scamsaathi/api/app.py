@@ -356,7 +356,13 @@ def create_app() -> FastAPI:
 
             try:
                 outcome = state.runner.assess(req.text, thread_id=thread_id)
-                return outcome_to_response(outcome, session_token=session_token)
+                resp = outcome_to_response(
+                    outcome,
+                    session_token=session_token if outcome.status == "needs_followup" else None,
+                )
+                if outcome.status == "complete":
+                    _purge_session_records(state.sqlite_conn, thread_id)
+                return resp
             except ValueError as exc:
                 _purge_session_records(state.sqlite_conn, thread_id)
                 raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(exc)) from exc
@@ -432,7 +438,13 @@ def create_app() -> FastAPI:
 
             try:
                 outcome = state.runner.resume(req.thread_id, req.answer)
-                return outcome_to_response(outcome, session_token=token_to_verify)
+                resp = outcome_to_response(
+                    outcome,
+                    session_token=token_to_verify if outcome.status == "needs_followup" else None,
+                )
+                if outcome.status == "complete":
+                    _purge_session_records(state.sqlite_conn, req.thread_id)
+                return resp
             except HTTPException:
                 raise
             except Exception as exc:
