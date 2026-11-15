@@ -17,7 +17,7 @@
 | **Evaluation Pipeline Errors** | 0 | 0 | **0** | 0 | Unhandled exceptions during evaluation |
 | **Official Reporting Guidance** | N/A | N/A | **97.2%** | Active Citizen Defense | Any official channel recommended |
 | **Ambiguous Case Clarification** | 100.0% | 0.0% (No Interview) | **66.7%** | Interactive Interview | Proactive clarification questions on under-specified inputs (measures interview triggering behavior) |
-| **Median Latency** | < 5000 ms | 4.1 ms | 83.8 ms | Cached/Fast | End-to-end multi-agent graph |
+| **Median Latency** | < 5000 ms | 2.7 ms | 132.4 ms | Cached/Fast | End-to-end multi-agent graph |
 
 ## 2. Official Citizen Reporting Channel Breakdown
 
