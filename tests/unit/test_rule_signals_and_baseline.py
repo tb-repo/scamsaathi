@@ -107,3 +107,68 @@ def test_evaluate_pipeline_handles_runner_exception_without_unbound_local() -> N
     assert metrics["behaviour_total"] == 0
     assert metrics["evaluated_cases"] == 0
 
+
+def test_generate_markdown_report_warning_accuracy() -> None:
+    from scripts.run_benchmarks import generate_markdown_report
+
+    base_metrics = {
+        "total_cases": 50,
+        "evaluated_cases": 50,
+        "eval_errors": 0,
+        "scams_total": 36,
+        "scam_recall_warned": 0.95,
+        "scam_recall_high": 0.90,
+        "legit_total": 14,
+        "legit_clean": 13,
+        "false_alarm_rate": 0.05,
+        "behaviour_total": 36,
+        "behaviour_ok": 36,
+        "behaviour_rate": 1.0,
+        "reporting_rate": 0.95,
+        "reporting_chakshu_rate": 0.95,
+        "reporting_cybercrime_rate": 0.95,
+        "reporting_1930_rate": 0.90,
+        "typology_total": 36,
+        "typology_exact_top1_acc": 0.90,
+        "typology_acceptable_top1_acc": 0.95,
+        "typology_top3_acc": 0.95,
+        "groundedness": 0.85,
+        "language_compliance_rate": 1.0,
+        "ambiguous_total": 3,
+        "ambiguous_interviewed": 3,
+        "median_latency_ms": 100.0,
+        "p95_latency_ms": 150.0,
+        "by_lang": {
+            "en": {"scam_total": 20, "scam_warned": 19, "legit_total": 10, "legit_clean": 9},
+            "hinglish": {"scam_total": 16, "scam_warned": 16, "legit_total": 1, "legit_clean": 1},
+        },
+        "cases": [],
+    }
+
+    # Case 1: No errors in either pipeline -> No warning
+    md_no_err = generate_markdown_report(base_metrics, base_metrics)
+    assert "Evaluation Warning" not in md_no_err
+
+    # Case 2: Only Baseline B0 has errors
+    b0_err_metrics = dict(base_metrics, eval_errors=2, evaluated_cases=48)
+    md_b0_err = generate_markdown_report(b0_err_metrics, base_metrics)
+    assert "Evaluation Warning" in md_b0_err
+    warn_b0 = next(line for line in md_b0_err.splitlines() if line.startswith("> ⚠️"))
+    assert "Baseline B0: 2 error(s) (48/50 cases evaluated)" in warn_b0
+    assert "Agentic pipeline:" not in warn_b0
+
+    # Case 3: Only Agentic has errors
+    ag_err_metrics = dict(base_metrics, eval_errors=1, evaluated_cases=49)
+    md_ag_err = generate_markdown_report(base_metrics, ag_err_metrics)
+    assert "Evaluation Warning" in md_ag_err
+    warn_ag = next(line for line in md_ag_err.splitlines() if line.startswith("> ⚠️"))
+    assert "Agentic pipeline: 1 error(s) (49/50 cases evaluated)" in warn_ag
+    assert "Baseline B0:" not in warn_ag
+
+    # Case 4: Both have errors
+    md_both_err = generate_markdown_report(b0_err_metrics, ag_err_metrics)
+    assert "Evaluation Warning" in md_both_err
+    warn_both = next(line for line in md_both_err.splitlines() if line.startswith("> ⚠️"))
+    assert "Agentic pipeline: 1 error(s) (49/50 cases evaluated)" in warn_both
+    assert "Baseline B0: 2 error(s) (48/50 cases evaluated)" in warn_both
+

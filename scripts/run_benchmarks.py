@@ -301,10 +301,19 @@ def generate_markdown_report(b0_metrics: dict[str, Any], agentic_metrics: dict[s
     m_b0 = b0_metrics
     m_ag = agentic_metrics
 
-    if m_ag.get("eval_errors", 0) > 0 or m_b0.get("eval_errors", 0) > 0:
+    err_parts = []
+    if m_ag.get("eval_errors", 0) > 0:
+        err_parts.append(
+            f"Agentic pipeline: {m_ag['eval_errors']} error(s) ({m_ag.get('evaluated_cases', 0)}/{m_ag.get('total_cases', 0)} cases evaluated)"
+        )
+    if m_b0.get("eval_errors", 0) > 0:
+        err_parts.append(
+            f"Baseline B0: {m_b0['eval_errors']} error(s) ({m_b0.get('evaluated_cases', 0)}/{m_b0.get('total_cases', 0)} cases evaluated)"
+        )
+    if err_parts:
         lines.extend([
-            f"> ⚠️ **Evaluation Warning**: {m_ag.get('eval_errors', 0)} evaluation error(s) occurred during benchmarking. "
-            f"Quality metrics exclude errored cases and reflect partial evaluation ({m_ag.get('evaluated_cases', 0)}/{m_ag.get('total_cases', 0)} cases).",
+            f"> ⚠️ **Evaluation Warning**: Benchmark encountered pipeline errors: {'; '.join(err_parts)}. "
+            "Quality metrics exclude errored cases from denominators.",
             "",
         ])
 

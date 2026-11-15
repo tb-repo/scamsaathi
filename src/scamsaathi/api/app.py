@@ -198,6 +198,7 @@ def create_app() -> FastAPI:
     app.state.rate_limit_records = _rate_limit_records
     _RATE_LIMIT_MAX_REQUESTS = 60
     _RATE_LIMIT_WINDOW_SECONDS = 60.0
+    _RATE_LIMIT_MAX_TRACKED_IPS = 1000
 
     @app.middleware("http")
     async def rate_limit_middleware(request: Request, call_next: Any) -> Response:
@@ -208,7 +209,11 @@ def create_app() -> FastAPI:
         settings = get_settings()
         trusted = settings.trusted_proxy_set
 
-        # Trust X-Forwarded-For only when the direct connecting peer is in trusted_proxies
+        # Reverse Proxy Deployment Prerequisite:
+        # Trust X-Forwarded-For only when the direct connecting peer is in trusted_proxies.
+        # Production reverse proxies (e.g. Nginx, Envoy, AWS ALB) MUST be configured
+        # to strip or overwrite any client-supplied X-Forwarded-For header before appending
+        # the verified client IP. When so configured, the first IP in the header is the authentic client.
         if direct_ip in trusted and "x-forwarded-for" in request.headers:
             client_ip = request.headers["x-forwarded-for"].split(",")[0].strip()
         else:
@@ -218,12 +223,19 @@ def create_app() -> FastAPI:
         window_start = now - _RATE_LIMIT_WINDOW_SECONDS
 
         records: dict[str, list[float]] = getattr(app.state, "rate_limit_records", _rate_limit_records)
+        max_tracked = getattr(app.state, "rate_limit_max_tracked_ips", _RATE_LIMIT_MAX_TRACKED_IPS)
 
-        # Opportunistic eviction of stale IP keys to prevent unbounded memory growth
+        # 1. Opportunistic eviction of stale IP keys to prevent unbounded memory growth
         if len(records) > 200:
             stale = [ip for ip, timestamps in records.items() if not timestamps or timestamps[-1] <= window_start]
             for ip in stale:
                 records.pop(ip, None)
+
+        # 2. Strict memory bounding: enforce hard cap on active tracked IPs
+        if len(records) >= max_tracked and client_ip not in records:
+            # Evict the entry with the oldest recorded activity to enforce a fixed upper memory bound
+            oldest_ip = min(records.keys(), key=lambda k: records[k][-1] if records[k] else 0.0)
+            records.pop(oldest_ip, None)
 
         history = [ts for ts in records.get(client_ip, []) if ts > window_start]
         if len(history) >= _RATE_LIMIT_MAX_REQUESTS:

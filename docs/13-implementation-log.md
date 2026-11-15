@@ -210,7 +210,7 @@ A chronological journal of what was done, decisions, issues, and next steps. New
     - Reason Groundedness: **100.0%** (100% reasons linked to evidence IDs).
     - Top-1 Typology Accuracy: **97.1%** (Target >= 80.0% MET).
     - Official Reporting Rate: **94.4%** of scam advice directs users to Chakshu or Cyber Crime Portal.
-    - Hinglish Recall: **100.0%** (16/16 scams identified accurately with 100% English responses).
+    - Hinglish Recall: **100.0%** (16/16 scams identified accurately; audited for non-Devanagari script compliance with zero Devanagari script leakage in English responses).
   - Report generated: `reports/benchmark_report.md`.
 - Next: Phase 8 (Hardening & Demo Prep).
 

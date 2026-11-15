@@ -261,6 +261,39 @@ def test_rate_limiting_middleware(client: TestClient) -> None:
             app.state.rate_limit_records.clear()
 
 
+def test_rate_limiting_tracked_ips_hard_cap(client: TestClient) -> None:
+    # Verify that memory is strictly bounded by evicting oldest tracked IP when capacity is reached
+    orig_cap = getattr(app.state, "rate_limit_max_tracked_ips", None)
+    app.state.rate_limit_max_tracked_ips = 5
+    try:
+        if hasattr(app.state, "rate_limit_records"):
+            app.state.rate_limit_records.clear()
+
+        # Send requests from 5 distinct IPs (via X-Forwarded-For since testclient is in trusted_proxies)
+        for i in range(1, 6):
+            r = client.get("/health", headers={"X-Forwarded-For": f"10.0.0.{i}"})
+            assert r.status_code == 200
+
+        records = app.state.rate_limit_records
+        assert len(records) == 5
+        assert "10.0.0.1" in records
+
+        # Request from a 6th IP should evict the oldest tracked IP (10.0.0.1)
+        time.sleep(0.02)
+        r = client.get("/health", headers={"X-Forwarded-For": "10.0.0.6"})
+        assert r.status_code == 200
+        assert len(records) == 5
+        assert "10.0.0.1" not in records
+        assert "10.0.0.6" in records
+    finally:
+        if orig_cap is not None:
+            app.state.rate_limit_max_tracked_ips = orig_cap
+        elif hasattr(app.state, "rate_limit_max_tracked_ips"):
+            delattr(app.state, "rate_limit_max_tracked_ips")
+        if hasattr(app.state, "rate_limit_records"):
+            app.state.rate_limit_records.clear()
+
+
 def test_resume_expired_session_purge_failure_fails_closed(client: TestClient) -> None:
     assert state.sqlite_conn is not None
 

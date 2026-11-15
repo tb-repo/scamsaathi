@@ -157,6 +157,7 @@ Key configuration options (configured via `.env` or environment):
 - `GEMINI_MODEL_FAST`: Fast classification model (default: `gemini-3.5-flash-lite` from `config/llm.yaml`).
 - `GEMINI_MODEL_REASONING`: Reasoning/explanation model (default: `gemini-3.8-flash` from `config/llm.yaml`).
 - `SCAMSAATHI_MAX_LLM_CALLS_PER_REQUEST`: Per-request call budget cap (default: 6).
+- `SCAMSAATHI_TRUSTED_PROXIES`: Comma-separated trusted upstream proxy IPs/hostnames (default: `127.0.0.1,::1,localhost,testclient`). The rate limiter only trusts `X-Forwarded-For` from direct peers in this list; reverse proxies must strip/overwrite incoming untrusted forwarding headers.
 
 ### 3. Running the Streamlit Web Application
 

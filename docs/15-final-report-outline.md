@@ -152,7 +152,7 @@ Evaluation was conducted against the expanded 50-case benchmark dataset (`data/e
 | **English (EN)** | 20 | 19 | **95.0%** | 10 | 1 | 10.0% |
 | **Hinglish (HI-EN)** | 16 | 16 | **100.0%** | 1 | 0 | **0.0%** |
 
-*Key Takeaway:* ScamSaathi achieved **100.0% recall on Hinglish scams**, demonstrating that its multilingual prompt engineering and localized entity extraction accurately decipher colloquial threats while keeping all output strictly in safe, precise English.
+*Key Takeaway:* ScamSaathi achieved **100.0% recall on Hinglish scams**, demonstrating that its multilingual prompt engineering and localized entity extraction accurately decipher colloquial threats while keeping all generated output strictly compliant with non-Devanagari script requirements (audited for zero Devanagari script leakage in English responses).
 
 ---
 
