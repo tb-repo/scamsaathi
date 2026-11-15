@@ -1,0 +1,447 @@
+{
+  "run_id": "xr_run_20261115_221350",
+  "date": "2026-11-15 22:21:58",
+  "commit": "4d7b364e1e278176657aa7da29946a31c1f79dd8",
+  "short_commit": "4d7b364",
+  "config_sha256": "d55b23e0dfd679d25cdfc9e5356b0b5569a04cec119f5d23669940771fb286f3",
+  "mode_provider_model": "live/gemini/gemini-3.5-flash-lite+gemini-3.8-flash",
+  "total_cases": 28,
+  "results": [
+    {
+      "case_id": "xr_severe_digital_arrest_hinglish",
+      "label": "scam",
+      "language": "hinglish",
+      "status": "complete",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "typologies": [
+        "SC-01"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 20579.02180000383
+    },
+    {
+      "case_id": "xr_severe_bank_otp_en",
+      "label": "scam",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 70,
+      "typologies": [
+        "SC-03"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 16513.73720000265
+    },
+    {
+      "case_id": "xr_severe_upi_collect_hi",
+      "label": "scam",
+      "language": "hi",
+      "status": "complete",
+      "risk_level": "MEDIUM",
+      "risk_score": 32,
+      "typologies": [
+        "SC-04"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 17649.58719999413
+    },
+    {
+      "case_id": "xr_severe_paid_kyc_en",
+      "label": "scam",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 66,
+      "typologies": [
+        "SC-02"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [
+        "urgent recovery not triggered"
+      ],
+      "latency_ms": 18029.709399997955
+    },
+    {
+      "case_id": "xr_severe_remote_access_en",
+      "label": "scam",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "CRITICAL",
+      "risk_score": 97,
+      "typologies": [
+        "SC-11",
+        "SC-02"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 20226.943199988455
+    },
+    {
+      "case_id": "xr_severe_loan_blackmail_hinglish",
+      "label": "scam",
+      "language": "hinglish",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 68,
+      "typologies": [
+        "SC-06",
+        "SC-14"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 17830.385100009153
+    },
+    {
+      "case_id": "xr_scam_task_fee_hinglish",
+      "label": "scam",
+      "language": "hinglish",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 66,
+      "typologies": [
+        "SC-05"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 14961.340499998187
+    },
+    {
+      "case_id": "xr_scam_parcel_fee_hi",
+      "label": "scam",
+      "language": "hi",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 70,
+      "typologies": [
+        "SC-07",
+        "SC-03"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 14346.127600001637
+    },
+    {
+      "case_id": "xr_scam_lottery_fee_en",
+      "label": "scam",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "CRITICAL",
+      "risk_score": 100,
+      "typologies": [
+        "SC-08"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 17872.027999997954
+    },
+    {
+      "case_id": "xr_scam_investment_pressure_en",
+      "label": "scam",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 73,
+      "typologies": [
+        "SC-09"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 16007.892299996456
+    },
+    {
+      "case_id": "xr_scam_injection_kyc_en",
+      "label": "scam",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 65,
+      "typologies": [
+        "SC-02",
+        "SC-03"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 19625.17710000975
+    },
+    {
+      "case_id": "xr_scam_power_bill_hinglish",
+      "label": "scam",
+      "language": "hinglish",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 77,
+      "typologies": [
+        "SC-10"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 18939.801700005773
+    },
+    {
+      "case_id": "xr_scam_relative_distress_en",
+      "label": "scam",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "HIGH",
+      "risk_score": 60,
+      "typologies": [
+        "SC-12"
+      ],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "Yes",
+      "failures": [],
+      "latency_ms": 23774.070900006336
+    },
+    {
+      "case_id": "xr_legit_bank_debit_context",
+      "label": "legit",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 19231.700300006196
+    },
+    {
+      "case_id": "xr_legit_salary_credit",
+      "label": "legit",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 16526.841400002013
+    },
+    {
+      "case_id": "xr_legit_delivery_status_hinglish",
+      "label": "legit",
+      "language": "hinglish",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 15803.018399994471
+    },
+    {
+      "case_id": "xr_legit_meeting_friend_hi",
+      "label": "legit",
+      "language": "hi",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 15747.35080001119
+    },
+    {
+      "case_id": "xr_legit_awareness_quote_en",
+      "label": "legit",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 13294.481400007498
+    },
+    {
+      "case_id": "xr_legit_bank_statement_context",
+      "label": "legit",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 15053.616699995473
+    },
+    {
+      "case_id": "xr_legit_school_notice",
+      "label": "legit",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 11880.959099988104
+    },
+    {
+      "case_id": "xr_legit_account_login_otp_context",
+      "label": "legit",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 15559.753699999419
+    },
+    {
+      "case_id": "xr_ambiguous_parcel_call",
+      "label": "ambiguous",
+      "language": "en",
+      "status": "needs_followup",
+      "risk_level": "LOW",
+      "risk_score": 7,
+      "typologies": [],
+      "clarification_triggered": true,
+      "questions": "Did they ask you to pay or transfer money? | Did they say they were from the police, a court, a government office, or a bank? | Did they threaten to block your account, cut your service, or arrest you?",
+      "reporting_in_top3": "No",
+      "failures": [],
+      "latency_ms": 7172.040100005688
+    },
+    {
+      "case_id": "xr_ambiguous_job_offer_hinglish",
+      "label": "ambiguous",
+      "language": "hinglish",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 22,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [
+        "ambiguous case was not interviewed"
+      ],
+      "latency_ms": 13786.690699998871
+    },
+    {
+      "case_id": "xr_ambiguous_bank_callback_hi",
+      "label": "ambiguous",
+      "language": "hi",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [
+        "ambiguous case was not interviewed"
+      ],
+      "latency_ms": 24405.17890000774
+    },
+    {
+      "case_id": "xr_ambiguous_friend_help_en",
+      "label": "ambiguous",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 11,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [
+        "ambiguous case was not interviewed"
+      ],
+      "latency_ms": 26623.864699999103
+    },
+    {
+      "case_id": "xr_ambiguous_job_cv_en",
+      "label": "ambiguous",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 6,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [
+        "ambiguous case was not interviewed"
+      ],
+      "latency_ms": 15873.311699993792
+    },
+    {
+      "case_id": "xr_ambiguous_government_status_hinglish",
+      "label": "ambiguous",
+      "language": "hinglish",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [
+        "ambiguous case was not interviewed"
+      ],
+      "latency_ms": 16286.504000003333
+    },
+    {
+      "case_id": "xr_ambiguous_investment_chat_en",
+      "label": "ambiguous",
+      "language": "en",
+      "status": "complete",
+      "risk_level": "LOW",
+      "risk_score": 0,
+      "typologies": [],
+      "clarification_triggered": false,
+      "questions": "",
+      "reporting_in_top3": "No",
+      "failures": [
+        "ambiguous case was not interviewed"
+      ],
+      "latency_ms": 16379.809899997781
+    }
+  ]
+}

@@ -68,6 +68,20 @@ def test_situation_detection() -> None:
     assert sit_paid_kyc["credentials_shared"]
     assert sit_paid_kyc["link_clicked"]
 
+    # Positive mixed-clause tests (scoped event detection across contrastive boundaries)
+    assert rule_signals.detect_situation(
+        "I shared my OTP. I did not share my PIN."
+    )["credentials_shared"]
+    assert rule_signals.detect_situation(
+        "I have not shared my OTP, but I gave the caller my banking password."
+    )["credentials_shared"]
+    assert rule_signals.detect_situation(
+        "What if I shared my OTP? I now confirm I shared it with the caller."
+    )["credentials_shared"]
+    assert rule_signals.detect_situation(
+        "Your account was debited INR 500; I already transferred another INR 2,000 to the fraudster."
+    )["money_sent"]
+
     # Negative / false-positive guard tests (negations, hypotheticals, routine bank alerts)
     assert not rule_signals.detect_situation("I have not shared my OTP")["credentials_shared"]
     assert not rule_signals.detect_situation("I did not enter my password")["credentials_shared"]

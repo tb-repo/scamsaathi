@@ -135,12 +135,18 @@ def _credential_requests(text: str) -> list[re.Match[str]]:
     return hits
 
 
+# Clause boundary: punctuation, linebreaks, or contrastive conjunctions
+_CLAUSE_BOUNDARY: Final = re.compile(
+    r"(?:[.!?;:\n]+|\b(?:but|however|although|though|whereas|while|lekin|magar|parantu|kintu)\b)",
+    re.I,
+)
+
 _PRE_NEG_OR_HYPO: Final = re.compile(
     r"\b(?:not|n't|never|neither|no|did not|didn't|have not|haven't|has not|hasn't|was not|wasn't|"
     r"refused|avoided|declined|without|if|what if|suppose|assuming|whether|in case|agar|yadi|kya hoga agar)\b",
     re.I,
 )
-_POST_NEG: Final = re.compile(r"\b(?:nahi|nahin|na|mat|kabhi nahi|not)\b", re.I)
+_POST_NEG: Final = re.compile(r"^\W*(?:nahi|nahin|na|mat|kabhi nahi)\b", re.I)
 
 # Routine bank transactional notice addressed in second person ("your account/card")
 _BANK_TX_NOTICE: Final = re.compile(
@@ -160,6 +166,7 @@ _MONEY_SENT: Final = re.compile(
 )
 _CREDS_SHARED: Final = re.compile(
     rf"(?:\bi (?:have )?(?:already )?|\band )?(?:shared|gave|told|entered|sent|provided|typed in)\b.{{0,25}}?\b{_SECRET}\b|"
+    rf"\bi (?:now )?(?:confirm )?(?:that )?(?:i )?(?:shared|gave|told|provided)\b.{{0,20}}?\bit\b.{{0,20}}?\b(?:with (?:the )?(?:caller|him|her|them|scammer|fraudster))\b|"
     rf"\bmaine\b.{{0,60}}?\b{_SECRET}\b.{{0,20}}?\b(?:bata|de|bhej|enter kar|daal) di(?:ya|ye)\b",
     re.I | re.S,
 )
@@ -173,15 +180,27 @@ _APP_INSTALLED: Final = re.compile(
 )
 
 
+def _get_clause_bounds(text: str, match_start: int, match_end: int) -> tuple[int, int]:
+    """Find the start and end of the clause containing the match without crossing clause boundaries."""
+    clause_start = 0
+    for b in _CLAUSE_BOUNDARY.finditer(text[:match_start]):
+        clause_start = b.end()
+    clause_end = len(text)
+    m = _CLAUSE_BOUNDARY.search(text[match_end:])
+    if m:
+        clause_end = match_end + m.start()
+    return clause_start, clause_end
+
+
 def _is_negated_or_hypothetical(text: str, start: int, end: int) -> bool:
-    before = text[max(0, start - 45) : start]
-    after = text[end : min(len(text), end + 35)]
-    return bool(_PRE_NEG_OR_HYPO.search(before) or _POST_NEG.search(after))
+    """Check for negations or hypotheticals strictly within the same clause as the match."""
+    clause_start, clause_end = _get_clause_bounds(text, start, end)
+    before_in_clause = text[clause_start:start]
+    after_in_clause = text[end:clause_end]
+    return bool(_PRE_NEG_OR_HYPO.search(before_in_clause) or _POST_NEG.search(after_in_clause))
 
 
 def _check_money_sent(text: str) -> bool:
-    if _BANK_TX_NOTICE.search(text) and not re.search(r"\bmy account\b", text, re.I):
-        return False
     for m in _MONEY_SENT.finditer(text):
         if not _is_negated_or_hypothetical(text, m.start(), m.end()):
             return True
