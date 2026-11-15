@@ -110,6 +110,30 @@ runner = get_runner()
 # Pre-built scenarios for evaluator testing
 DEMO_SCENARIOS = {
     "Select a pre-built scenario...": "",
+    "🚨 Vaahan / Parivahan e-Challan Threat": (
+        "Traffic Police Notice: E-Challan pending for vehicle MH12AB1234. "
+        "Amount: Rs. 1,000 for signal violation. Pay immediately at "
+        "http://echallan-parivahan-gov.example/pay to avoid vehicle impound warrant."
+    ),
+    "🚨 Work-From-Home Job Promise Scam (Telegram)": (
+        "Work from home part-time opportunity! Earn Rs.3000 to Rs.8000 daily by "
+        "simply rating hotels and liking YouTube videos. Join our official Telegram group "
+        "t.me/daily-task-jobs to start earning today."
+    ),
+    "🚨 Fake Stock & IPO Investment Scam (SEBI)": (
+        "SEBI certified institutional trading desk: Join our VIP WhatsApp group for "
+        "guaranteed 300% monthly returns on IPO pre-allotment and insider stock tips. "
+        "Initial investment starts from Rs.10,000."
+    ),
+    "🚨 Automated Crypto Trading Bot Scam (Hinglish)": (
+        "Automated AI crypto trading bot: Maine Rs 5000 lagaye the aur kal 45000 ban gaye. "
+        "100% safe aur daily withdrawal. Is platform par register karein aur bonus paayein."
+    ),
+    "🚨 Advance Fee Lottery & Prize Scam (KBC)": (
+        "Dear customer, you have won Rs.25,00,000 in KBC Jio All India Lucky Draw. "
+        "Call our prize manager Mr. Rana on +919876543210 and pay government processing tax "
+        "of Rs.4,999 to claim your cheque."
+    ),
     "🚨 KYC Phishing SMS (SBI Impersonation)": (
         "SBI Alert: Dear customer your SBI YONO account has been blocked today. "
         "Update KYC immediately at http://sbi-kyc-update.example/pan. Share OTP to verify."
@@ -119,9 +143,24 @@ DEMO_SCENARIOS = {
         "Arrest warrant issue ho chuka hai. Turant video call par aaiye aur matter clear kijiye, "
         "kisi ko batana nahi."
     ),
-    "🚨 Advance Fee Lottery Scam (UPI)": (
-        "Congratulations! You won Rs.25,00,000 in KBC Lucky Draw. "
-        "To claim your prize, transfer government GST fee of Rs.4,999 to prize-tax@example-bank."
+    "🚨 Electricity Bill Disconnection Threat": (
+        "Electricity Alert: Dear consumer, your power supply will be disconnected tonight "
+        "at 9:30 PM because your previous month bill was not updated. Immediately contact "
+        "electricity officer at 9876543210."
+    ),
+    "🚨 Predatory Loan App APK & Contact Blackmail": (
+        "Instant Cash Loan of Rs.50,000 pre-approved without CIBIL check or salary slip! "
+        "Money credited in 5 minutes. Download QuickRupee app APK now: "
+        "http://quickrupee-instant.example/loan.apk"
+    ),
+    "🚨 Money Mule Bank Account Renting (SC-15)": (
+        "Earn Rs.25,000 monthly sitting at home! We need verified Indian current and savings "
+        "accounts to route gaming transactions. You get 2% commission on every transaction "
+        "processed through your account."
+    ),
+    "🚨 Urgent Financial Loss (1930 Golden Hour Routing)": (
+        "I received an SMS about my bank KYC and I already transferred Rs.15,000 to the "
+        "account they gave. Please help me freeze the transaction."
     ),
     "❓ Suspicious Parcel Call (Needs Clarification)": (
         "They called me saying a courier parcel arrived in my name and asked me to confirm details."
@@ -129,6 +168,10 @@ DEMO_SCENARIOS = {
     "✅ Genuine Bank OTP Alert (Safe)": (
         "HDFC Bank: 482910 is your OTP for purchase of Rs. 1,450.00 at AMAZON. "
         "Do not share this OTP with anyone, including bank staff."
+    ),
+    "✅ Genuine Salary Credit SMS (Safe)": (
+        "Dear Customer, your salary for Oct 2026 INR 82,500.00 has been credited to your "
+        "account XX5120 on 31-Oct-26 by INFOSYS LTD. Ref no 630192847192."
     ),
 }
 
