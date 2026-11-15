@@ -3,7 +3,7 @@
 | Field | Value |
 |---|---|
 | Project name | ScamSaathi |
-| Version | 0.1 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-11 |
 | Author / Project lead | Thiagarajan Baskarasubramanian |
 | Context | Capstone project, Agentic AI certification (Hero Vired) |

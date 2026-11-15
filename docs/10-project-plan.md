@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.1 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-11 |
 | Deadline | TBD (Q-2). Dates below are relative (Week 1, 2, ...). Convert to calendar dates once the deadline is known |
 

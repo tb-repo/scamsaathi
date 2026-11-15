@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.1 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-11 |
 
 Each agent is a LangGraph node (or small subgraph). "Agent" here means a node with a defined role, inputs, outputs, tools, and failure behaviour. Some agents are LLM-backed, some are hybrid, and some are pure code. This is deliberate (ADR-003, ADR-006).

@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.1 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-11 |
 | Related | ADR-007 (data handling), FR-060 to FR-065, NFR-008, NFR-009, NFR-017 |
 

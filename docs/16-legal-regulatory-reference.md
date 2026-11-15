@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.2 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-13 |
 | Related | ADR-009, document 08, FR-080 to FR-087, R-017 to R-019 |
 

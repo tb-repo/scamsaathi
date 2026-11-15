@@ -43,4 +43,9 @@ Documents are numbered in reading order. Requirements (03) drive design (04 to 0
 
 ## Document status legend
 
-Draft, In review, Approved, Superseded. All documents in this set are currently **Draft** until the author approves them.
+- **Draft**: Working document in progress.
+- **In Review**: Formal peer/expert review underway.
+- **Approved**: Verified, finalized, and accepted for final Capstone submission.
+- **Superseded**: Historical record replaced by a newer specification.
+
+All documents in this set are formally **Approved** for the Capstone Submission & Defense Release (v1.0).

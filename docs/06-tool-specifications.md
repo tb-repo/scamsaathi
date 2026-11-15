@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.1 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-11 |
 
 All tools are Python functions with Pydantic input/output models. Deterministic tools are pure where possible so they can be unit tested without network access.

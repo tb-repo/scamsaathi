@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.1 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-11 |
 | Related ADRs | ADR-001, ADR-002, ADR-003, ADR-004, ADR-005, ADR-006 |
 

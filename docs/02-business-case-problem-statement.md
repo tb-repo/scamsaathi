@@ -2,7 +2,7 @@
 
 | Field | Value |
 |---|---|
-| Version | 0.1 (Draft) |
+| Version | 1.0 (Approved) |
 | Date | 2026-11-11 |
 
 > Statistics are intentionally not quoted here. Before the final report, add current, cited figures (for example from the National Cybercrime Reporting Portal or RBI/NPCI publications) and record the source and access date. Task: see Q-5 in document 12.
