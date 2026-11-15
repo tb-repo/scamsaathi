@@ -188,7 +188,7 @@ with st.sidebar:
         "• **Known Limitations:** Pattern matching cannot reliably detect free-text personal names or street addresses; please avoid entering them.\n"
         "• **URLs Inspected:** Web links are analyzed for security threat intelligence and domain legitimacy.\n"
         "• **Zero Device Scraping:** Paste-only interface—we never access device SMS, call logs, or contacts.\n"
-        "• **Ephemeral Processing:** Original unmasked text is held strictly in memory during analysis and immediately evicted from the vault upon graph completion. Masked analysis outcomes, checkpoints, and the input widget persist only in your active session until cleared, replaced, or purged after 30 minutes of inactivity."
+        "• **Ephemeral Processing:** Original unmasked text is held strictly in memory during analysis and immediately evicted from the vault upon graph completion. Completed assessments purge their graph checkpoints immediately; paused interview sessions and input widgets persist only in your active session until cleared, replaced, or purged on the next interaction after 30 minutes of inactivity."
     )
 
     st.markdown("---")
@@ -272,7 +272,11 @@ if analyze_clicked and user_text.strip():
         try:
             outcome = runner.assess(user_text.strip())
             st.session_state.outcome = outcome
-            st.session_state.thread_id = outcome.thread_id
+            if outcome.status == "complete":
+                runner.clear_session(outcome.thread_id, purge_checkpoint=True)
+                st.session_state.thread_id = None
+            else:
+                st.session_state.thread_id = outcome.thread_id
         except Exception as exc:
             st.error(f"Error during assessment: {exc}")
 
@@ -310,6 +314,9 @@ if outcome is not None:
                     resumed = runner.resume(outcome.thread_id, {"answers": structured_answers})
                     st.session_state.outcome = resumed
                     st.session_state.last_active_time = time.time()
+                    if resumed.status == "complete":
+                        runner.clear_session(outcome.thread_id, purge_checkpoint=True)
+                        st.session_state.thread_id = None
                     st.rerun()
         with col_sub2:
             if st.button("Skip / Give Best Guess", use_container_width=True):
@@ -317,6 +324,9 @@ if outcome is not None:
                     resumed = runner.resume(outcome.thread_id, "skip")
                     st.session_state.outcome = resumed
                     st.session_state.last_active_time = time.time()
+                    if resumed.status == "complete":
+                        runner.clear_session(outcome.thread_id, purge_checkpoint=True)
+                        st.session_state.thread_id = None
                     st.rerun()
 
     # Complete Assessment
