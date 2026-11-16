@@ -288,15 +288,6 @@ def main() -> None:
         "latency_summary": lat_summary,
         "results": per_case_meta,
     }
-        "date": time.strftime("%Y-%m-%d %H:%M:%S"),
-        "commit": commit,
-        "short_commit": short_commit,
-        "config_sha256": config_hash,
-        "mode_provider_model": mode_provider_model,
-        "total_cases": len(cases),
-        "latency_summary": lat_summary,
-        "results": per_case_meta,
-    }
     versioned_meta_file = _PROJECT_ROOT / "data" / "evaluation" / f"external_review_run_meta_{run_id}.json"
     with open(versioned_meta_file, "w", encoding="utf-8") as f:
         json.dump(meta, f, indent=2)
