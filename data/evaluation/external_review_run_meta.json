@@ -1,17 +1,17 @@
 {
-  "run_id": "xr_run_20261115_232445",
-  "date": "2026-11-15 23:25:25",
-  "commit": "48e5046a4864090a2ad34fc323bf4cf44b628caa",
-  "short_commit": "48e5046",
+  "run_id": "xr_run_20261116_165109",
+  "date": "2026-11-16 16:51:15",
+  "commit": "24059295e7ae51246d52c2fc03c402c2438e02dd",
+  "short_commit": "2405929",
   "config_sha256": "d55b23e0dfd679d25cdfc9e5356b0b5569a04cec119f5d23669940771fb286f3",
   "mode_provider_model": "live/gemini/gemini-3.5-flash-lite+gemini-3.8-flash",
   "total_cases": 28,
   "latency_summary": {
-    "median_ms": 911.4,
-    "mean_ms": 1326.8,
-    "p95_ms": 1195.6,
-    "max_ms": 11788.9,
-    "min_ms": 856.6
+    "median_ms": 118.5,
+    "mean_ms": 124.2,
+    "p95_ms": 151.6,
+    "max_ms": 228.3,
+    "min_ms": 97.9
   },
   "results": [
     {
@@ -46,7 +46,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 1195.6426999968244,
+      "latency_ms": 151.6373000049498,
       "llm_calls": 0
     },
     {
@@ -76,7 +76,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 894.7386000072584,
+      "latency_ms": 139.36379997176118,
       "llm_calls": 0
     },
     {
@@ -101,7 +101,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 1033.6070000048494,
+      "latency_ms": 114.71769999479875,
       "llm_calls": 0
     },
     {
@@ -135,7 +135,7 @@
       "failures": [
         "no official reporting step in the top 3 actions"
       ],
-      "latency_ms": 907.9874999879394,
+      "latency_ms": 128.29490000149235,
       "llm_calls": 0
     },
     {
@@ -169,7 +169,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 911.2090000126045,
+      "latency_ms": 119.77429999387823,
       "llm_calls": 0
     },
     {
@@ -201,7 +201,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 934.8777999985032,
+      "latency_ms": 119.21589999110438,
       "llm_calls": 0
     },
     {
@@ -231,7 +231,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 948.9601000095718,
+      "latency_ms": 122.54660000326112,
       "llm_calls": 0
     },
     {
@@ -262,7 +262,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 896.2652000045637,
+      "latency_ms": 120.82169999484904,
       "llm_calls": 0
     },
     {
@@ -297,7 +297,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 910.9715999948094,
+      "latency_ms": 115.85119998198934,
       "llm_calls": 0
     },
     {
@@ -329,7 +329,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 911.6387000103714,
+      "latency_ms": 116.78729997947812,
       "llm_calls": 0
     },
     {
@@ -360,7 +360,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 856.5558999980567,
+      "latency_ms": 124.79090000852011,
       "llm_calls": 0
     },
     {
@@ -392,7 +392,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 867.3451999929966,
+      "latency_ms": 120.39290001848713,
       "llm_calls": 0
     },
     {
@@ -423,7 +423,7 @@
       "questions": "",
       "reporting_in_top3": "Yes",
       "failures": [],
-      "latency_ms": 897.1891999972286,
+      "latency_ms": 117.87439999170601,
       "llm_calls": 0
     },
     {
@@ -441,8 +441,8 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 11788.917700003367,
-      "llm_calls": 1
+      "latency_ms": 115.55149999912828,
+      "llm_calls": 0
     },
     {
       "case_id": "xr_legit_salary_credit",
@@ -459,7 +459,7 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 1105.0174999982119,
+      "latency_ms": 111.50860000634566,
       "llm_calls": 0
     },
     {
@@ -477,7 +477,7 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 893.647000004421,
+      "latency_ms": 127.17089999932796,
       "llm_calls": 0
     },
     {
@@ -495,7 +495,7 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 1069.613700004993,
+      "latency_ms": 124.1425999905914,
       "llm_calls": 0
     },
     {
@@ -513,7 +513,7 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 1034.8565000022063,
+      "latency_ms": 146.97949998662807,
       "llm_calls": 0
     },
     {
@@ -531,7 +531,7 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 871.5326999954414,
+      "latency_ms": 228.30449999310076,
       "llm_calls": 0
     },
     {
@@ -549,7 +549,7 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 915.9358000033535,
+      "latency_ms": 135.78559999587014,
       "llm_calls": 0
     },
     {
@@ -567,7 +567,7 @@
       "questions": "",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 979.4739999924786,
+      "latency_ms": 110.29080001753755,
       "llm_calls": 0
     },
     {
@@ -587,7 +587,7 @@
       "questions": "Did they ask you to pay or transfer money? | Did they say they were from the police, a court, a government office, or a bank? | Did they threaten to block your account, cut your service, or arrest you?",
       "reporting_in_top3": "No",
       "failures": [],
-      "latency_ms": 924.4881000049645,
+      "latency_ms": 97.85900000133552,
       "llm_calls": 0
     },
     {
@@ -614,7 +614,7 @@
       "failures": [
         "ambiguous case was not interviewed"
       ],
-      "latency_ms": 885.103299995535,
+      "latency_ms": 108.14659998868592,
       "llm_calls": 0
     },
     {
@@ -634,7 +634,7 @@
       "failures": [
         "ambiguous case was not interviewed"
       ],
-      "latency_ms": 882.787599999574,
+      "latency_ms": 111.72610000357963,
       "llm_calls": 0
     },
     {
@@ -659,7 +659,7 @@
       "failures": [
         "ambiguous case was not interviewed"
       ],
-      "latency_ms": 891.9486000086181,
+      "latency_ms": 113.8799000182189,
       "llm_calls": 0
     },
     {
@@ -681,7 +681,7 @@
       "failures": [
         "ambiguous case was not interviewed"
       ],
-      "latency_ms": 920.1573999889661,
+      "latency_ms": 115.28700002236292,
       "llm_calls": 0
     },
     {
@@ -701,7 +701,7 @@
       "failures": [
         "ambiguous case was not interviewed"
       ],
-      "latency_ms": 919.4155000004685,
+      "latency_ms": 110.0696999928914,
       "llm_calls": 0
     },
     {
@@ -721,7 +721,7 @@
       "failures": [
         "ambiguous case was not interviewed"
       ],
-      "latency_ms": 900.5871000117622,
+      "latency_ms": 109.25379997934215,
       "llm_calls": 0
     }
   ]
