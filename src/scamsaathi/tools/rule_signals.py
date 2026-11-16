@@ -155,6 +155,24 @@ _BANK_TX_NOTICE: Final = re.compile(
     re.I,
 )
 
+_THIRD_PARTY_NOUN: Final = (
+    r"(?:caller|call wale|technician|agent|officer|executive|representative|operator|scammer|fraudster|"
+    r"sender|stranger|person|guy)"
+)
+_THIRD_PARTY_ACTOR: Final = re.compile(
+    rf"\b(?:the\s+|a\s+|an\s+)?{_THIRD_PARTY_NOUN}\b|\b(?:he|she|they|usne|unhone|samne wale ne)\b",
+    re.I,
+)
+_FIRST_PERSON_ACTOR: Final = re.compile(r"\b(?:i|i've|we|we've|maine|humne)\b", re.I)
+_PREP_BEFORE: Final = re.compile(r"\b(?:to|from|with|by|for|about|at)\s+(?:the\s+|a\s+|an\s+)?$", re.I)
+_POST_OBJ_HI: Final = re.compile(r"^\s*(?:ko|se|ke pass|ke sath)\b", re.I)
+
+_THIRD_PARTY_DEVICE: Final = re.compile(
+    r"\b(?:on\s+)?(?:their|his|her|its|unke|uske)\s+(?:own\s+)?(?:phone|device|mobile|screen|system|computer|laptop|handset)\b",
+    re.I,
+)
+_SECRET_TO_USER: Final = re.compile(r"\b(?:to (?:me|us)|mujhe|mujhko)\b", re.I)
+
 # First-person money sent or loss: user reporting money left *their* account or they transferred/sent it
 _MONEY_SENT: Final = re.compile(
     r"\bi (?:have )?(?:already )?(?:sent|paid|transferred|deposited)\b|"
@@ -166,7 +184,8 @@ _MONEY_SENT: Final = re.compile(
 )
 _CREDS_SHARED: Final = re.compile(
     rf"\b(?:did share|shared|gave|told|entered|sent|provided|typed in)\b.{{0,25}}?\b{_SECRET}\b|"
-    rf"\b(?:did share|shared|gave|told|provided)\b.{{0,20}}?\bit\b.{{0,25}}?\b(?:with (?:the )?(?:caller|him|her|them|scammer|fraudster))\b|"
+    rf"\b(?:did share|shared|gave|told|provided)\b.{{0,20}}?\bit\b.{{0,25}}?\b(?:with|to)\b.{{0,10}}?\b(?:the )?(?:caller|him|her|them|scammer|fraudster)\b|"
+    rf"\b(?:entered|typed in)\b.{{0,15}}?\bit\b|"
     rf"\bmaine\b.{{0,60}}?\b{_SECRET}\b.{{0,20}}?\b(?:bata|de|bhej|enter kar|daal) di(?:ya|ye)\b",
     re.I | re.S,
 )
@@ -195,6 +214,41 @@ def _get_predicate_bounds(text: str, match_start: int, match_end: int) -> tuple[
     return pred_start, pred_end
 
 
+def _is_third_party_actor(text: str, pred_start: int, match_start: int) -> bool:
+    """Check if the subject performing the action is a third party rather than the user."""
+    before_in_pred = text[pred_start:match_start]
+    if _FIRST_PERSON_ACTOR.search(before_in_pred):
+        return False
+    for m in _THIRD_PARTY_ACTOR.finditer(before_in_pred):
+        pre = before_in_pred[:m.start()]
+        post = before_in_pred[m.end():]
+        if _PREP_BEFORE.search(pre):
+            continue
+        if _POST_OBJ_HI.search(post):
+            continue
+        return True
+
+    # If the current predicate starts after a coordinating conjunction (like 'and'),
+    # inspect the preceding clause for the subject.
+    if pred_start > 0:
+        preceding = text[:pred_start].strip()
+        p_start = 0
+        for b in _PREDICATE_BOUNDARY.finditer(preceding):
+            p_start = b.end()
+        preceding_clause = preceding[p_start:]
+        if _FIRST_PERSON_ACTOR.search(preceding_clause):
+            return False
+        for m in _THIRD_PARTY_ACTOR.finditer(preceding_clause):
+            pre = preceding_clause[:m.start()]
+            post = preceding_clause[m.end():]
+            if _PREP_BEFORE.search(pre):
+                continue
+            if _POST_OBJ_HI.search(post):
+                continue
+            return True
+    return False
+
+
 def _is_negated_or_hypothetical(text: str, match: re.Match[str]) -> bool:
     """Check for negations or hypotheticals strictly within the same predicate as the match."""
     start, end = match.start(), match.end()
@@ -221,22 +275,43 @@ def _check_money_sent(text: str) -> bool:
 
 def _check_creds_shared(text: str) -> bool:
     for m in _CREDS_SHARED.finditer(text):
-        if not _is_negated_or_hypothetical(text, m):
-            return True
+        if _is_negated_or_hypothetical(text, m):
+            continue
+        pred_start, pred_end = _get_predicate_bounds(text, m.start(), m.end())
+        after_in_pred = text[m.end():pred_end]
+        if _SECRET_TO_USER.search(after_in_pred) or _SECRET_TO_USER.search(m.group(0)):
+            continue
+        if _is_third_party_actor(text, pred_start, m.start()):
+            continue
+        return True
     return False
 
 
 def _check_link_clicked(text: str) -> bool:
     for m in _LINK_CLICKED.finditer(text):
-        if not _is_negated_or_hypothetical(text, m):
-            return True
+        if _is_negated_or_hypothetical(text, m):
+            continue
+        pred_start, pred_end = _get_predicate_bounds(text, m.start(), m.end())
+        pred_text = text[pred_start:pred_end]
+        if _THIRD_PARTY_DEVICE.search(pred_text):
+            continue
+        if _is_third_party_actor(text, pred_start, m.start()):
+            continue
+        return True
     return False
 
 
 def _check_app_installed(text: str) -> bool:
     for m in _APP_INSTALLED.finditer(text):
-        if not _is_negated_or_hypothetical(text, m):
-            return True
+        if _is_negated_or_hypothetical(text, m):
+            continue
+        pred_start, pred_end = _get_predicate_bounds(text, m.start(), m.end())
+        pred_text = text[pred_start:pred_end]
+        if _THIRD_PARTY_DEVICE.search(pred_text):
+            continue
+        if _is_third_party_actor(text, pred_start, m.start()):
+            continue
+        return True
     return False
 
 

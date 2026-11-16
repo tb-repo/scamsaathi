@@ -117,6 +117,20 @@ def test_situation_detection() -> None:
     )["money_sent"]
     assert not any(rule_signals.detect_situation("Got a message about my parcel").values())
 
+    # Third-party action negative guards (actions performed by caller, technician, or third party)
+    assert not rule_signals.detect_situation(
+        "The caller provided an OTP to me for a demonstration."
+    )["credentials_shared"]
+    assert not rule_signals.detect_situation(
+        "The caller clicked the link on their own phone, but I did not click it."
+    )["link_clicked"]
+    assert not rule_signals.detect_situation(
+        "The technician installed an APK on their own device; I did not install it."
+    )["app_installed"]
+    assert not rule_signals.detect_situation("The caller clicked the link.")["link_clicked"]
+    assert not rule_signals.detect_situation("The technician installed an APK.")["app_installed"]
+    assert not rule_signals.detect_situation("The caller provided an OTP to me.")["credentials_shared"]
+
 
 # Outcome checks for the rules-only baseline on the demo cases: scams must be warned about,
 # genuine messages must not raise an alarm, and required behaviours must hold. These are
