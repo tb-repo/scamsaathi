@@ -169,6 +169,10 @@ MissingFact = Literal[
     "money_sent",
     "secret_shared",
     "link_clicked",
+    # Context-aware decision-relevant facts
+    "otp_account_exposure",
+    "apk_device_exposure",
+    "unauthorized_loss_noticed",
 ]
 
 

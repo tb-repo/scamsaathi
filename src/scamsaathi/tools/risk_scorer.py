@@ -9,6 +9,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 from pathlib import Path
+from typing import Literal
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -58,14 +59,33 @@ class ScoringConfig(BaseModel):
         return self
 
 
+FactState = Literal["confirmed", "denied", "unknown"]
+ActorType = Literal["user", "third_party", "unknown"]
+TargetEntity = Literal["user_account", "user_device", "third_party_account", "third_party_device", "unknown"]
+
+
+class ExposureFact(BaseModel):
+    status: FactState = "unknown"
+    actor: ActorType = "unknown"
+    target: TargetEntity = "unknown"
+    authorized: FactState = "unknown"
+    evidence: str | None = None
+
+
 class Situation(BaseModel):
-    """Facts reported by the user (for example from interview answers)."""
+    """Facts reported by the user (with explicit confirmation state)."""
 
     money_sent: bool = False
     credentials_shared: bool = False
     link_clicked: bool = False
     app_installed: bool = False
     child_involved: bool = False  # child-safety path (docs/16 section 10)
+
+    # Decision-relevant structured facts:
+    credentials_exposure: ExposureFact = Field(default_factory=ExposureFact)
+    app_installation: ExposureFact = Field(default_factory=ExposureFact)
+    money_loss: ExposureFact = Field(default_factory=ExposureFact)
+    unresolved_uncertainties: list[str] = Field(default_factory=list)
 
 
 class LLMAdjustment(BaseModel):

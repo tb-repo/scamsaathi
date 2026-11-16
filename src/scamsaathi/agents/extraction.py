@@ -112,12 +112,33 @@ def extraction(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
     signals = merge(rule, reconcile_with_intel(llm_signals, rule, intel), text)
 
     # Situation facts come from rules over the masked text and answers (deterministic),
-    # combined with anything already known, so an answer can only add facts.
+    # with explicit confirmations or denials taking precedence.
     previous = read(state, "situation", Situation) or Situation()
     found = Situation(**rule_signals.detect_situation(text))
-    situation = Situation(**{
-        key: getattr(previous, key) or getattr(found, key) for key in Situation.model_fields
-    })
+
+    creds_shared = found.credentials_shared
+    if found.credentials_exposure.status == "unknown" and previous.credentials_shared:
+        creds_shared = True
+
+    app_inst = found.app_installed
+    if found.app_installation.status == "unknown" and previous.app_installed:
+        app_inst = True
+
+    money_sent = found.money_sent or previous.money_sent
+    link_clicked = found.link_clicked or previous.link_clicked
+    child_involved = found.child_involved or previous.child_involved
+
+    situation = Situation(
+        money_sent=money_sent,
+        credentials_shared=creds_shared,
+        link_clicked=link_clicked,
+        app_installed=app_inst,
+        child_involved=child_involved,
+        credentials_exposure=found.credentials_exposure if found.credentials_exposure.status != "unknown" else previous.credentials_exposure,
+        app_installation=found.app_installation if found.app_installation.status != "unknown" else previous.app_installation,
+        money_loss=found.money_loss if found.money_loss.status != "unknown" else previous.money_loss,
+        unresolved_uncertainties=found.unresolved_uncertainties,
+    )
 
     org = result.output.impersonated_org if result else None
     if org and not span_in_text(org, text):

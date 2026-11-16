@@ -20,13 +20,14 @@ from scamsaathi.tools.language import detect
 from scamsaathi.tools.pii_masker import mask
 from scamsaathi.tools.risk_scorer import Situation
 
-# First-person account of an event ("I got a call", "someone called me", "mujhe call aaya").
+# First-person account of an event ("I got a call", "someone called me", "mujhe call aaya", "I heard...").
 _NARRATIVE: Final = re.compile(
     r"\b(?:i|me|my|we|us|mujhe|maine|mera|meri|humein|hamein)\b.{0,40}?"
     r"\b(?:got|received|called|call(?:ed)? me|asked|said|told|sent|messaged|texted|"
-    r"aaya|aayi|kaha|bola|boli|maanga|manga)\b|"
+    r"heard|saw|noticed|think|found|suspect|shared|transferred|lost|debit|"
+    r"aaya|aayi|kaha|bola|boli|maanga|manga|suna|dekha)\b|"
     r"\b(?:someone|somebody|a man|a woman|a person|they|koi)\b.{0,30}?"
-    r"\b(?:called|messaged|texted|asked|said|told|call kiya)\b",
+    r"\b(?:called|messaged|texted|asked|said|told|call kiya|bheja|shared)\b",
     re.I | re.S,
 )
 _WORD: Final = re.compile(r"\w+")

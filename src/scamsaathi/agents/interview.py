@@ -29,8 +29,8 @@ from scamsaathi.prompts import load_prompt, untrusted_block
 from scamsaathi.schemas import ClassificationResult
 from scamsaathi.tools.pii_masker import mask
 
-# fact -> (English question, Hinglish question, sentence added when the answer is yes)
-QUESTION_BANK: Final[dict[str, tuple[str, str, str]]] = {
+# fact -> (English question, Hinglish question, sentence added when yes, optional sentence when no)
+QUESTION_BANK: Final[dict[str, tuple[str, ...]]] = {
     "asked_for_secret": (
         "Did they ask you to share an OTP, PIN, or password?",
         "Kya unhone OTP, PIN ya password maanga?",
@@ -81,6 +81,25 @@ QUESTION_BANK: Final[dict[str, tuple[str, str, str]]] = {
         "Kya aapne unka bheja hua link khol diya?",
         "I already clicked the link.",
     ),
+    # Context-aware decision-relevant facts
+    "otp_account_exposure": (
+        "Was this one-time code or password for your own personal or bank account, and did someone else obtain or use it? (Please never share the actual code.)",
+        "Kya yeh code ya password aapke apne personal ya bank account ka tha aur kisi aur ko mila ya unhone use kiya? (Apna code yahan mat batayein.)",
+        "The code was for my own personal account and someone else obtained or used it.",
+        "The code was not for my personal account and no one has access to my account.",
+    ),
+    "apk_device_exposure": (
+        "Was this app or APK installed on your own phone or device, or did you grant remote control permissions like AnyDesk?",
+        "Kya yeh app ya APK aapke apne phone par install hua, ya aapne AnyDesk jaise remote control permissions diye?",
+        "The app was installed on my own device with permissions.",
+        "The app was not installed on my device and no remote access was granted.",
+    ),
+    "unauthorized_loss_noticed": (
+        "Did you notice any unauthorized debit, money transfer, or suspicious activity on your account?",
+        "Kya aapne apne account par koi anjan debit, paise katna ya sandigdh activity dekhi?",
+        "I noticed an unauthorized debit or suspicious activity on my account.",
+        "No money was lost and no unauthorized activity was noticed.",
+    ),
 }
 _YES: Final = re.compile(r"^\s*(?:yes|y|yeah|yep|haan|han|ha|ji haan|ji|true)\b", re.I)
 _NO: Final = re.compile(r"^\s*(?:no|n|nope|nahi|nahin|na|false)\b", re.I)
@@ -103,8 +122,7 @@ class InterviewOutput(BaseModel):
 
 
 def question_text(fact: str, language: str = "en") -> str:
-    english, _, _ = QUESTION_BANK[fact]
-    return english
+    return QUESTION_BANK[fact][0]
 
 
 def plan_questions(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
@@ -184,16 +202,35 @@ def _interpret(answer: Any, pending: list[dict[str, str]]) -> tuple[list[str], b
                 val = m.group(1).lower()
                 yes[f] = val in ("yes", "y", "haan", "true", "1")
 
-        if len(facts) == 1 and not yes and (_YES.match(free) or _NO.match(free)):
-            yes = {facts[0]: bool(_YES.match(free))}
+        if not yes and (_YES.search(free) or _NO.search(free)):
+            val = bool(_YES.search(free))
+            if len(facts) == 1:
+                yes = {facts[0]: val}
+            else:
+                for f in facts:
+                    if f in ("otp_account_exposure", "apk_device_exposure", "unauthorized_loss_noticed"):
+                        yes[f] = val
+                        break
 
-    lines = [QUESTION_BANK[f][2] for f in facts if yes.get(f)]
+    lines: list[str] = []
+    for f in facts:
+        entry = QUESTION_BANK[f]
+        if yes.get(f) is True:
+            lines.append(entry[2])
+        elif yes.get(f) is False and len(entry) >= 4:
+            lines.append(entry[3])
 
     # Clean structured markers so they don't leak as raw strings
     cleaned_free = re.sub(r"\b(?:Q\d+|\d+)\s*[:=-]\s*(?:yes|no|y|n|true|false)\b", "", free, flags=re.I).strip()
     cleaned_free = re.sub(r"^[,;\s]+|[,;\s]+$", "", cleaned_free)
-    if cleaned_free and not _YES.match(cleaned_free) and not _NO.match(cleaned_free):
-        lines.append(mask(cleaned_free[:1000]).masked_text)
+    cleaned_substantive = re.sub(
+        r"^(?:yes|y|yeah|yep|haan|han|ha|ji haan|ji|no|n|nope|nahi|nahin|na|true|false)\b[,:\s-]*",
+        "",
+        cleaned_free,
+        flags=re.I,
+    ).strip()
+    if cleaned_substantive:
+        lines.append(mask(cleaned_substantive[:1000]).masked_text)
 
     return lines, False
 

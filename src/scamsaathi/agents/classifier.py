@@ -160,6 +160,19 @@ def interview_useful(state: ScamState) -> bool:
     such as a bank's OTP notice, is assessed as it is. Situation descriptions, number or
     link queries, and messages with any warning sign may still lead to questions.
     """
+    situation = state.get("situation", {})
+    # If harm or exposure is already confirmed, emergency response must not be delayed.
+    if situation.get("money_sent") or situation.get("credentials_shared") or situation.get("child_involved"):
+        return False
+
+    # If the user has already answered a round and resolved situational uncertainties, complete the assessment.
+    if state.get("followups_asked", 0) >= 1 and not situation.get("unresolved_uncertainties"):
+        return False
+
+    # If there are unresolved decision-relevant uncertainties, clarification is essential.
+    if situation.get("unresolved_uncertainties"):
+        return True
+
     if state.get("input_mode") != InputMode.MESSAGE.value:
         return True
     intel = read(state, "intel", IntelResult) or IntelResult()
@@ -179,9 +192,19 @@ def validate(output: ClassifierOutput, state: ScamState, ctx: AgentContext) -> C
         matches.append(TypologyMatch(code=m.code, confidence=m.confidence,
                                      supporting_evidence_ids=ids))
     missing: list[str] = [str(f) for f in dict.fromkeys(output.missing_facts) if f not in asked]
+    situation = state.get("situation", {})
+    uncertainties = [u for u in situation.get("unresolved_uncertainties", []) if u not in asked]
+    if uncertainties:
+        for u in reversed(uncertainties):
+            if u not in missing:
+                missing.insert(0, u)
+        needs_more_info = bool(missing) and interview_useful(state)
+    else:
+        needs_more_info = output.needs_more_info and bool(missing) and interview_useful(state)
+
     return ClassificationResult(
         matches=matches,
-        needs_more_info=output.needs_more_info and bool(missing) and interview_useful(state),
+        needs_more_info=needs_more_info,
         missing_facts=missing,
         kb_chunk_ids=state.get("kb_chunk_ids", []),
     )
@@ -204,12 +227,20 @@ def classify(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
                        "llm_adjustment": adjustment})
         return update
 
-    # Fallback: retrieval typologies, and the static interview only for vague first-person
-    # accounts with no clear signals (a pasted message is assessed as it is).
+    # Fallback: retrieval typologies, and the static interview for vague first-person
+    # accounts or decision-relevant uncertainties.
+    asked = state.get("asked_facts", [])
+    situation = state.get("situation", {})
+    uncertainties = [u for u in situation.get("unresolved_uncertainties", []) if u not in asked]
     vague = (state.get("input_mode") == InputMode.SITUATION.value and not state.get("signals")
              and state.get("followups_asked", 0) == 0)
-    asked = state.get("asked_facts", [])
-    missing: list[str] = [str(f) for f in DEFAULT_FACTS if f not in asked] if vague else []
+    if uncertainties and state.get("followups_asked", 0) == 0:
+        missing = uncertainties
+    elif vague:
+        missing = [str(f) for f in DEFAULT_FACTS if f not in asked]
+    else:
+        missing = []
+
     classification = retrieval_classification(state, needs_more_info=bool(missing), missing=missing)
     update.update({"classification": dump(classification), "classification_source": "retrieval",
                    "llm_adjustment": None})

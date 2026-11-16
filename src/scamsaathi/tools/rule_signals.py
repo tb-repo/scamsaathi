@@ -8,7 +8,7 @@ get a fixed, moderate confidence; the LLM extractor (Phase 4) refines them.
 from __future__ import annotations
 
 import re
-from typing import Final
+from typing import Any, Final
 
 from scamsaathi.schemas import Signal, SignalName
 
@@ -173,6 +173,44 @@ _THIRD_PARTY_DEVICE: Final = re.compile(
 )
 _SECRET_TO_USER: Final = re.compile(r"\b(?:to (?:me|us)|mujhe|mujhko)\b", re.I)
 
+_HEARSAY_OR_UNCONFIRMED: Final = re.compile(
+    r"\b(?:i\s+heard|heard\s+that|someone\s+told\s+me|i\s+was\s+told|claims?\s+that|claimed\s+that|"
+    r"allegedly|rumou?r|pata\s+chala|sunne\s+me\s+aaya|kisi\s+ne\s+bataya|lagta\s+hai|might\s+have|may\s+have)\b",
+    re.I,
+)
+
+_THIRD_PARTY_ACCESSED_USER_SECRET: Final = re.compile(
+    rf"\b{_THIRD_PARTY_NOUN}\b.{{0,30}}?\b(?:shared|sent|used|entered|took|has|got|le\s+liya)\b.{{0,25}}?\b(?:my\s+{_SECRET}|mera\s+{_SECRET})\b|"
+    rf"\b(?:my\s+{_SECRET}|mera\s+{_SECRET})\b.{{0,30}}?\b(?:was\s+shared|got\s+shared|was\s+used|was\s+sent|chala\s+gaya)\b",
+    re.I,
+)
+
+_UNCONFIRMED_USER_APP: Final = re.compile(
+    r"\b(?:may have|might have|suspect|think|heard)\b.{0,30}?\b(?:installed|downloaded)\b.{0,25}?\b(?:app|apk)\b|"
+    rf"\b{_THIRD_PARTY_NOUN}\b.{{0,30}}?\b(?:installed|downloaded)\b.{{0,25}}?\b(?:app|apk)\b.{{0,25}}?\b(?:on my|in my|mera|meri)\b",
+    re.I,
+)
+
+_CONFIRMED_USER_SECRET: Final = re.compile(
+    r"\b(?:code|otp|password|pin)\s+was\s+for\s+my\s+own\s+(?:personal\s+|bank\s+)?account\b|"
+    r"\bused\s+it\s+to\s+access\s+my\s+account\b",
+    re.I,
+)
+_DENIED_USER_SECRET: Final = re.compile(
+    r"\b(?:code|otp|password|pin)\s+was\s+not\s+for\s+my\b|\bno\s+one\s+has\s+access\s+to\s+my\s+account\b|"
+    r"\bnot\s+my\s+(?:code|otp|account)\b",
+    re.I,
+)
+_CONFIRMED_USER_APP: Final = re.compile(
+    r"\bapp\s+was\s+installed\s+on\s+my\s+own\s+device\b|\binstalled\s+on\s+my\s+phone\s+with\s+permissions\b",
+    re.I,
+)
+_DENIED_USER_APP: Final = re.compile(
+    r"\bapp\s+was\s+not\s+installed\s+on\s+my\b|\bno\s+remote\s+access\s+was\s+granted\b|"
+    r"\bon\s+the\s+technician's\s+own\s+phone\b|\bnot\s+installed\s+on\s+my\s+phone\b",
+    re.I,
+)
+
 # First-person money sent or loss: user reporting money left *their* account or they transferred/sent it
 _MONEY_SENT: Final = re.compile(
     r"\bi (?:have )?(?:already )?(?:sent|paid|transferred|deposited)\b|"
@@ -217,16 +255,22 @@ def _get_predicate_bounds(text: str, match_start: int, match_end: int) -> tuple[
 def _is_third_party_actor(text: str, pred_start: int, match_start: int) -> bool:
     """Check if the subject performing the action is a third party rather than the user."""
     before_in_pred = text[pred_start:match_start]
-    if _FIRST_PERSON_ACTOR.search(before_in_pred):
-        return False
+    last_first_pos = -1
+    for m in _FIRST_PERSON_ACTOR.finditer(before_in_pred):
+        last_first_pos = max(last_first_pos, m.end())
+
+    last_third_pos = -1
     for m in _THIRD_PARTY_ACTOR.finditer(before_in_pred):
         pre = before_in_pred[:m.start()]
         post = before_in_pred[m.end():]
-        if _PREP_BEFORE.search(pre):
+        if _PREP_BEFORE.search(pre) or _POST_OBJ_HI.search(post):
             continue
-        if _POST_OBJ_HI.search(post):
-            continue
+        last_third_pos = max(last_third_pos, m.end())
+
+    if last_third_pos > last_first_pos:
         return True
+    if last_first_pos >= 0:
+        return False
 
     # If the current predicate starts after a coordinating conjunction (like 'and'),
     # inspect the preceding clause for the subject.
@@ -336,15 +380,82 @@ def detect_child_safety(text: str) -> bool:
     return bool(_MINOR.search(text) and _SEXUAL.search(text))
 
 
-def detect_situation(text: str) -> dict[str, bool]:
-    """What the user says has already happened (feeds the scorer's safety floors)."""
-    return {
-        "child_involved": detect_child_safety(text),
-        "money_sent": _check_money_sent(text),
-        "credentials_shared": _check_creds_shared(text),
-        "link_clicked": _check_link_clicked(text),
-        "app_installed": _check_app_installed(text),
+def detect_situation(text: str) -> dict[str, Any]:
+    """What the user says has already happened (feeds the scorer's safety floors and interview)."""
+    child_safety = detect_child_safety(text)
+    money_sent = _check_money_sent(text)
+    link_clicked = _check_link_clicked(text)
+
+    # 1. Credentials exposure determination
+    uncertainties: list[str] = []
+    if _DENIED_USER_SECRET.search(text):
+        creds_exp = {"status": "denied", "actor": "user", "target": "user_account"}
+        credentials_shared = False
+    elif _CONFIRMED_USER_SECRET.search(text):
+        creds_exp = {"status": "confirmed", "actor": "user", "target": "user_account"}
+        credentials_shared = True
+    elif _THIRD_PARTY_ACCESSED_USER_SECRET.search(text) or (
+        _HEARSAY_OR_UNCONFIRMED.search(text) and re.search(rf"\b(?:my\s+{_SECRET}|mera\s+{_SECRET}|{_SECRET})\b", text, re.I)
+    ):
+        creds_exp = {"status": "unknown", "actor": "third_party", "target": "user_account"}
+        credentials_shared = False
+        uncertainties.append("otp_account_exposure")
+    else:
+        shared = _check_creds_shared(text)
+        creds_exp = {
+            "status": "confirmed" if shared else "denied",
+            "actor": "user" if shared else "unknown",
+            "target": "user_account" if shared else "unknown",
+        }
+        credentials_shared = shared
+
+    # 2. App installation determination
+    if _DENIED_USER_APP.search(text):
+        app_exp = {"status": "denied", "actor": "user", "target": "user_device"}
+        app_installed = False
+    elif _CONFIRMED_USER_APP.search(text):
+        app_exp = {"status": "confirmed", "actor": "user", "target": "user_device"}
+        app_installed = True
+    elif _UNCONFIRMED_USER_APP.search(text) or (
+        _HEARSAY_OR_UNCONFIRMED.search(text) and re.search(r"\b(?:app|apk)\b", text, re.I)
+    ):
+        app_exp = {"status": "unknown", "actor": "third_party", "target": "user_device"}
+        app_installed = False
+        uncertainties.append("apk_device_exposure")
+    else:
+        installed = _check_app_installed(text)
+        app_exp = {
+            "status": "confirmed" if installed else "denied",
+            "actor": "user" if installed else "unknown",
+            "target": "user_device" if installed else "unknown",
+        }
+        app_installed = installed
+
+    money_exp = {
+        "status": "confirmed" if money_sent else "denied",
+        "actor": "user" if money_sent else "unknown",
+        "target": "user_account" if money_sent else "unknown",
     }
+
+    res: dict[str, Any] = {
+        "child_involved": child_safety,
+        "money_sent": money_sent,
+        "credentials_shared": credentials_shared,
+        "link_clicked": link_clicked,
+        "app_installed": app_installed,
+    }
+    if (
+        creds_exp["status"] != "denied"
+        or app_exp["status"] != "denied"
+        or money_exp["status"] != "denied"
+        or uncertainties
+    ):
+        res["credentials_exposure"] = creds_exp
+        res["app_installation"] = app_exp
+        res["money_loss"] = money_exp
+        res["unresolved_uncertainties"] = uncertainties
+
+    return res
 
 
 def detect(masked_text: str, has_link: bool | None = None) -> list[Signal]:

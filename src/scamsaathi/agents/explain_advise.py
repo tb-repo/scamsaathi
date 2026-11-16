@@ -147,7 +147,7 @@ def evidence_catalogue(state: ScamState, ctx: AgentContext, risk: RiskScore) -> 
 
 
 def template_explanation(risk: RiskScore, catalogue: dict[str, str], language: str,
-                         typology_names: list[str]) -> Explanation:
+                         typology_names: list[str], situation: Situation | None = None) -> Explanation:
     lang = "en"
     headline = HEADLINES[lang][risk.level]
     if typology_names and risk.level != "LOW":
@@ -172,7 +172,21 @@ def template_explanation(risk: RiskScore, catalogue: dict[str, str], language: s
     if not reasons:
         key = next(iter(catalogue))
         reasons.append(Reason(text=catalogue[key], evidence_ids=[key]))
-    return Explanation(headline=headline, reasons=reasons[:4], uncertainty=UNCERTAINTY[lang])
+
+    uncertainty = UNCERTAINTY[lang]
+    if situation and situation.unresolved_uncertainties:
+        if "otp_account_exposure" in situation.unresolved_uncertainties:
+            uncertainty = (
+                "It remains unconfirmed whether your personal or bank account was exposed. "
+                "Check your bank account for unauthorized activity and verify with your bank independently."
+            )
+        elif "apk_device_exposure" in situation.unresolved_uncertainties:
+            uncertainty = (
+                "It remains unconfirmed whether an app was installed on your own device. "
+                "Check your device settings and app permissions independently."
+            )
+
+    return Explanation(headline=headline, reasons=reasons[:4], uncertainty=uncertainty)
 
 
 # --- LLM output -----------------------------------------------------------------------
@@ -245,17 +259,24 @@ def explain_advise(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
     language = state.get("language", "en")
     names = [ctx.kb.typologies[c].name for c in codes if c in ctx.kb.typologies]
     catalogue = evidence_catalogue(state, ctx, risk)
-    template = template_explanation(risk, catalogue, language, names)
+    template = template_explanation(risk, catalogue, language, names, situation=situation)
 
     reply_language = "english"
-    user = "\n".join([
+    user_blocks = [
         f"RISK_LEVEL: {risk.level}",
         "EVIDENCE: " + json.dumps(catalogue, ensure_ascii=False),
         "TYPOLOGIES: " + json.dumps(names, ensure_ascii=False),
         "ACTIONS: " + json.dumps([a.text for a in advice.actions], ensure_ascii=False),
         f"LANGUAGE: {reply_language}",
-        untrusted_block(case_text(state)),
-    ])
+    ]
+    if situation.unresolved_uncertainties or state.get("interview_skipped"):
+        user_blocks.append(
+            "UNRESOLVED_FACTS: Follow-up questions were skipped or key facts remain unconfirmed "
+            f"({', '.join(situation.unresolved_uncertainties) or 'unconfirmed exposure'}). "
+            "In 'uncertainty', state clearly what remains unconfirmed."
+        )
+    user_blocks.append(untrusted_block(case_text(state)))
+    user = "\n".join(user_blocks)
     result, update = ctx.call_llm(state, node="explain", prompt=load_prompt("explain"),
                                   tier="reasoning", user=user, schema=ExplainOutput)
     if result is None:
