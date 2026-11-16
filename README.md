@@ -9,7 +9,7 @@
   <a href="#-multi-agent-architecture"><img src="https://img.shields.io/badge/Architecture-9--Agent%20LangGraph-blue.svg?style=flat-square" alt="Architecture" /></a>
   <a href="#-empirical-benchmark-evaluation"><img src="https://img.shields.io/badge/Scam%20Recall-97.2%25-success.svg?style=flat-square" alt="Scam Recall" /></a>
   <a href="#-empirical-benchmark-evaluation"><img src="https://img.shields.io/badge/Safety%20Behaviors-97.7%25-success.svg?style=flat-square" alt="Safety Behaviors" /></a>
-  <a href="#-testing--verification"><img src="https://img.shields.io/badge/Pytest-275%20Passed%20(100%25)-brightgreen.svg?style=flat-square" alt="Tests" /></a>
+  <a href="#-testing--verification"><img src="https://img.shields.io/badge/Pytest-277%20Passed%20(100%25)-brightgreen.svg?style=flat-square" alt="Tests" /></a>
   <a href="#-privacy-by-design--dpdp-act-2023-compliance"><img src="https://img.shields.io/badge/Privacy-DPDP%20Act%20Aligned-darkgreen.svg?style=flat-square" alt="Privacy" /></a>
   <a href="#-quick-start--installation"><img src="https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square&logo=python&logoColor=white" alt="Python Version" /></a>
   <a href="#-license--capstone-metadata"><img src="https://img.shields.io/badge/Certification-Hero%20Vired%20Agentic%20AI-orange.svg?style=flat-square" alt="Hero Vired Capstone" /></a>
@@ -304,7 +304,7 @@ The project includes a comprehensive offline test suite covering all units, pipe
 pytest -v
 ```
 
-**Verification Results: 275 passed in 33.64s (100% Passing)**
+**Verification Results: 277 passed in 37.14s (100% Passing)**
 
 The test suite validates:
 - Deterministic signal extractors and threat intel database queries.
@@ -360,7 +360,7 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
-├── tests/                  # 275 unit and integration tests
+├── tests/                  # 277 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies
 ├── requirements-dev.txt    # Development and test dependencies

@@ -139,3 +139,34 @@ def test_mixed_answer_unauthorized_debit_noticed(runner: AgentRunner) -> None:
     assert "1930" in resumed.advice.actions[0].text
     runner.clear_session(first.thread_id, purge_checkpoint=True)
 
+
+def test_otp_caller_already_had_it_triggers_urgent_recovery(runner: AgentRunner) -> None:
+    text = "I did not share my OTP, but the caller already had it"
+    outcome = runner.assess(text)
+    assert outcome.status == "complete"
+    assert outcome.risk is not None
+    assert outcome.risk.level in ("HIGH", "CRITICAL")
+    assert outcome.risk.value >= 60
+    assert "urgent_recovery" in outcome.risk.overrides
+    assert outcome.advice is not None
+    assert outcome.advice.urgent_recovery_mode
+    assert any("1930" in a.text or "freeze" in a.text.lower() for a in outcome.advice.actions)
+    runner.clear_session(outcome.thread_id, purge_checkpoint=True)
+
+
+def test_technician_apk_unauthorized_installation_tracked(runner: AgentRunner) -> None:
+    text = "The technician installed an APK on my phone without asking me"
+    outcome = runner.assess(text)
+    if outcome.status == "needs_followup":
+        outcome = runner.resume(outcome.thread_id, {"skip": True})
+    assert outcome.status == "complete"
+    snap = runner.graph.get_state(runner._config(outcome.thread_id))
+    sit = snap.values.get("situation", {})
+    assert sit.get("app_installed") is True
+    app_exp = sit.get("app_installation", {})
+    assert app_exp.get("status") == "confirmed"
+    assert app_exp.get("actor") == "third_party"
+    assert app_exp.get("target") == "user_device"
+    assert app_exp.get("authorized") == "denied"
+    runner.clear_session(outcome.thread_id, purge_checkpoint=True)
+

@@ -217,8 +217,9 @@ _USER_TRANSFER_DENIED: Final = re.compile(
 )
 
 _SECRET_RECEIVED_OR_EXPOSED: Final = re.compile(
-    r"\b(?:someone\s+else|third\s+party|caller|another\s+person|scammer)\s+(?:received|got|has|obtained|took|entered|used)\b.{0,30}?\b(?:code|otp|password|pin|it)\b|"
-    r"\b(?:code|otp|password|pin)\s+(?:was\s+)?(?:received|obtained|taken|entered|shared)\b|"
+    r"\b(?:someone\s+else|third\s+party|caller|another\s+person|scammer|they|he|she)\s+(?:already\s+)?(?:received|got|has|had|knew|already\s+knew|obtained|took|entered|used|possessed|held)\b.{0,30}?\b(?:code|otp|password|pin|it)\b|"
+    r"\b(?:already\s+)?(?:had|knew|obtained|got|received)\s+(?:the\s+|my\s+)?(?:code|otp|password|pin)\b|"
+    r"\b(?:code|otp|password|pin)\s+(?:was\s+)?(?:already\s+)?(?:received|obtained|taken|entered|shared|known|compromised|leaked)\b|"
     r"\b(?:received|got|obtained)\s+(?:the\s+|my\s+)?(?:code|otp|password|pin)\b",
     re.I,
 )
@@ -257,11 +258,20 @@ _APP_INSTALLATION_DENIED: Final = re.compile(
     re.I,
 )
 
+_THIRD_PARTY_INSTALLED_APP: Final = re.compile(
+    r"\b(?:someone\s+else|third\s+party|caller|another\s+person|scammer|technician|agent|executive|stranger|they|he|she)\s+(?:already\s+)?(?:installed|downloaded|put|sideloaded)\b|"
+    r"\b(?:installed|downloaded|put|sideloaded)\s+by\s+(?:the\s+)?(?:technician|caller|scammer|executive|agent|third\s+party|someone\s+else)\b",
+    re.I,
+)
+
 _REMOTE_ACCESS_DENIED: Final = re.compile(
     r"\b(?:granted|gave)\s+no\s+remote\s+access\b|"
     r"\bno\s+remote\s+access\s+was\s+granted\b|"
     r"\bdid\s+not\s+grant\s+(?:any\s+)?(?:remote\s+access|permissions?)\b|"
-    r"\bno\s+permissions?\s+(?:given|granted)\b",
+    r"\bno\s+permissions?\s+(?:given|granted)\b|"
+    r"\bwithout\s+(?:my\s+)?(?:asking|permission|consent|knowledge|authorization|authorisation)\b|"
+    r"\bwithout\s+asking\s+me\b|"
+    r"\bunauthorized\b",
     re.I,
 )
 
@@ -503,7 +513,8 @@ def detect_situation(text: str) -> dict[str, Any]:
     if app_installed_on_user:
         app_installed = True
         auth_status = "denied" if remote_denied else ("confirmed" if remote_granted else "unknown")
-        app_exp = {"status": "confirmed", "actor": "user", "target": "user_device", "authorized": auth_status}
+        actor_type = "third_party" if _THIRD_PARTY_INSTALLED_APP.search(text) else "user"
+        app_exp = {"status": "confirmed", "actor": actor_type, "target": "user_device", "authorized": auth_status}
     elif app_install_denied:
         app_installed = False
         auth_status = "denied" if remote_denied else "unknown"

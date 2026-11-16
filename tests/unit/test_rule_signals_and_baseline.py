@@ -140,6 +140,21 @@ def test_situation_detection() -> None:
     assert sit_unauth_debit["money_loss"]["status"] == "confirmed"
     assert sit_unauth_debit["money_loss"]["authorized"] == "denied"
 
+    # 4. Evidence caller had OTP overrides user's denial of sharing it
+    sit_otp_caller_had = rule_signals.detect_situation("I did not share my OTP, but the caller already had it")
+    assert sit_otp_caller_had["credentials_shared"]
+    assert sit_otp_caller_had["credentials_exposure"]["status"] == "confirmed"
+    assert sit_otp_caller_had["credentials_exposure"]["actor"] == "third_party"
+    assert sit_otp_caller_had["credentials_exposure"]["target"] == "user_account"
+
+    # 5. Third-party installation on user device without authorization
+    sit_tech_unauth = rule_signals.detect_situation("The technician installed an APK on my phone without asking me")
+    assert sit_tech_unauth["app_installed"]
+    assert sit_tech_unauth["app_installation"]["status"] == "confirmed"
+    assert sit_tech_unauth["app_installation"]["actor"] == "third_party"
+    assert sit_tech_unauth["app_installation"]["target"] == "user_device"
+    assert sit_tech_unauth["app_installation"]["authorized"] == "denied"
+
     assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_sent"]
     assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_loss"]["status"] == "confirmed"
     assert rule_signals.detect_situation("No money was lost and no unauthorized activity was noticed")["money_loss"]["status"] == "denied"
