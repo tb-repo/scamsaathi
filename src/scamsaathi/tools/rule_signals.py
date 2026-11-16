@@ -216,11 +216,35 @@ _USER_TRANSFER_DENIED: Final = re.compile(
     re.I,
 )
 
-_SECRET_RECEIVED_OR_EXPOSED: Final = re.compile(
-    r"\b(?:someone\s+else|third\s+party|caller|another\s+person|scammer|they|he|she)\s+(?:already\s+)?(?:received|got|has|had|knew|already\s+knew|obtained|took|entered|used|possessed|held)\b.{0,30}?\b(?:code|otp|password|pin|it)\b|"
-    r"\b(?:already\s+)?(?:had|knew|obtained|got|received)\s+(?:the\s+|my\s+)?(?:code|otp|password|pin)\b|"
-    r"\b(?:code|otp|password|pin)\s+(?:was\s+)?(?:already\s+)?(?:received|obtained|taken|entered|shared|known|compromised|leaked)\b|"
-    r"\b(?:received|got|obtained)\s+(?:the\s+|my\s+)?(?:code|otp|password|pin)\b",
+_INQUIRY_OR_QUESTION: Final = re.compile(
+    r"\b(?:asked|asking|inquired|inquiring|enquired|enquiring|wanted\s+to\s+know|wondered|checked|checking)\s+(?:whether|if|me\s+if|me\s+whether)\b|"
+    r"\b(?:asked|asking|inquired|enquired)\b.{0,30}?\b(?:did\s+i|did\s+you|if\s+i|whether\s+i)\b|"
+    r"\b(?:kya\s+maine|pucha\s+ki|puch\s+rahe\s+the)\b|"
+    r"\b(?:asked|asking|told)\s+(?:me\s+)?to\s+(?:install|download|click|pay|send)\b",
+    re.I,
+)
+
+_ACTION_DENIED_RESPONSE: Final = re.compile(
+    r"\b(?:said|replied|answered|told\s+(?:them|him|her)|bol(?:a|i)|kaha)\s+(?:no|nah|nahi|nahin|na)\b|"
+    r"\b(?:said|replied|answered|told\s+(?:them|him|her))\s+(?:that\s+)?i\s+(?:did\s+not|didn't|had\s+not|hadn't)\b|"
+    r"\bmana\s+(?:kar\s+diya|kiya)\b|"
+    r"\brefused\b|\bdeclined\b|\brejected\b",
+    re.I,
+)
+
+_THIRD_PARTY_SECRET_EXPOSED: Final = re.compile(
+    rf"\b(?:the\s+|a\s+|an\s+)?(?:someone\s+else|third\s+party|another\s+person|scammer|fraudster|they|he|she|{_THIRD_PARTY_NOUN})\b.{{0,25}}?\b(?:already\s+)?(?:received|got|has|had|knew|already\s+knew|obtained|took|entered|used|possessed|held)\b.{{0,30}}?\b(?:code|otp|password|pin|it)\b|"
+    rf"\b(?:code|otp|password|pin)\s+(?:was|is)\s+(?:already\s+)?(?:known|revealed|disclosed|accessible)\s+to\s+(?:the\s+)?(?:someone\s+else|third\s+party|another\s+person|caller|scammer|fraudster|them|him|her|{_THIRD_PARTY_NOUN})\b",
+    re.I,
+)
+
+_SECRET_LEAKED_OR_COMPROMISED: Final = re.compile(
+    r"\b(?:code|otp|password|pin)\s+(?:was|is)\s+(?:already\s+)?(?:compromised|leaked|stolen|intercepted|breached)\b",
+    re.I,
+)
+
+_THIRD_PARTY_INSTALLED_ON_USER: Final = re.compile(
+    rf"\b{_THIRD_PARTY_NOUN}\b.{{0,30}}?\b(?:installed|downloaded)\b.{{0,25}}?\b(?:app|apk)\b.{{0,25}}?\b(?:on my|in my|mera|meri)\b",
     re.I,
 )
 
@@ -365,7 +389,7 @@ def _is_third_party_actor(text: str, pred_start: int, match_start: int) -> bool:
 
 
 def _is_negated_or_hypothetical(text: str, match: re.Match[str]) -> bool:
-    """Check for negations or hypotheticals strictly within the same predicate as the match."""
+    """Check for negations, questions, inquiries, or hypotheticals strictly within the same predicate as the match."""
     start, end = match.start(), match.end()
     pred_start, pred_end = _get_predicate_bounds(text, start, end)
     before_in_pred = text[pred_start:start]
@@ -378,7 +402,77 @@ def _is_negated_or_hypothetical(text: str, match: re.Match[str]) -> bool:
         return True
     if _POST_NEG.search(after_in_pred):
         return True
+    if _INQUIRY_OR_QUESTION.search(before_in_pred):
+        return True
+    if "?" in text[start:pred_end]:
+        return True
+    before_text = text[:start]
+    if before_text.count('"') % 2 == 1 or before_text.count("'") % 2 == 1:
+        return True
     return False
+
+
+def _check_secret_third_party_exposed(text: str) -> bool:
+    for m in _THIRD_PARTY_SECRET_EXPOSED.finditer(text):
+        if _is_negated_or_hypothetical(text, m):
+            continue
+        pred_start, pred_end = _get_predicate_bounds(text, m.start(), m.end())
+        if _SECRET_TO_USER.search(text[m.end():pred_end]) or _SECRET_TO_USER.search(m.group(0)):
+            continue
+        if not _is_third_party_actor(text, pred_start, m.start()) and not re.search(
+            rf"\b(?:the\s+|a\s+|an\s+)?(?:someone\s+else|third\s+party|another\s+person|scammer|fraudster|{_THIRD_PARTY_NOUN})\b",
+            m.group(0),
+            re.I,
+        ):
+            continue
+        return True
+    for m in _SECRET_LEAKED_OR_COMPROMISED.finditer(text):
+        if _is_negated_or_hypothetical(text, m):
+            continue
+        return True
+    return False
+
+
+def _check_secret_denied(text: str) -> bool:
+    if _SECRET_CONFIRMED_DENIED.search(text):
+        return True
+    if _INQUIRY_OR_QUESTION.search(text) and _ACTION_DENIED_RESPONSE.search(text):
+        if re.search(rf"\b(?:{_SECRET})\b", text, re.I):
+            return True
+    return False
+
+
+def _check_app_installation_denied(text: str) -> bool:
+    if _APP_INSTALLATION_DENIED.search(text):
+        return True
+    if _INQUIRY_OR_QUESTION.search(text) and _ACTION_DENIED_RESPONSE.search(text):
+        if re.search(r"\b(?:app|apk|application)\b", text, re.I):
+            return True
+    return False
+
+
+def _check_app_installed_on_user(text: str) -> bool:
+    if _check_app_installation_denied(text):
+        return False
+    for m in _THIRD_PARTY_INSTALLED_ON_USER.finditer(text):
+        if _is_negated_or_hypothetical(text, m):
+            continue
+        pred_start, pred_end = _get_predicate_bounds(text, m.start(), m.end())
+        pred_text = text[pred_start:pred_end]
+        if _THIRD_PARTY_DEVICE.search(pred_text):
+            continue
+        return True
+    for m in _APP_INSTALLED_ON_USER_DEVICE.finditer(text):
+        if _is_negated_or_hypothetical(text, m):
+            continue
+        pred_start, pred_end = _get_predicate_bounds(text, m.start(), m.end())
+        pred_text = text[pred_start:pred_end]
+        if _THIRD_PARTY_DEVICE.search(pred_text):
+            continue
+        if _is_third_party_actor(text, pred_start, m.start()):
+            continue
+        return True
+    return _check_app_installed(text)
 
 
 def _check_money_sent(text: str) -> bool:
@@ -488,10 +582,13 @@ def detect_situation(text: str) -> dict[str, Any]:
 
     # 1. Credentials exposure determination:
     # Distinguish received/exposed, confirmed denied, and unresolved/unknown
-    if _SECRET_RECEIVED_OR_EXPOSED.search(text) or _check_creds_shared(text):
+    if _check_secret_third_party_exposed(text):
         creds_exp = {"status": "confirmed", "actor": "third_party", "target": "user_account"}
         credentials_shared = True
-    elif _SECRET_CONFIRMED_DENIED.search(text):
+    elif _check_creds_shared(text):
+        creds_exp = {"status": "confirmed", "actor": "user", "target": "user_account"}
+        credentials_shared = True
+    elif _check_secret_denied(text):
         creds_exp = {"status": "denied", "actor": "user", "target": "user_account"}
         credentials_shared = False
     elif _THIRD_PARTY_ACCESSED_USER_SECRET.search(text) or (
@@ -505,15 +602,15 @@ def detect_situation(text: str) -> dict[str, Any]:
 
     # 2. App installation determination:
     # Decouple installation on device from remote access permissions
-    app_installed_on_user = bool(_APP_INSTALLED_ON_USER_DEVICE.search(text) or _check_app_installed(text))
-    app_install_denied = bool(_APP_INSTALLATION_DENIED.search(text))
+    app_installed_on_user = _check_app_installed_on_user(text)
+    app_install_denied = _check_app_installation_denied(text)
     remote_denied = bool(_REMOTE_ACCESS_DENIED.search(text))
     remote_granted = bool(_REMOTE_ACCESS_GRANTED.search(text))
 
     if app_installed_on_user:
         app_installed = True
         auth_status = "denied" if remote_denied else ("confirmed" if remote_granted else "unknown")
-        actor_type = "third_party" if _THIRD_PARTY_INSTALLED_APP.search(text) else "user"
+        actor_type = "third_party" if (_THIRD_PARTY_INSTALLED_APP.search(text) or _THIRD_PARTY_INSTALLED_ON_USER.search(text)) else "user"
         app_exp = {"status": "confirmed", "actor": actor_type, "target": "user_device", "authorized": auth_status}
     elif app_install_denied:
         app_installed = False

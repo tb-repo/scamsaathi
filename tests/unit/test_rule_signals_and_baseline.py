@@ -155,6 +155,18 @@ def test_situation_detection() -> None:
     assert sit_tech_unauth["app_installation"]["target"] == "user_device"
     assert sit_tech_unauth["app_installation"]["authorized"] == "denied"
 
+    # Negative controls: user having own OTP on phone does not mean third-party exposure
+    sit_user_otp = rule_signals.detect_situation("I already had my OTP on my phone")
+    assert not sit_user_otp["credentials_shared"]
+    assert sit_user_otp.get("credentials_exposure", {}).get("status") != "confirmed"
+
+    # Negative controls: inquiry / question and denial must not count as confirmed action
+    sit_tech_denied = rule_signals.detect_situation(
+        "The technician asked whether I installed the APK, but I said no"
+    )
+    assert not sit_tech_denied["app_installed"]
+    assert sit_tech_denied.get("app_installation", {}).get("status") == "denied"
+
     assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_sent"]
     assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_loss"]["status"] == "confirmed"
     assert rule_signals.detect_situation("No money was lost and no unauthorized activity was noticed")["money_loss"]["status"] == "denied"

@@ -170,3 +170,31 @@ def test_technician_apk_unauthorized_installation_tracked(runner: AgentRunner) -
     assert app_exp.get("authorized") == "denied"
     runner.clear_session(outcome.thread_id, purge_checkpoint=True)
 
+def test_technician_inquiry_apk_denial_no_urgent_recovery(runner: AgentRunner) -> None:
+    text = "The technician asked whether I installed the APK, but I said no"
+    outcome = runner.assess(text)
+    if outcome.status == "needs_followup":
+        outcome = runner.resume(outcome.thread_id, {"skip": True})
+    assert outcome.status == "complete"
+    assert outcome.risk is not None
+    assert "urgent_recovery" not in outcome.risk.overrides
+    snap = runner.graph.get_state(runner._config(outcome.thread_id))
+    sit = snap.values.get("situation", {})
+    assert sit.get("app_installed") is False
+    assert sit.get("app_installation", {}).get("status") == "denied"
+    runner.clear_session(outcome.thread_id, purge_checkpoint=True)
+
+
+def test_user_had_otp_on_phone_not_third_party_exposure(runner: AgentRunner) -> None:
+    text = "I already had my OTP on my phone"
+    outcome = runner.assess(text)
+    if outcome.status == "needs_followup":
+        outcome = runner.resume(outcome.thread_id, {"skip": True})
+    assert outcome.status == "complete"
+    assert outcome.risk is not None
+    assert "urgent_recovery" not in outcome.risk.overrides
+    snap = runner.graph.get_state(runner._config(outcome.thread_id))
+    sit = snap.values.get("situation", {})
+    assert sit.get("credentials_shared") is False
+    assert sit.get("credentials_exposure", {}).get("status") != "confirmed"
+    runner.clear_session(outcome.thread_id, purge_checkpoint=True)
