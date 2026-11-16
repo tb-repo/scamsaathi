@@ -144,14 +144,21 @@ def main() -> None:
         all_fails = core_fails + beh_fails + typ_fails
         safety_issue_str = "; ".join(all_fails) if all_fails else "None"
 
-        # Rubric v2 (calibrated metric): allows ambiguous cases without threats to resolve safely to LOW with cautionary advice
+        # Rubric v2 (provisional calibrated metric): requires ambiguous cases resolving to LOW to have 0 warning signals and include cautionary verification advice
         v2_fails: list[str] = []
         if clabel == "scam" and risk_level == "LOW":
             v2_fails.append("missed scam: level is LOW")
         elif clabel == "legit" and risk_level != "LOW":
             v2_fails.append(f"false alarm: level is {risk_level}")
-        elif clabel == "ambiguous" and not clarification_triggered and risk_level != "LOW":
-            v2_fails.append(f"ambiguous escalated to {risk_level} without clarification")
+        elif clabel == "ambiguous":
+            if not clarification_triggered:
+                if risk_level != "LOW":
+                    v2_fails.append(f"ambiguous escalated to {risk_level} without clarification")
+                if len(final_outcome.signals or []) > 0:
+                    v2_fails.append("ambiguous case has unaddressed warning signals")
+                actions_text = " ".join(a.text.lower() for a in (final_outcome.advice.actions if final_outcome.advice else []))
+                if not any(w in actions_text for w in ("verify", "official", "caution", "confirm")):
+                    v2_fails.append("ambiguous case lacks cautionary verification guidance")
         v2_fails.extend(beh_fails)
         if clabel == "scam":
             v2_fails.extend(typ_fails)
@@ -172,7 +179,7 @@ def main() -> None:
             if clarification_triggered:
                 reviewer_notes.append("Ambiguous: clarification triggered")
             else:
-                reviewer_notes.append("Ambiguous: resolved to LOW with caution (Rubric v1: not interviewed; Rubric v2: pass)")
+                reviewer_notes.append("Ambiguous: resolved to LOW with caution (Strict Rubric v1: not interviewed; Provisional Rubric v2: pass)")
 
         if not reviewer_notes:
             reviewer_notes.append(f"Expected={clabel}; Output={risk_level}({risk_score})")
@@ -273,17 +280,30 @@ def main() -> None:
         "config_sha256": config_hash,
         "mode_provider_model": mode_provider_model,
         "total_cases": len(cases),
+        "execution_path": {
+            "type": "deterministic_offline_cache",
+            "llm_calls": 0,
+            "description": "Standard deterministic rule, intel cache, and classification path with 0 live LLM calls",
+        },
         "strict_rubric_v1": {
             "passed": strict_pass_count,
             "total": len(cases),
             "pass_rate_pct": round(100.0 * strict_pass_count / len(cases), 1),
             "note": "Requires interview on all ambiguous cases; 6 resolved safely to LOW without interview",
         },
+        "provisional_calibrated_rubric_v2": {
+            "passed": v2_pass_count,
+            "total": len(cases),
+            "pass_rate_pct": round(100.0 * v2_pass_count / len(cases), 1),
+            "status": "provisional",
+            "note": "Allows ambiguous cases without warning signals or threat intel to resolve safely to LOW with cautionary verification advice",
+        },
         "calibrated_rubric_v2": {
             "passed": v2_pass_count,
             "total": len(cases),
             "pass_rate_pct": round(100.0 * v2_pass_count / len(cases), 1),
-            "note": "Allows ambiguous cases without threat signals to resolve safely to LOW with cautionary advice",
+            "status": "provisional",
+            "note": "Alias for provisional_calibrated_rubric_v2",
         },
         "latency_summary": lat_summary,
         "results": per_case_meta,

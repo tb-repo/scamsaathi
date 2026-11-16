@@ -122,8 +122,24 @@ def test_situation_detection() -> None:
     assert rule_signals.detect_situation("No, the code was not for my personal account and no one has access to my account")["credentials_exposure"]["status"] == "denied"
     assert rule_signals.detect_situation("code is mine, but nobody used it")["credentials_exposure"]["status"] == "denied"
     assert not rule_signals.detect_situation("code is mine, but nobody used it")["credentials_shared"]
-    assert rule_signals.detect_situation("app is on my phone, but I granted no remote access")["app_installation"]["status"] == "denied"
-    assert not rule_signals.detect_situation("app is on my phone, but I granted no remote access")["app_installed"]
+    
+    # 1. Received vs used distinction: receiving the code is an exposure even if not used
+    sit_otp_rec = rule_signals.detect_situation("Someone else received my OTP, but nobody used it")
+    assert sit_otp_rec["credentials_shared"]
+    assert sit_otp_rec["credentials_exposure"]["status"] == "confirmed"
+
+    # 2. Installation on device separated from remote access permissions
+    sit_app_remote = rule_signals.detect_situation("The app is on my phone, but I granted no remote access")
+    assert sit_app_remote["app_installed"]
+    assert sit_app_remote["app_installation"]["status"] == "confirmed"
+    assert sit_app_remote["app_installation"]["authorized"] == "denied"
+
+    # 3. User-initiated transfer denial vs unauthorized debit
+    sit_unauth_debit = rule_signals.detect_situation("No money was sent by me, but an unauthorized debit appeared")
+    assert sit_unauth_debit["money_sent"]
+    assert sit_unauth_debit["money_loss"]["status"] == "confirmed"
+    assert sit_unauth_debit["money_loss"]["authorized"] == "denied"
+
     assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_sent"]
     assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_loss"]["status"] == "confirmed"
     assert rule_signals.detect_situation("No money was lost and no unauthorized activity was noticed")["money_loss"]["status"] == "denied"

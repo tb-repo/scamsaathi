@@ -89,10 +89,10 @@ QUESTION_BANK: Final[dict[str, tuple[str, ...]]] = {
         "No one obtained or used any code or password for my account.",
     ),
     "apk_device_exposure": (
-        "Was this app or APK installed on your own phone or device with permissions granted?",
-        "Kya yeh app ya APK aapke apne phone par permissions ke saath install hua?",
-        "The app was installed on my own device with permissions.",
-        "The app was not installed on my device and no remote access was granted.",
+        "Was this app or APK installed or downloaded on your own phone or device?",
+        "Kya yeh app ya APK aapke apne phone par install ya download hua?",
+        "The app was installed on my own device.",
+        "The app was not installed on my device.",
     ),
     "unauthorized_loss_noticed": (
         "Did you notice any unauthorized debit, money deduction, or financial loss from your account?",

@@ -195,31 +195,39 @@ _UNAUTHORIZED_LOSS_CONFIRMED: Final = re.compile(
     r"\b(?:unauthorized|unauthorised|fraudulent)\s+(?:debit|transaction|transfer|deduction|withdrawal|loss)\b|"
     r"\b(?:money|amount|funds?|rupees|inr|rs\.?|₹|[\d,]+)\s+(?:was|were|got)?\s*(?:deducted|debited|taken|stolen|withdrawn|lost)\s+(?:without\s+my\s+(?:permission|consent|authorization|authorisation)|unauthorized|unauthorised)\b|"
     r"\bnoticed\s+(?:an?\s+)?(?:unauthorized|unauthorised|fraudulent)\s+(?:debit|transaction|transfer|deduction|loss)\b|"
+    r"\bunauthorized\s+debit\s+appeared\b|"
     r"\bunauthorized\s+debit\b",
     re.I,
 )
 
-_DENIED_USER_MONEY: Final = re.compile(
+_TOTAL_LOSS_DENIED: Final = re.compile(
     r"\bno\s+(?:unauthorized|unauthorised)\s+(?:debit|deduction|activity|transaction|loss)\b|"
-    r"\bno\s+money\s+(?:was\s+)?(?:lost|sent|debited|deducted|taken)\b|"
-    r"\bi\s+(?:have\s+)?not\s+sent\s+(?:any\s+)?money\b|"
-    r"\bi\s+haven't\s+paid\s+anything\b|"
-    r"\bmaine\s+paise\s+nahi\s+bheje\b|"
+    r"\bno\s+money\s+(?:was\s+)?(?:lost|deducted|taken|stolen|debited)\b|"
     r"\bno\s+financial\s+loss\b",
     re.I,
 )
 
-_CONFIRMED_USER_SECRET: Final = re.compile(
-    r"\b(?:someone\s+else\s+(?:obtained|used|entered|took)\b.{0,30}?\b(?:code|otp|password|pin|it))\b|"
-    r"\b(?:obtained\s+or\s+used\s+a\s+code)\b|"
-    r"\bused\s+it\s+to\s+access\s+my\s+account\b|"
-    r"\bshared\s+(?:the\s+|my\s+)?(?:code|otp|pin|password)\s+with\s+(?:them|the\s+caller|someone|the\s+scammer)\b",
+_USER_TRANSFER_DENIED: Final = re.compile(
+    r"\bno\s+money\s+was\s+sent\b|"
+    r"\bi\s+(?:have\s+)?not\s+sent\s+(?:any\s+)?money\b|"
+    r"\bi\s+haven't\s+paid\s+anything\b|"
+    r"\bi\s+did\s+not\s+(?:send|pay|transfer)\b|"
+    r"\bmaine\s+paise\s+nahi\s+bheje\b",
     re.I,
 )
-_DENIED_USER_SECRET: Final = re.compile(
+
+_SECRET_RECEIVED_OR_EXPOSED: Final = re.compile(
+    r"\b(?:someone\s+else|third\s+party|caller|another\s+person|scammer)\s+(?:received|got|has|obtained|took|entered|used)\b.{0,30}?\b(?:code|otp|password|pin|it)\b|"
+    r"\b(?:code|otp|password|pin)\s+(?:was\s+)?(?:received|obtained|taken|entered|shared)\b|"
+    r"\b(?:received|got|obtained)\s+(?:the\s+|my\s+)?(?:code|otp|password|pin)\b",
+    re.I,
+)
+
+_SECRET_CONFIRMED_DENIED: Final = re.compile(
     r"\b(?:code|otp|password|pin)\s+(?:was|is)\s+not\s+for\s+my\b|"
     r"\bno\s+one\s+has\s+access\s+to\s+my\s+account\b|"
     r"\bnot\s+my\s+(?:code|otp|account)\b|"
+    r"\bno\s+one\s+(?:received|obtained)\s+(?:my\s+)?(?:code|otp)\b|"
     r"\bi\s+(?:have\s+)?not\s+shared\b.{0,20}?\b(?:otp|pin|password|code|details)\b|"
     r"\bi\s+did\s+not\s+(?:share|enter|give|provide)\b.{0,20}?\b(?:otp|pin|password|code|details)\b|"
     r"\bmaine\s+otp\s+nahi\s+bataya\b|"
@@ -230,18 +238,37 @@ _DENIED_USER_SECRET: Final = re.compile(
     r"\bno\s+one\s+obtained\s+or\s+used\b",
     re.I,
 )
-_CONFIRMED_USER_APP: Final = re.compile(
-    r"\bapp\s+was\s+installed\s+on\s+my\s+own\s+device\b|\binstalled\s+on\s+my\s+phone\s+with\s+permissions\b",
+
+_APP_INSTALLED_ON_USER_DEVICE: Final = re.compile(
+    r"\b(?:app|apk)\s+(?:is\s+)?on\s+my\s+(?:phone|device|mobile)\b|"
+    r"\bi\s+(?:have\s+)?(?:the\s+)?(?:app|apk)\s+on\s+my\b|"
+    r"\bapp\s+(?:was|is)\s+installed\s+on\s+my\b|"
+    r"\binstalled\s+on\s+my\s+(?:phone|device|mobile)\b|"
+    r"\bi\s+(?:have\s+)?(?:already\s+)?(?:installed|downloaded)\b.{0,20}?\b(?:app|apk)\b|"
+    r"\bapp\s+install\s+kar\s+(?:liya|diya)\b",
     re.I,
 )
-_DENIED_USER_APP: Final = re.compile(
+
+_APP_INSTALLATION_DENIED: Final = re.compile(
     r"\bapp\s+(?:was|is)\s+not\s+installed\s+on\s+my\b|"
-    r"\bno\s+remote\s+access\s+was\s+granted\b|"
-    r"\bon\s+the\s+technician's\s+own\s+phone\b|"
-    r"\bnot\s+installed\s+on\s+my\s+phone\b|"
+    r"\bnot\s+installed\s+on\s+my\s+(?:phone|device|mobile)\b|"
     r"\bi\s+did\s+not\s+install\s+(?:it|the\s+app|any\s+app|apk)\b|"
-    r"\bgranted\s+no\s+remote\s+access\b|"
+    r"\bon\s+the\s+(?:technician's|caller's|other\s+person's)\s+own\s+phone\b",
+    re.I,
+)
+
+_REMOTE_ACCESS_DENIED: Final = re.compile(
+    r"\b(?:granted|gave)\s+no\s+remote\s+access\b|"
+    r"\bno\s+remote\s+access\s+was\s+granted\b|"
+    r"\bdid\s+not\s+grant\s+(?:any\s+)?(?:remote\s+access|permissions?)\b|"
     r"\bno\s+permissions?\s+(?:given|granted)\b",
+    re.I,
+)
+
+_REMOTE_ACCESS_GRANTED: Final = re.compile(
+    r"\b(?:granted|gave|allowed)\s+(?:remote\s+access|permissions?)\b|"
+    r"\bwith\s+permissions\b|"
+    r"\bshared\s+(?:the\s+)?(?:access\s+code|screen)\b",
     re.I,
 )
 
@@ -345,14 +372,25 @@ def _is_negated_or_hypothetical(text: str, match: re.Match[str]) -> bool:
 
 
 def _check_money_sent(text: str) -> bool:
-    if _DENIED_USER_MONEY.search(text):
-        return False
+    # 1. If an unauthorized debit or fraudulent loss is confirmed in an un-negated clause:
+    # That is confirmed financial loss, even if user clarifies "no money was sent by me".
     for m in _UNAUTHORIZED_LOSS_CONFIRMED.finditer(text):
         if not _is_negated_or_hypothetical(text, m):
             return True
+
+    # 2. If the user explicitly denies any financial loss or unauthorized debit:
+    if _TOTAL_LOSS_DENIED.search(text):
+        return False
+
+    # 3. If the user denies sending money and no unauthorized debit was reported:
+    if _USER_TRANSFER_DENIED.search(text):
+        return False
+
+    # 4. Standard first-person money transfer detection:
     for m in _MONEY_SENT.finditer(text):
         if not _is_negated_or_hypothetical(text, m):
             return True
+
     return False
 
 
@@ -438,11 +476,12 @@ def detect_situation(text: str) -> dict[str, Any]:
     app_exp: dict[str, Any] | None = None
     money_exp: dict[str, Any] | None = None
 
-    # 1. Credentials exposure determination
-    if _check_creds_shared(text) or _CONFIRMED_USER_SECRET.search(text):
-        creds_exp = {"status": "confirmed", "actor": "user", "target": "user_account"}
+    # 1. Credentials exposure determination:
+    # Distinguish received/exposed, confirmed denied, and unresolved/unknown
+    if _SECRET_RECEIVED_OR_EXPOSED.search(text) or _check_creds_shared(text):
+        creds_exp = {"status": "confirmed", "actor": "third_party", "target": "user_account"}
         credentials_shared = True
-    elif _DENIED_USER_SECRET.search(text):
+    elif _SECRET_CONFIRMED_DENIED.search(text):
         creds_exp = {"status": "denied", "actor": "user", "target": "user_account"}
         credentials_shared = False
     elif _THIRD_PARTY_ACCESSED_USER_SECRET.search(text) or (
@@ -454,18 +493,27 @@ def detect_situation(text: str) -> dict[str, Any]:
     else:
         credentials_shared = False
 
-    # 2. App installation determination
-    if _check_app_installed(text) or _CONFIRMED_USER_APP.search(text):
-        app_exp = {"status": "confirmed", "actor": "user", "target": "user_device", "authorized": "confirmed"}
+    # 2. App installation determination:
+    # Decouple installation on device from remote access permissions
+    app_installed_on_user = bool(_APP_INSTALLED_ON_USER_DEVICE.search(text) or _check_app_installed(text))
+    app_install_denied = bool(_APP_INSTALLATION_DENIED.search(text))
+    remote_denied = bool(_REMOTE_ACCESS_DENIED.search(text))
+    remote_granted = bool(_REMOTE_ACCESS_GRANTED.search(text))
+
+    if app_installed_on_user:
         app_installed = True
-    elif _DENIED_USER_APP.search(text):
-        app_exp = {"status": "denied", "actor": "user", "target": "user_device", "authorized": "denied"}
+        auth_status = "denied" if remote_denied else ("confirmed" if remote_granted else "unknown")
+        app_exp = {"status": "confirmed", "actor": "user", "target": "user_device", "authorized": auth_status}
+    elif app_install_denied:
         app_installed = False
+        auth_status = "denied" if remote_denied else "unknown"
+        app_exp = {"status": "denied", "actor": "user", "target": "user_device", "authorized": auth_status}
     elif _UNCONFIRMED_USER_APP.search(text) or (
         _HEARSAY_OR_UNCONFIRMED.search(text) and re.search(r"\b(?:app|apk)\b", text, re.I)
     ):
-        app_exp = {"status": "unknown", "actor": "third_party", "target": "user_device", "authorized": "unknown"}
         app_installed = False
+        auth_status = "denied" if remote_denied else ("confirmed" if remote_granted else "unknown")
+        app_exp = {"status": "unknown", "actor": "third_party", "target": "user_device", "authorized": auth_status}
         uncertainties.append("apk_device_exposure")
     else:
         app_installed = False
@@ -479,7 +527,7 @@ def detect_situation(text: str) -> dict[str, Any]:
             "target": "user_account",
             "authorized": "denied" if is_unauth else "confirmed",
         }
-    elif _DENIED_USER_MONEY.search(text):
+    elif _TOTAL_LOSS_DENIED.search(text) or _USER_TRANSFER_DENIED.search(text):
         money_exp = {"status": "denied", "actor": "user", "target": "user_account", "authorized": "unknown"}
         money_sent = False
     elif _HEARSAY_MONEY.search(text) and _HEARSAY_OR_UNCONFIRMED.search(text):
