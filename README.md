@@ -48,18 +48,18 @@ The ScamSaathi architecture strictly separates access, application execution, ex
    - **Air-Gapped Offline CLI** (`scripts/run_agentic.py`): Demonstrates full multi-agent graph execution across canonical scenarios without internet or external API dependencies.
 
 2. **ScamSaathi Application Boundary (Python Runtime)**:
-   - **Intake & Local Masker**: Detects language (EN / Hinglish) and replaces sensitive identifiers (`<PHONE_1>`, `<BANK_ACC_1>`, `<UPI_ID_1>`, `<EMAIL_1>`, `<OTP_1>`).
-   - **Threat Intel DB**: SQLite-backed verification of TRAI 1600/1601 series, designated bank domains (`.bank.in`), and URL reputation.
-   - **Feature Extractor**: Identifies urgent financial coercion, authority impersonation, and structural suspicious patterns.
+   - **A1: Intake & Local Masker**: Detects language (EN / Hinglish) and replaces sensitive identifiers (`<PHONE_1>`, `<BANK_ACC_1>`, `<UPI_ID_1>`, `<EMAIL_1>`, `<OTP_1>`).
+   - **A2: Feature / Signal Extractor**: Identifies urgent financial coercion, authority impersonation, and structural suspicious patterns.
+   - **A3: Threat Intel DB**: SQLite-backed verification of TRAI 1600/1601 series, designated bank domains (`.bank.in`), and blocklisted domains/handles (runs straight after intake).
    - **Deterministic Prescreen**: Applies fast-path rules and calculates deterministic baseline scores.
-   - **Classifier Agent**: Maps threats to 15 curated typologies (SC-01 to SC-15) and enforces bounded delta constraints ($\pm 15$ max variance from baseline).
-   - **Question Planner & HITL Node**: Pauses graph execution with LangGraph `interrupt()` when ambiguous reports require user clarification; resolves situational exposure facts (distinguishing personal OTP entry from caller demonstrations, or user sideloading from technician testing) without adding inferred claims.
-   - **Deterministic Scorer**: Calculates calibrated 0–100 risk score and enforces mandatory safety floors (`apk_attachment`, `urgent_recovery`, `child_safety`). Note: score reflects detected warning signs and compromise floors, not a mathematical probability of scam.
-   - **Explainer & Advice Agents**: Synthesizes evidence-grounded explanations citing runtime IDs (`S#`, `I#`, `K#`, `C#`) and verified emergency contacts.
-   - **A9 Guardrail Sanitizer**: Post-graph security barrier enforcing zero Devanagari script leakage, contact allowlist validation, and raw vault clearing.
+   - **A4: Classifier Agent**: Maps threats to 15 curated typologies (SC-01 to SC-15) and identifies missing situational facts.
+   - **A5: Interview / Question Planner**: Pauses graph execution with LangGraph `interrupt()` when ambiguous reports require user clarification; resolves situational exposure facts (distinguishing personal OTP entry from caller demonstrations, or user sideloading from technician testing) without adding inferred claims.
+   - **A6: Deterministic Scorer**: Computes calibrated 0–100 risk score combining rule signals, threat intelligence, safety floors (`urgent_recovery`, `blocklist_floor`, `child_safety`), and applies a bounded LLM scoring adjustment (capped at $\pm 10$ points from baseline).
+   - **A7: Explainer & A8: Advice Agents**: Unified in a single model call (`explain_advise`), A7 synthesizes evidence-grounded explanations citing runtime IDs (`S#`, `I#`, `K#`, `C#`) while A8 formulates prioritized citizen action steps and verified emergency reporting channels.
+   - **A9: Post-Graph Guardrail Sanitizer**: Runs after graph completion as a final safety gate to suppress PII leakage, block absolute safety claims, suppress specific legal sections (FR-083), prevent secret demands (FR-064), validate official contact allowlists (FR-050), and attach mandatory advisory disclaimers (FR-065). *(Note: ephemeral raw text vault clearance is performed upon session completion by `AgentRunner.clear_session`).*
 
 3. **External Services Trust Boundary (Masked Prompts Only)**:
-   - **LLM Gateway with Circuit Breakers**: Dual-provider resiliency with Google Gemini (`gemini-3.5-flash-lite` fast tier, `gemini-3.8-flash` reasoning tier) and Groq fallback (`openai/gpt-oss-20b` fast, `openai/gpt-oss-120b` reasoning, configurable to `llama-3.3-70b-versatile`).
+   - **LLM Gateway with Circuit Breakers**: Primary execution uses Google Gemini (`gemini-3.5-flash-lite` fast tier, `gemini-3.8-flash` reasoning tier) with `gemini-3.6-flash` reasoning fallback defined in `config/llm.yaml`. Multi-provider Groq fallback (`llama-3.1-8b-instant` fast, `llama-3.3-70b-versatile` reasoning) is dynamically activated when a `GROQ_API_KEY` is configured in the environment.
    - **Ephemeral In-Memory Vault**: Raw unmasked text is held exclusively in memory during graph execution and popped immediately upon assessment completion.
 
 4. **User-Directed Reporting Guidance (Verified Official Channels)**:
@@ -121,7 +121,7 @@ The ScamSaathi architecture strictly separates access, application execution, ex
                                     │
                                     ▼
              ┌──────────────────────────────────────────────┐
-             │                explain_advise                │ ── Evidence grounding (A8) & advice (A7)
+             │                explain_advise                │ ── Evidence grounding (A7) & advice (A8) [unified call]
              └──────────────────────────────────────────────┘
                                     │
                                     ▼
@@ -129,7 +129,7 @@ The ScamSaathi architecture strictly separates access, application execution, ex
                                     │
                                     ▼
              ┌──────────────────────────────────────────────┐
-             │            A9: GuardrailSanitizer            │ ── Post-graph PII, script & safety gate
+             │            A9: GuardrailSanitizer            │ ── Post-graph PII, safety & allowlist gate
              └──────────────────────────────────────────────┘
                                     │
                                     ▼

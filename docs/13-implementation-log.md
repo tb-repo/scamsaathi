@@ -241,6 +241,27 @@ A chronological journal of what was done, decisions, issues, and next steps. New
 - Decisions:
   - Keep the formal 50-case benchmark report and config hash strictly intact; treat the 28-case synthetic challenge set as a separate exploratory quality probe.
 
+### 2026-11-16, Session 16, Fact Attribution Hardening & Documentation Reconciliation
+- Goal: Fix fact attribution edge cases, qualify the calibrated rubric, and reconcile documentation/presentations with implementation reality.
+- Done:
+  - Fact Attribution & Exposure Logic:
+    - Distinguished secret receipt from usage: receiving or exposing an OTP is confirmed as a security exposure even if unused (`_SECRET_RECEIVED_OR_EXPOSED`), while unreceived denial is preserved (`_SECRET_CONFIRMED_DENIED`).
+    - Decoupled APK device installation from remote access authorization: presence on device sets `app_installed=True` and `status="confirmed"`, while remote permission denial sets `authorized="denied"`.
+    - Decoupled user transfer denial from unauthorized debits: denying user-initiated transfer does not suppress confirmed unauthorized loss (`money_sent=True`, `status="confirmed"`, `authorized="denied"`).
+  - Challenge Evaluation Rubric Qualified:
+    - Updated `scripts/run_external_challenge.py` to strictly qualify the provisional calibrated rubric v2: un-interviewed ambiguous cases must resolve to `LOW`, have zero unaddressed warning signals, and include cautionary official verification advice.
+    - Added execution path metadata (`deterministic_offline_cache`, `llm_calls=0`) and recorded challenge run `xr_run_20261116_224540` (strict rubric v1: 22/28 [78.6%]; provisional calibrated rubric v2: 26/28 [92.9%]).
+  - Documentation & Deck Reconciliation:
+    - Updated all submission presentations (`ScamSaathi_Final_Submission.pptx`, `ScamSaathi_ThiagarajanBaskarasubramanian.pptx`, `ScamSaathi_ThiagarajanBaskarasubramanian_DefenseNotes.pptx`) and `README.md` to match canonical agent mapping: A1 Intake, A2 Feature Extractor, A3 Threat Intel, A4 Classifier, A5 Interviewer, A6 Scorer, A7 Explainer, A8 Advice, A9 Post-Graph Guardrail.
+    - Assigned evidence-grounded explanation to A7 and advice to A8 (sharing the `explain_advise` unified model step).
+    - Corrected scoring adjustment to ±10 points (attributed to A6 Scorer rather than A4 Classifier).
+    - Clarified that Groq fallback is conditional on configuration (`GROQ_API_KEY`).
+    - Clarified A9 post-graph gate placement and removed claims of non-Devanagari enforcement or raw vault clearing by A9.
+    - Kept locked 50-case formal benchmark figures strictly distinct from the internally authored 28-case challenge set.
+  - Test Suite: **275 passed in 35.89s (100% Passing)** across all unit and integration tests.
+- Decisions:
+  - All documentation now clearly distinguishes design baseline specifications from live implementation architecture (`docs/16-current-architecture.md`).
+
 ---
 
 ## Appendix A: Final prompts (to be filled during P4)

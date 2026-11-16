@@ -12,15 +12,15 @@ Each agent is a LangGraph node (or small subgraph). "Agent" here means a node wi
 | # | Agent | Type | Model tier | MVP | LLM calls |
 |---|---|---|---|---|---|
 | A0 | Orchestrator (graph and routers) | Code | none | Yes | 0 |
-| A1 | Intake agent | Hybrid | fast | Yes | 0 or 1 (merged with A2) |
+| A1 | Intake agent | Deterministic | none | Yes | 0 |
 | A2 | Signal Extraction agent | Hybrid | fast | Yes | 1 |
 | A3 | Threat Intelligence agent | Code (tools) | none | Yes | 0 |
 | A4 | Pattern Classifier agent (RAG) | LLM + retrieval | reasoning | Yes | 0 or 1 |
 | A5 | Interview agent | LLM | fast | Yes | 0 or 1 per turn |
 | A6 | Risk Scoring | Code | none | Yes | 0 |
-| A7 | Explanation agent | LLM | reasoning | Yes | 1 (merged with A8) |
-| A8 | Advisory and Action agent | Hybrid | reasoning | Yes | 1 (merged with A7) |
-| A9 | Guardrail and Privacy agent | Hybrid | rules, fast if needed | Yes | 0 or 1 |
+| A7 | Explanation agent | LLM | reasoning | Yes | 1 (shared with A8 in explain_advise) |
+| A8 | Advisory and Action agent | Hybrid | reasoning | Yes | 1 (shared with A7 in explain_advise) |
+| A9 | Guardrail and Privacy agent | Deterministic (post-graph) | none | Yes | 0 |
 | A10 | Feedback agent | Code | none | Stretch | 0 |
 
 Typical call counts: clear scam, 2 to 3 calls. Ambiguous input, 3 to 4. Cap is configurable (`MAX_LLM_CALLS_PER_REQUEST`).
@@ -46,15 +46,16 @@ Typical call counts: clear scam, 2 to 3 calls. Ambiguous input, 3 to 4. Cap is c
 | Implementation | LangGraph `StateGraph` with conditional edges and a checkpointer |
 | Inputs | Entire `ScamState` |
 | Outputs | Next node decision |
-| Routers | `route_after_prescreen`, `route_after_classification`, `route_after_guardrail` |
+| Routers | `route_after_prescreen`, `route_after_classify`, `route_after_plan`, `route_after_answers` |
 | Rules | See below |
 
-Routing rules (configuration driven):
+Routing rules (configuration driven via `config/routing.yaml`):
 
-1. After pre-screen: if `prescreen.confidence >= HIGH_CONF` (default 0.85) go to scoring; else go to classifier.
-2. After classification: if `needs_more_info` and `followups_asked < MAX_FOLLOWUPS` go to interview; else go to scoring.
-3. After guardrail: if pass, return; if fail and `rewrites < 1`, go back to explanation with the failure reasons; else return the safe fallback response.
-4. If `llm_calls >= MAX_LLM_CALLS`, skip optional LLM nodes and continue deterministically.
+1. After pre-screen: if `prescreen.confidence >= HIGH_CONF` (default 0.85) and `skip_classifier`, route to `score`; else route to `classify`.
+2. After classification: if `needs_more_info`, open missing facts exist, and `followups_asked < max_followups` (default 2), route to `plan_questions`; else route to `score`.
+3. After question planning: if `pending_questions` exist, route to `await_answers` (`interrupt()`); else route to `score`.
+4. After answers: if user skipped, route to `score`; else route to `extract` for incremental re-extraction.
+5. Post-graph guardrail: A9 executes deterministically after StateGraph completion in `AgentRunner.outcome`, sanitizing the final outcome.
 
 Failure modes: infinite loop (mitigated by counters and a hard step limit), wrong route on bad confidence values (validated ranges).
 
@@ -135,7 +136,7 @@ Behavioural signal vocabulary (fixed enum): `urgency`, `threat`, `secrecy`, `aut
 
 Question bank schema and single-fact questions (English and Hinglish; 4-tuples with denial sentences):
 - `otp_account_exposure`: Did someone else obtain, receive, or use a one-time code or password for your account? (Please never share the actual code.)
-- `apk_device_exposure`: Was this app or APK installed on your own phone or device with permissions granted?
+- `apk_device_exposure`: Was this app or APK installed or downloaded on your own phone or device?
 - `unauthorized_loss_noticed`: Did you notice any unauthorized debit, money deduction, or financial loss from your account?
 - Behaviour: Each question queries a single independent fact. Nuanced free-text answers are preserved directly in state without inferred canned claims; unambiguous yes/no replies map deterministically to verified confirmation or denial sentences.
 
@@ -186,12 +187,11 @@ A7 and A8 are executed in a single LLM call returning both parts to save cost an
 
 | Item | Detail |
 |---|---|
-| Role | Final safety gate before output |
-| Checks (code) | Schema validity; PII regex scan on output; banned phrases ("100% safe", "definitely a scam"); contact numbers appear in the verified list; risk level consistent with scorer; disclaimer present |
-| Checks (LLM, optional) | Groundedness: every reason maps to evidence; no instructions requesting secrets |
-| Output | `GuardrailResult` (pass/fail, reasons) |
-| On fail | One rewrite loop with failure reasons; then safe fallback |
-| Failure modes | False blocks; mitigation: log and review in evaluation |
+| Role | Post-graph safety and sanitization gate (runs deterministically outside the StateGraph in `AgentRunner.outcome`) |
+| Checks (code) | PII leakage suppression (regex scan on unmasked tokens); banned absolute claims ("100% safe", "definitely a scam"); legal section citation suppression (FR-083); secret demand prevention (FR-064); official contact allowlist enforcement (FR-050); headline risk level consistency with scorer; disclaimer attachment (FR-065) |
+| Output | `GuardrailResult` (pass/fail, violations list) |
+| Placement | Post-graph gate in Python runtime; operates on completed `AssessmentOutcome` without in-graph rewrite loop |
+| Privacy Note | Session text vault is cleared upon outcome delivery / session clearance by `AgentRunner.clear_session` |
 
 ---
 

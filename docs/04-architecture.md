@@ -2,9 +2,16 @@
 
 | Field | Value |
 |---|---|
-| Version | 1.0 (Approved) |
-| Date | 2026-11-11 |
+| Version | 1.0 (Design Baseline) |
+| Date | 2026-11-11 (Updated 2026-11-16) |
+| Status | Historical Design Baseline (See [16-current-architecture.md](16-current-architecture.md) for live implementation) |
 | Related ADRs | ADR-001, ADR-002, ADR-003, ADR-004, ADR-005, ADR-006 |
+
+> [!NOTE] Design History & Baseline Specification
+> This document records the original Phase 1–2 architectural baseline. The live, implemented system architecture is documented in [16-current-architecture.md](16-current-architecture.md). Key evolutions from this baseline include:
+> 1. **Model IDs**: Standardized on Google GenAI SDK (`gemini-3.5-flash-lite` fast tier, `gemini-3.8-flash` reasoning tier; verified stable in `config/llm.yaml`). Groq fallback (`llama-3.1-8b-instant` / `llama-3.3-70b-versatile`) is optional and dynamically activated when `GROQ_API_KEY` is present.
+> 2. **Post-Graph Guardrail**: A9 Guardrail Sanitizer runs deterministically *after* graph execution in `AgentRunner.outcome`, rather than as an in-graph looping node.
+> 3. **Explanation & Advice Consolidation**: A7 (Explanation) and A8 (Advice) execute within a single unified model step (`explain_advise`) to optimize cost and latency.
 
 ## 1. Architectural principles
 

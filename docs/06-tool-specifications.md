@@ -320,4 +320,4 @@ Standard error body `{ "error": { "code": "...", "message": "..." }, "request_id
 | `config/llm.yaml` | Tier-to-model mapping, fallbacks, timeouts, cost table, call caps |
 | `config/scoring.yaml` | Weights, caps, combos, thresholds |
 | `config/routing.yaml` | Confidence thresholds, follow-up limits |
-| `config/guardrails.yaml` | Banned phrases, PII patterns, disclaimer text |
+| `config/guardrails.yaml` | *(Design baseline specification)* Compiled directly in code (`src/scamsaathi/agents/guardrails.py` and `pii_masker.py`) in the current implementation |

@@ -67,6 +67,10 @@
 
 ## 4. Evaluation metrics
 
+> [!NOTE] Benchmark Datasets & Exploratory Challenge Scope
+> - **Formal 50-Case Benchmark** (`data/evaluation/eval_dataset.jsonl`): Serves as the official project evaluation baseline reported in `reports/benchmark_report.md`. Evaluates core recall, high-risk detection, false-alarm rates, and safety compliance across English and Hinglish mobile scams.
+> - **Internally Authored 28-Case Challenge Suite** (`data/evaluation/external_review_challenge.jsonl`): An exploratory challenge suite constructed to probe severe loss handling (`xr_severe_*`), prompt injection resistance, and nuanced legitimate/ambiguous messages. Evaluated via `scripts/run_external_challenge.py` reporting both strict rubric v1 (22/28) and provisional calibrated rubric v2 (26/28). It is an internal stress test, not an independent third-party certification.
+
 ### 4.1 Detection and required behaviour (revised 2026-11-13)
 
 Cases are labelled `scam`, `legit`, or `ambiguous`, with required behaviours (doc 07 section 7.1). Risk levels are not ground truth: nothing in reality has one. So levels are not scored for "accuracy". A case counts as **warned** when the level is above LOW (MEDIUM tells the user to verify before acting).
