@@ -132,9 +132,9 @@ sequenceDiagram
     G->>G: URL/phone/UPI lookups (no LLM)
     G->>G: pre-screen says clear scam
     G->>G: deterministic risk score
-    G->>L: explanation + advice (reasoning model, 1 call)
-    G->>L: guardrail check (fast model or rules)
-    G-->>API: result
+    G->>L: explanation + advice (reasoning model, 1 call: explain_advise)
+    G-->>API: graph output
+    API->>API: post-graph A9 guardrail sanitization (deterministic rules)
     API-->>U: risk level, reasons, next steps
 ```
 
@@ -173,15 +173,16 @@ LLM Gateway tries primary provider, retries with backoff on 429/5xx, then the co
 | Modes | `live`, `cached` (read cache, fail if miss), `offline` (cache plus deterministic only) |
 | Telemetry | Tokens, latency, model, cache hit, estimated cost per call |
 
-## 8. Model tiering (see ADR-001)
+## 8. Model tiering (see ADR-001) *(Design Baseline & Confirmed Models)*
 
-| Tier | Used for | Model |
-|---|---|---|
-| `fast` | Intake, signal extraction, guardrail checks | Low-latency Gemini model (name TBD) |
-| `reasoning` | Pattern classification on ambiguous input, explanation, advice wording | Stronger Gemini model (name TBD) |
-| `embedding` | KB retrieval | Local multilingual embedding model on CPU, or Gemini embedding (decision in ADR-004) |
+| Tier | Implemented Model | Primary Purpose | Execution / Fallback Policy |
+|---|---|---|---|
+| `fast` | **Gemini 3.5 Flash-Lite** (`gemini-3.5-flash-lite`) | Signal extraction (A2), interview question generation (A5) | Fast, low-latency text model. Fallback: local deterministic heuristics (`config/llm.yaml`). |
+| `reasoning` | **Gemini 3.8 Flash** (`gemini-3.8-flash`) | Typology classification (A4), explanation & advice (A7/A8 via `explain_advise`) | High-reasoning model. Primary fallback: `gemini-3.6-flash`. Optional multi-provider Groq fallback (`llama-3.3-70b-versatile`) when `GROQ_API_KEY` is configured. |
+| `embedding` | **Gemini Embeddings** (`gemini-embedding-001`) + BM25 | Knowledge Base hybrid retrieval (typologies, advisories) | In-memory hybrid RAG without external vector database (ADR-004). |
+| `deterministic` | Pure Python / SQLite | Intake (A1), Threat Intel (A3), Prescreen, Scorer (A6), Post-Graph Guardrail (A9) | Zero-token, deterministic execution for regulatory allowlists, scoring, and safety gates. |
 
-Exact model IDs are set in configuration after confirmation in AI Studio (open question Q-3).
+*Model IDs verified stable in `config/llm.yaml` (ADR-008). Overridden via environment variables (`GEMINI_MODEL_FAST`, `GEMINI_MODEL_REASONING`).*
 
 ## 9. Data stores
 

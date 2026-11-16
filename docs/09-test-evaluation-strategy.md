@@ -51,7 +51,7 @@
 | IT-ADV-01..05 | Advice | Correct contacts; recovery mode when money sent |
 | IT-API-01 | End-to-end API | 200 with valid schema |
 | IT-DEG-01 | Provider down | Degraded deterministic result, no crash |
-| IT-GR-01 | Guardrail failure | One rewrite, then safe fallback |
+| IT-GR-01 | Guardrail failure | Deterministic post-graph sanitization & safe fallback without in-graph rewrite loop |
 
 ### 3.3 Security tests
 
