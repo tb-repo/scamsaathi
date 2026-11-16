@@ -1,8 +1,8 @@
 {
-  "run_id": "xr_run_20261116_224540",
-  "date": "2026-11-16 22:45:52",
-  "commit": "91a273ae10c518c6a92dc87ea72677937a4a867e",
-  "short_commit": "91a273a",
+  "run_id": "xr_run_20261116_232138",
+  "date": "2026-11-16 23:21:43",
+  "commit": "38b2e94070bf6c6bc0031e1a338ded128cf3451e",
+  "short_commit": "38b2e94",
   "config_sha256": "d55b23e0dfd679d25cdfc9e5356b0b5569a04cec119f5d23669940771fb286f3",
   "mode_provider_model": "live/gemini/gemini-3.5-flash-lite+gemini-3.8-flash",
   "total_cases": 28,
@@ -32,11 +32,11 @@
     "note": "Alias for provisional_calibrated_rubric_v2"
   },
   "latency_summary": {
-    "median_ms": 84.8,
-    "mean_ms": 349.0,
-    "p95_ms": 195.5,
-    "max_ms": 7236.8,
-    "min_ms": 76.1
+    "median_ms": 79.0,
+    "mean_ms": 87.5,
+    "p95_ms": 115.4,
+    "max_ms": 172.0,
+    "min_ms": 70.0
   },
   "results": [
     {
@@ -72,7 +72,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 98.58920000260696,
+      "latency_ms": 171.9747000024654,
       "llm_calls": 0
     },
     {
@@ -103,7 +103,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 76.13339999807067,
+      "latency_ms": 109.43529999349266,
       "llm_calls": 0
     },
     {
@@ -129,7 +129,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 80.51770000020042,
+      "latency_ms": 95.51030001603067,
       "llm_calls": 0
     },
     {
@@ -162,7 +162,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 92.44800001033582,
+      "latency_ms": 90.29799999552779,
       "llm_calls": 0
     },
     {
@@ -197,7 +197,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 90.44020000146702,
+      "latency_ms": 91.42919999430887,
       "llm_calls": 0
     },
     {
@@ -230,7 +230,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 82.64560002135113,
+      "latency_ms": 89.87900000647642,
       "llm_calls": 0
     },
     {
@@ -261,7 +261,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 83.8248000072781,
+      "latency_ms": 77.79609999852255,
       "llm_calls": 0
     },
     {
@@ -293,7 +293,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 81.90550000290386,
+      "latency_ms": 75.14949998585507,
       "llm_calls": 0
     },
     {
@@ -329,7 +329,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 84.40049999626353,
+      "latency_ms": 73.89970001531765,
       "llm_calls": 0
     },
     {
@@ -362,7 +362,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 82.32180000049993,
+      "latency_ms": 77.2784999862779,
       "llm_calls": 0
     },
     {
@@ -393,7 +393,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 82.41099998122081,
+      "latency_ms": 76.9776999950409,
       "llm_calls": 0
     },
     {
@@ -426,7 +426,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 82.0137000118848,
+      "latency_ms": 78.12859999830835,
       "llm_calls": 0
     },
     {
@@ -458,7 +458,7 @@
       "reporting_in_top3": "Yes",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 81.01819999865256,
+      "latency_ms": 79.80450001196004,
       "llm_calls": 0
     },
     {
@@ -477,7 +477,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 80.98060000338592,
+      "latency_ms": 74.71909999730997,
       "llm_calls": 0
     },
     {
@@ -496,7 +496,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 85.1429000031203,
+      "latency_ms": 70.01639998634346,
       "llm_calls": 0
     },
     {
@@ -515,7 +515,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 79.91080000647344,
+      "latency_ms": 76.07320000533946,
       "llm_calls": 0
     },
     {
@@ -534,7 +534,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 83.48750000004657,
+      "latency_ms": 69.95309999911115,
       "llm_calls": 0
     },
     {
@@ -553,7 +553,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 85.28940001269802,
+      "latency_ms": 75.82240001647733,
       "llm_calls": 0
     },
     {
@@ -572,8 +572,8 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 7236.754100013059,
-      "llm_calls": 1
+      "latency_ms": 80.87850001174957,
+      "llm_calls": 0
     },
     {
       "case_id": "xr_legit_school_notice",
@@ -591,7 +591,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 82.27519999491051,
+      "latency_ms": 73.2807999884244,
       "llm_calls": 0
     },
     {
@@ -610,7 +610,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 104.07020000275224,
+      "latency_ms": 77.53770000999793,
       "llm_calls": 0
     },
     {
@@ -631,7 +631,7 @@
       "reporting_in_top3": "No",
       "strict_rubric_v1_failures": [],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 140.48420000472106,
+      "latency_ms": 73.46590000088327,
       "llm_calls": 0
     },
     {
@@ -662,7 +662,7 @@
         "ambiguous case has unaddressed warning signals",
         "ambiguous case lacks cautionary verification guidance"
       ],
-      "latency_ms": 86.68060001218691,
+      "latency_ms": 96.84850001940504,
       "llm_calls": 0
     },
     {
@@ -685,7 +685,7 @@
         "ambiguous case was not interviewed"
       ],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 86.15430002100766,
+      "latency_ms": 115.38639999344014,
       "llm_calls": 0
     },
     {
@@ -712,7 +712,7 @@
       "calibrated_rubric_v2_failures": [
         "ambiguous case has unaddressed warning signals"
       ],
-      "latency_ms": 195.50460000755265,
+      "latency_ms": 101.74620000179857,
       "llm_calls": 0
     },
     {
@@ -735,7 +735,7 @@
         "ambiguous case was not interviewed"
       ],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 126.95569999050349,
+      "latency_ms": 104.57470000255853,
       "llm_calls": 0
     },
     {
@@ -756,7 +756,7 @@
         "ambiguous case was not interviewed"
       ],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 98.46019998076372,
+      "latency_ms": 88.17339999950491,
       "llm_calls": 0
     },
     {
@@ -777,7 +777,7 @@
         "ambiguous case was not interviewed"
       ],
       "calibrated_rubric_v2_failures": [],
-      "latency_ms": 102.19810000853613,
+      "latency_ms": 83.0122999905143,
       "llm_calls": 0
     }
   ]
