@@ -133,11 +133,11 @@ Behavioural signal vocabulary (fixed enum): `urgency`, `threat`, `secrecy`, `aut
 | Fallback | A static question bank per typology if the LLM is unavailable |
 | Failure modes | Interrogation fatigue; mitigation: hard cap and a "skip, give me best assessment" option |
 
-Question bank examples (English; Hinglish variants maintained alongside):
-- Did they ask you to share an OTP, PIN, or install an app?
-- Did they ask you to pay money or transfer money right now?
-- Did they tell you not to tell anyone or to stay on the call?
-- Did you already click a link, send money, or share details?
+Question bank schema and single-fact questions (English and Hinglish; 4-tuples with denial sentences):
+- `otp_account_exposure`: Did someone else obtain, receive, or use a one-time code or password for your account? (Please never share the actual code.)
+- `apk_device_exposure`: Was this app or APK installed on your own phone or device with permissions granted?
+- `unauthorized_loss_noticed`: Did you notice any unauthorized debit, money deduction, or financial loss from your account?
+- Behaviour: Each question queries a single independent fact. Nuanced free-text answers are preserved directly in state without inferred canned claims; unambiguous yes/no replies map deterministically to verified confirmation or denial sentences.
 
 ---
 
@@ -146,9 +146,9 @@ Question bank examples (English; Hinglish variants maintained alongside):
 | Item | Detail |
 |---|---|
 | Role | Compute score and level reproducibly |
-| Inputs | Signals, intel findings, classification confidences, user answers |
+| Inputs | Signals, intel findings, classification confidences, structured `Situation` exposure facts (`credentials_exposure`, `app_installation`, `money_loss`) |
 | Output | `RiskScore`: value 0 to 100, level, contribution breakdown, applied overrides |
-| Method | Weighted sum with caps, hard overrides (for example known-blocklisted entity gives at least HIGH; user already lost money or shared secrets gives at least HIGH plus the urgent recovery flow, consistent with doc 06 section 3.9), and bounded LLM adjustment of at most +/- 10 points with logged reason |
+| Method | Weighted sum with caps, hard overrides (for example known-blocklisted entity gives at least HIGH; user confirmed lost money or shared secrets gives at least HIGH plus the urgent recovery flow, consistent with doc 06 section 3.9), and bounded LLM adjustment of at most +/- 10 points with logged reason |
 | Config | Weights and thresholds in `config/scoring.yaml` |
 | Details | Document 06, section "risk_scorer" |
 

@@ -88,3 +88,54 @@ def test_ambiguous_apk_multiturn_denial(runner: AgentRunner) -> None:
     assert resumed.risk.level == "LOW"
     assert "urgent_recovery" not in resumed.risk.overrides
     runner.clear_session(first.thread_id, purge_checkpoint=True)
+
+
+def test_mixed_answer_otp_nobody_used_it(runner: AgentRunner) -> None:
+    text = "I heard the caller shared my OTP with another person"
+    first = runner.assess(text)
+    assert first.status == "needs_followup"
+
+    # User answers with mixed context: code belongs to them, but was not used/compromised
+    resumed = runner.resume(first.thread_id, "code is mine, but nobody used it")
+    assert resumed.status == "complete"
+    assert resumed.risk is not None
+    assert resumed.risk.level == "LOW"
+    assert "urgent_recovery" not in resumed.risk.overrides
+    assert resumed.advice is not None
+    assert not resumed.advice.urgent_recovery_mode
+    runner.clear_session(first.thread_id, purge_checkpoint=True)
+
+
+def test_mixed_answer_apk_no_remote_access(runner: AgentRunner) -> None:
+    apk_text = "The technician may have installed an APK on my phone"
+    first = runner.assess(apk_text)
+    assert first.status == "needs_followup"
+
+    # User answers: app is on phone, but no remote access/permissions granted
+    resumed = runner.resume(first.thread_id, "app is on my phone, but I granted no remote access")
+    assert resumed.status == "complete"
+    assert resumed.risk is not None
+    assert resumed.risk.level == "LOW"
+    assert "urgent_recovery" not in resumed.risk.overrides
+    assert resumed.advice is not None
+    assert not resumed.advice.urgent_recovery_mode
+    runner.clear_session(first.thread_id, purge_checkpoint=True)
+
+
+def test_mixed_answer_unauthorized_debit_noticed(runner: AgentRunner) -> None:
+    text = "I heard the caller shared my OTP with another person"
+    first = runner.assess(text)
+    assert first.status == "needs_followup"
+
+    # User confirms noticing an unauthorized debit
+    resumed = runner.resume(first.thread_id, "yes, I noticed an unauthorized debit")
+    assert resumed.status == "complete"
+    assert resumed.risk is not None
+    assert resumed.risk.level in ("HIGH", "CRITICAL")
+    assert resumed.risk.value >= 60
+    assert "urgent_recovery" in resumed.risk.overrides
+    assert resumed.advice is not None
+    assert resumed.advice.urgent_recovery_mode
+    assert "1930" in resumed.advice.actions[0].text
+    runner.clear_session(first.thread_id, purge_checkpoint=True)
+

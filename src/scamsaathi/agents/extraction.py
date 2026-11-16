@@ -119,12 +119,16 @@ def extraction(state: ScamState, ctx: AgentContext) -> dict[str, Any]:
     creds_shared = found.credentials_shared
     if found.credentials_exposure.status == "unknown" and previous.credentials_shared:
         creds_shared = True
+    elif found.credentials_exposure.status == "denied":
+        creds_shared = False
 
     app_inst = found.app_installed
     if found.app_installation.status == "unknown" and previous.app_installed:
         app_inst = True
+    elif found.app_installation.status == "denied":
+        app_inst = False
 
-    money_sent = found.money_sent or previous.money_sent
+    money_sent = found.money_sent or (previous.money_sent and found.money_loss.status != "denied")
     link_clicked = found.link_clicked or previous.link_clicked
     child_involved = found.child_involved or previous.child_involved
 

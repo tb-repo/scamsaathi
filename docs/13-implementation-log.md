@@ -225,6 +225,22 @@ A chronological journal of what was done, decisions, issues, and next steps. New
   - Verified test suite: **247 passed in 19.70s**.
 - Next: Phase 9 (Final Report Document 15 & Presentation Deck).
 
+### 2026-11-16, Session 15, Post-Evaluation Hardening & Context Resolution
+- Goal: Fix situation over-triggering, actor directionality, structured exposure tracking, and context resolution.
+- Done:
+  - Actor Scoping & Directionality: Prevented third-party actions (e.g. caller demonstrating an OTP, technician installing an APK on their own handset) from falsely triggering user compromise flags. Added `_THIRD_PARTY_DEVICE` and `_SECRET_TO_USER` negative guards.
+  - Structured Fact Tracking: Upgraded `Situation` model to track structured `ExposureFact` records (`status`: confirmed/denied/unknown, `actor`, `target`, `authorized`) for credentials, app installation, and money loss alongside `unresolved_uncertainties`.
+  - Context-Aware HITL Clarification:
+    - Upgraded question bank to ask single independent facts per question (`otp_account_exposure`, `apk_device_exposure`, `unauthorized_loss_noticed`).
+    - Answer parser preserves nuanced free text without adding inferred canned claims; unambiguous yes/no replies map to 4-tuple confirmation/denial sentences.
+    - Explicit denials are consistently retained as `denied` in state.
+    - Confirmed unauthorized debit reports now map to `money_sent=True` and activate `urgent_recovery` floor (1930 Helpline / bank freeze).
+  - External Challenge Evaluation:
+    - Updated isolated runner `scripts/run_external_challenge.py` to transparently report both strict rubric v1 and calibrated rubric v2.
+  - Test Suite: **275 passed in 33.64s (100% Passing)** across all unit and integration tests.
+- Decisions:
+  - Keep the formal 50-case benchmark report and config hash strictly intact; treat the 28-case synthetic challenge set as a separate exploratory quality probe.
+
 ---
 
 ## Appendix A: Final prompts (to be filled during P4)

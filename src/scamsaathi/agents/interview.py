@@ -81,24 +81,24 @@ QUESTION_BANK: Final[dict[str, tuple[str, ...]]] = {
         "Kya aapne unka bheja hua link khol diya?",
         "I already clicked the link.",
     ),
-    # Context-aware decision-relevant facts
+    # Context-aware decision-relevant facts (single independent facts per question)
     "otp_account_exposure": (
-        "Was this one-time code or password for your own personal or bank account, and did someone else obtain or use it? (Please never share the actual code.)",
-        "Kya yeh code ya password aapke apne personal ya bank account ka tha aur kisi aur ko mila ya unhone use kiya? (Apna code yahan mat batayein.)",
-        "The code was for my own personal account and someone else obtained or used it.",
-        "The code was not for my personal account and no one has access to my account.",
+        "Did someone else obtain, receive, or use a one-time code or password for your account? (Please never share the actual code.)",
+        "Kya kisi aur ko aapke account ka OTP, code ya password mila ya unhone use kiya? (Apna code yahan mat batayein.)",
+        "Someone else obtained or used a code or password for my account.",
+        "No one obtained or used any code or password for my account.",
     ),
     "apk_device_exposure": (
-        "Was this app or APK installed on your own phone or device, or did you grant remote control permissions like AnyDesk?",
-        "Kya yeh app ya APK aapke apne phone par install hua, ya aapne AnyDesk jaise remote control permissions diye?",
+        "Was this app or APK installed on your own phone or device with permissions granted?",
+        "Kya yeh app ya APK aapke apne phone par permissions ke saath install hua?",
         "The app was installed on my own device with permissions.",
         "The app was not installed on my device and no remote access was granted.",
     ),
     "unauthorized_loss_noticed": (
-        "Did you notice any unauthorized debit, money transfer, or suspicious activity on your account?",
-        "Kya aapne apne account par koi anjan debit, paise katna ya sandigdh activity dekhi?",
-        "I noticed an unauthorized debit or suspicious activity on my account.",
-        "No money was lost and no unauthorized activity was noticed.",
+        "Did you notice any unauthorized debit, money deduction, or financial loss from your account?",
+        "Kya aapke account se koi unauthorized debit ya paise katne ka pata chala?",
+        "I noticed an unauthorized debit or financial loss from my account.",
+        "No unauthorized debit or financial loss occurred on my account.",
     ),
 }
 _YES: Final = re.compile(r"^\s*(?:yes|y|yeah|yep|haan|han|ha|ji haan|ji|true)\b", re.I)
@@ -212,14 +212,6 @@ def _interpret(answer: Any, pending: list[dict[str, str]]) -> tuple[list[str], b
                         yes[f] = val
                         break
 
-    lines: list[str] = []
-    for f in facts:
-        entry = QUESTION_BANK[f]
-        if yes.get(f) is True:
-            lines.append(entry[2])
-        elif yes.get(f) is False and len(entry) >= 4:
-            lines.append(entry[3])
-
     # Clean structured markers so they don't leak as raw strings
     cleaned_free = re.sub(r"\b(?:Q\d+|\d+)\s*[:=-]\s*(?:yes|no|y|n|true|false)\b", "", free, flags=re.I).strip()
     cleaned_free = re.sub(r"^[,;\s]+|[,;\s]+$", "", cleaned_free)
@@ -229,8 +221,19 @@ def _interpret(answer: Any, pending: list[dict[str, str]]) -> tuple[list[str], b
         cleaned_free,
         flags=re.I,
     ).strip()
+
+    lines: list[str] = []
+    # If the user provided nuanced free text, preserve it directly without canned inferences.
     if cleaned_substantive:
-        lines.append(mask(cleaned_substantive[:1000]).masked_text)
+        lines.append(mask(cleaned_free[:1000]).masked_text)
+    else:
+        # Unambiguous yes/no reply: map to exact canned statements per fact
+        for f in facts:
+            entry = QUESTION_BANK[f]
+            if yes.get(f) is True:
+                lines.append(entry[2])
+            elif yes.get(f) is False and len(entry) >= 4:
+                lines.append(entry[3])
 
     return lines, False
 

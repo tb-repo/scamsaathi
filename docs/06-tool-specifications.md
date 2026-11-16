@@ -80,6 +80,24 @@ class ClassificationResult(BaseModel):
     missing_facts: list[str]
     kb_chunk_ids: list[str]
 
+class ExposureFact(BaseModel):
+    status: Literal["confirmed", "denied", "unknown"] = "unknown"
+    actor: Literal["user", "third_party", "unknown"] = "unknown"
+    target: Literal["user_account", "user_device", "third_party_account", "third_party_device", "unknown"] = "unknown"
+    authorized: Literal["confirmed", "denied", "unknown"] = "unknown"
+    evidence: Optional[str] = None
+
+class Situation(BaseModel):
+    money_sent: bool = False
+    credentials_shared: bool = False
+    link_clicked: bool = False
+    app_installed: bool = False
+    child_involved: bool = False
+    credentials_exposure: ExposureFact = Field(default_factory=ExposureFact)
+    app_installation: ExposureFact = Field(default_factory=ExposureFact)
+    money_loss: ExposureFact = Field(default_factory=ExposureFact)
+    unresolved_uncertainties: list[str] = Field(default_factory=list)
+
 class Contribution(BaseModel):
     factor: str
     points: float

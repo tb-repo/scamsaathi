@@ -191,14 +191,43 @@ _UNCONFIRMED_USER_APP: Final = re.compile(
     re.I,
 )
 
+_UNAUTHORIZED_LOSS_CONFIRMED: Final = re.compile(
+    r"\b(?:unauthorized|unauthorised|fraudulent)\s+(?:debit|transaction|transfer|deduction|withdrawal|loss)\b|"
+    r"\b(?:money|amount|funds?|rupees|inr|rs\.?|₹|[\d,]+)\s+(?:was|were|got)?\s*(?:deducted|debited|taken|stolen|withdrawn|lost)\s+(?:without\s+my\s+(?:permission|consent|authorization|authorisation)|unauthorized|unauthorised)\b|"
+    r"\bnoticed\s+(?:an?\s+)?(?:unauthorized|unauthorised|fraudulent)\s+(?:debit|transaction|transfer|deduction|loss)\b|"
+    r"\bunauthorized\s+debit\b",
+    re.I,
+)
+
+_DENIED_USER_MONEY: Final = re.compile(
+    r"\bno\s+(?:unauthorized|unauthorised)\s+(?:debit|deduction|activity|transaction|loss)\b|"
+    r"\bno\s+money\s+(?:was\s+)?(?:lost|sent|debited|deducted|taken)\b|"
+    r"\bi\s+(?:have\s+)?not\s+sent\s+(?:any\s+)?money\b|"
+    r"\bi\s+haven't\s+paid\s+anything\b|"
+    r"\bmaine\s+paise\s+nahi\s+bheje\b|"
+    r"\bno\s+financial\s+loss\b",
+    re.I,
+)
+
 _CONFIRMED_USER_SECRET: Final = re.compile(
-    r"\b(?:code|otp|password|pin)\s+was\s+for\s+my\s+own\s+(?:personal\s+|bank\s+)?account\b|"
-    r"\bused\s+it\s+to\s+access\s+my\s+account\b",
+    r"\b(?:someone\s+else\s+(?:obtained|used|entered|took)\b.{0,30}?\b(?:code|otp|password|pin|it))\b|"
+    r"\b(?:obtained\s+or\s+used\s+a\s+code)\b|"
+    r"\bused\s+it\s+to\s+access\s+my\s+account\b|"
+    r"\bshared\s+(?:the\s+|my\s+)?(?:code|otp|pin|password)\s+with\s+(?:them|the\s+caller|someone|the\s+scammer)\b",
     re.I,
 )
 _DENIED_USER_SECRET: Final = re.compile(
-    r"\b(?:code|otp|password|pin)\s+was\s+not\s+for\s+my\b|\bno\s+one\s+has\s+access\s+to\s+my\s+account\b|"
-    r"\bnot\s+my\s+(?:code|otp|account)\b",
+    r"\b(?:code|otp|password|pin)\s+(?:was|is)\s+not\s+for\s+my\b|"
+    r"\bno\s+one\s+has\s+access\s+to\s+my\s+account\b|"
+    r"\bnot\s+my\s+(?:code|otp|account)\b|"
+    r"\bi\s+(?:have\s+)?not\s+shared\b.{0,20}?\b(?:otp|pin|password|code|details)\b|"
+    r"\bi\s+did\s+not\s+(?:share|enter|give|provide)\b.{0,20}?\b(?:otp|pin|password|code|details)\b|"
+    r"\bmaine\s+otp\s+nahi\s+bataya\b|"
+    r"\bno\s+one\s+(?:obtained\s+or\s+)?used\s+it\b|"
+    r"\bnobody\s+used\s+it\b|"
+    r"\b(?:don't|do\s+not)\s+believe\s+anyone\s+used\s+it\b|"
+    r"\bdid\s+not\s+share\s+it\b|"
+    r"\bno\s+one\s+obtained\s+or\s+used\b",
     re.I,
 )
 _CONFIRMED_USER_APP: Final = re.compile(
@@ -206,8 +235,13 @@ _CONFIRMED_USER_APP: Final = re.compile(
     re.I,
 )
 _DENIED_USER_APP: Final = re.compile(
-    r"\bapp\s+was\s+not\s+installed\s+on\s+my\b|\bno\s+remote\s+access\s+was\s+granted\b|"
-    r"\bon\s+the\s+technician's\s+own\s+phone\b|\bnot\s+installed\s+on\s+my\s+phone\b",
+    r"\bapp\s+(?:was|is)\s+not\s+installed\s+on\s+my\b|"
+    r"\bno\s+remote\s+access\s+was\s+granted\b|"
+    r"\bon\s+the\s+technician's\s+own\s+phone\b|"
+    r"\bnot\s+installed\s+on\s+my\s+phone\b|"
+    r"\bi\s+did\s+not\s+install\s+(?:it|the\s+app|any\s+app|apk)\b|"
+    r"\bgranted\s+no\s+remote\s+access\b|"
+    r"\bno\s+permissions?\s+(?:given|granted)\b",
     re.I,
 )
 
@@ -311,6 +345,11 @@ def _is_negated_or_hypothetical(text: str, match: re.Match[str]) -> bool:
 
 
 def _check_money_sent(text: str) -> bool:
+    if _DENIED_USER_MONEY.search(text):
+        return False
+    for m in _UNAUTHORIZED_LOSS_CONFIRMED.finditer(text):
+        if not _is_negated_or_hypothetical(text, m):
+            return True
     for m in _MONEY_SENT.finditer(text):
         if not _is_negated_or_hypothetical(text, m):
             return True
@@ -380,20 +419,32 @@ def detect_child_safety(text: str) -> bool:
     return bool(_MINOR.search(text) and _SEXUAL.search(text))
 
 
+_HEARSAY_MONEY: Final = re.compile(
+    r"\b(?:money|funds?|cash|amount|paise|paisa|rupees|inr|rs\.?|₹)\b.{0,30}?\b(?:lost|gone|deducted|debited|taken|transferred|stolen)\b|"
+    r"\b(?:unauthorized|unauthorised|suspicious)\s+(?:debit|deduction|transfer|transaction|loss)\b|"
+    r"\b(?:loss|deduction|debit)\s+of\s+money\b",
+    re.I,
+)
+
+
 def detect_situation(text: str) -> dict[str, Any]:
     """What the user says has already happened (feeds the scorer's safety floors and interview)."""
     child_safety = detect_child_safety(text)
     money_sent = _check_money_sent(text)
     link_clicked = _check_link_clicked(text)
 
-    # 1. Credentials exposure determination
     uncertainties: list[str] = []
-    if _DENIED_USER_SECRET.search(text):
-        creds_exp = {"status": "denied", "actor": "user", "target": "user_account"}
-        credentials_shared = False
-    elif _CONFIRMED_USER_SECRET.search(text):
+    creds_exp: dict[str, Any] | None = None
+    app_exp: dict[str, Any] | None = None
+    money_exp: dict[str, Any] | None = None
+
+    # 1. Credentials exposure determination
+    if _check_creds_shared(text) or _CONFIRMED_USER_SECRET.search(text):
         creds_exp = {"status": "confirmed", "actor": "user", "target": "user_account"}
         credentials_shared = True
+    elif _DENIED_USER_SECRET.search(text):
+        creds_exp = {"status": "denied", "actor": "user", "target": "user_account"}
+        credentials_shared = False
     elif _THIRD_PARTY_ACCESSED_USER_SECRET.search(text) or (
         _HEARSAY_OR_UNCONFIRMED.search(text) and re.search(rf"\b(?:my\s+{_SECRET}|mera\s+{_SECRET}|{_SECRET})\b", text, re.I)
     ):
@@ -401,41 +452,39 @@ def detect_situation(text: str) -> dict[str, Any]:
         credentials_shared = False
         uncertainties.append("otp_account_exposure")
     else:
-        shared = _check_creds_shared(text)
-        creds_exp = {
-            "status": "confirmed" if shared else "denied",
-            "actor": "user" if shared else "unknown",
-            "target": "user_account" if shared else "unknown",
-        }
-        credentials_shared = shared
+        credentials_shared = False
 
     # 2. App installation determination
-    if _DENIED_USER_APP.search(text):
-        app_exp = {"status": "denied", "actor": "user", "target": "user_device"}
-        app_installed = False
-    elif _CONFIRMED_USER_APP.search(text):
-        app_exp = {"status": "confirmed", "actor": "user", "target": "user_device"}
+    if _check_app_installed(text) or _CONFIRMED_USER_APP.search(text):
+        app_exp = {"status": "confirmed", "actor": "user", "target": "user_device", "authorized": "confirmed"}
         app_installed = True
+    elif _DENIED_USER_APP.search(text):
+        app_exp = {"status": "denied", "actor": "user", "target": "user_device", "authorized": "denied"}
+        app_installed = False
     elif _UNCONFIRMED_USER_APP.search(text) or (
         _HEARSAY_OR_UNCONFIRMED.search(text) and re.search(r"\b(?:app|apk)\b", text, re.I)
     ):
-        app_exp = {"status": "unknown", "actor": "third_party", "target": "user_device"}
+        app_exp = {"status": "unknown", "actor": "third_party", "target": "user_device", "authorized": "unknown"}
         app_installed = False
         uncertainties.append("apk_device_exposure")
     else:
-        installed = _check_app_installed(text)
-        app_exp = {
-            "status": "confirmed" if installed else "denied",
-            "actor": "user" if installed else "unknown",
-            "target": "user_device" if installed else "unknown",
-        }
-        app_installed = installed
+        app_installed = False
 
-    money_exp = {
-        "status": "confirmed" if money_sent else "denied",
-        "actor": "user" if money_sent else "unknown",
-        "target": "user_account" if money_sent else "unknown",
-    }
+    # 3. Money loss determination
+    if money_sent:
+        is_unauth = bool(_UNAUTHORIZED_LOSS_CONFIRMED.search(text))
+        money_exp = {
+            "status": "confirmed",
+            "actor": "user",
+            "target": "user_account",
+            "authorized": "denied" if is_unauth else "confirmed",
+        }
+    elif _DENIED_USER_MONEY.search(text):
+        money_exp = {"status": "denied", "actor": "user", "target": "user_account", "authorized": "unknown"}
+        money_sent = False
+    elif _HEARSAY_MONEY.search(text) and _HEARSAY_OR_UNCONFIRMED.search(text):
+        money_exp = {"status": "unknown", "actor": "user", "target": "user_account", "authorized": "unknown"}
+        uncertainties.append("unauthorized_loss_noticed")
 
     res: dict[str, Any] = {
         "child_involved": child_safety,
@@ -444,15 +493,13 @@ def detect_situation(text: str) -> dict[str, Any]:
         "link_clicked": link_clicked,
         "app_installed": app_installed,
     }
-    if (
-        creds_exp["status"] != "denied"
-        or app_exp["status"] != "denied"
-        or money_exp["status"] != "denied"
-        or uncertainties
-    ):
+    if creds_exp is not None:
         res["credentials_exposure"] = creds_exp
+    if app_exp is not None:
         res["app_installation"] = app_exp
+    if money_exp is not None:
         res["money_loss"] = money_exp
+    if uncertainties:
         res["unresolved_uncertainties"] = uncertainties
 
     return res

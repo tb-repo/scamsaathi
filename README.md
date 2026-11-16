@@ -9,7 +9,7 @@
   <a href="#-multi-agent-architecture"><img src="https://img.shields.io/badge/Architecture-9--Agent%20LangGraph-blue.svg?style=flat-square" alt="Architecture" /></a>
   <a href="#-empirical-benchmark-evaluation"><img src="https://img.shields.io/badge/Scam%20Recall-97.2%25-success.svg?style=flat-square" alt="Scam Recall" /></a>
   <a href="#-empirical-benchmark-evaluation"><img src="https://img.shields.io/badge/Safety%20Behaviors-97.7%25-success.svg?style=flat-square" alt="Safety Behaviors" /></a>
-  <a href="#-testing--verification"><img src="https://img.shields.io/badge/Pytest-268%20Passed%20(100%25)-brightgreen.svg?style=flat-square" alt="Tests" /></a>
+  <a href="#-testing--verification"><img src="https://img.shields.io/badge/Pytest-275%20Passed%20(100%25)-brightgreen.svg?style=flat-square" alt="Tests" /></a>
   <a href="#-privacy-by-design--dpdp-act-2023-compliance"><img src="https://img.shields.io/badge/Privacy-DPDP%20Act%20Aligned-darkgreen.svg?style=flat-square" alt="Privacy" /></a>
   <a href="#-quick-start--installation"><img src="https://img.shields.io/badge/Python-3.11%2B-blue.svg?style=flat-square&logo=python&logoColor=white" alt="Python Version" /></a>
   <a href="#-license--capstone-metadata"><img src="https://img.shields.io/badge/Certification-Hero%20Vired%20Agentic%20AI-orange.svg?style=flat-square" alt="Hero Vired Capstone" /></a>
@@ -29,7 +29,7 @@ Traditional defense tools fail because:
 - **Deterministic Pre-Screen & Rules Engine**: Checks official TRAI service codes (1600/1601), authenticated banking domains (`.bank.in`, `.gov.in`), and known malicious URLs before LLMs are invoked.
 - **Privacy-by-Design Masking**: Replaces phone numbers, bank accounts, UPI IDs, emails, and contextual OTPs with local tokens before prompts leave the machine.
 - **Stateful Multi-Agent Reasoning (LangGraph)**: Employs 9 specialized agents to extract psychological urgency signals, classify against 15 curated cyber fraud typologies (SC-01 through SC-15), score risk (0–100) within bounded delta limits, and cite deterministic evidence IDs (`S#`, `I#`, `K#`, `C#`).
-- **Human-in-the-Loop (HITL) Clarification**: Triggers targeted multi-question follow-ups on ambiguous reports rather than hallucinating answers.
+- **Human-in-the-Loop (HITL) Clarification & Actor Scoping**: Distinguishes first-person compromise from third-party actions or hearsay; tracks structured exposure facts (`confirmed`, `denied`, `unknown`) and triggers targeted single-fact clarifying follow-ups on ambiguous reports rather than hallucinating answers.
 - **Official Citizen Recovery Guidance**: Directly routes victims to the **DoT Chakshu Facility**, the **National Cyber Crime Reporting Portal**, and the **1930 Financial Fraud Helpline** for golden-hour loss mitigation.
 
 ---
@@ -53,8 +53,8 @@ The ScamSaathi architecture strictly separates access, application execution, ex
    - **Feature Extractor**: Identifies urgent financial coercion, authority impersonation, and structural suspicious patterns.
    - **Deterministic Prescreen**: Applies fast-path rules and calculates deterministic baseline scores.
    - **Classifier Agent**: Maps threats to 15 curated typologies (SC-01 to SC-15) and enforces bounded delta constraints ($\pm 15$ max variance from baseline).
-   - **Question Planner & HITL Node**: Pauses graph execution with LangGraph `interrupt()` when ambiguous reports require user clarification.
-   - **Deterministic Scorer**: Calculates calibrated 0–100 risk score and enforces mandatory safety floors (`apk_attachment`, `urgent_recovery`, `child_safety`).
+   - **Question Planner & HITL Node**: Pauses graph execution with LangGraph `interrupt()` when ambiguous reports require user clarification; resolves situational exposure facts (distinguishing personal OTP entry from caller demonstrations, or user sideloading from technician testing) without adding inferred claims.
+   - **Deterministic Scorer**: Calculates calibrated 0–100 risk score and enforces mandatory safety floors (`apk_attachment`, `urgent_recovery`, `child_safety`). Note: score reflects detected warning signs and compromise floors, not a mathematical probability of scam.
    - **Explainer & Advice Agents**: Synthesizes evidence-grounded explanations citing runtime IDs (`S#`, `I#`, `K#`, `C#`) and verified emergency contacts.
    - **A9 Guardrail Sanitizer**: Post-graph security barrier enforcing zero Devanagari script leakage, contact allowlist validation, and raw vault clearing.
 
@@ -304,7 +304,7 @@ The project includes a comprehensive offline test suite covering all units, pipe
 pytest -v
 ```
 
-**Verification Results: 268 passed in 45.65s (100% Passing)**
+**Verification Results: 275 passed in 33.64s (100% Passing)**
 
 The test suite validates:
 - Deterministic signal extractors and threat intel database queries.
@@ -360,7 +360,7 @@ scamsaathi/
 │   ├── config.py           # Pydantic Settings & environment loader
 │   ├── logging_setup.py    # Structured logging configuration
 │   └── schemas.py          # Core Pydantic domain schemas
-├── tests/                  # 268 unit and integration tests
+├── tests/                  # 275 unit and integration tests
 ├── pyproject.toml          # Project metadata & configuration
 ├── requirements.txt        # Pinned direct dependencies
 ├── requirements-dev.txt    # Development and test dependencies

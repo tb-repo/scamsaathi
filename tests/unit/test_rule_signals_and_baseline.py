@@ -117,6 +117,17 @@ def test_situation_detection() -> None:
     )["money_sent"]
     assert not any(rule_signals.detect_situation("Got a message about my parcel").values())
 
+    # Explicit denial retention and structured exposure status
+    assert rule_signals.detect_situation("I have not shared my OTP")["credentials_exposure"]["status"] == "denied"
+    assert rule_signals.detect_situation("No, the code was not for my personal account and no one has access to my account")["credentials_exposure"]["status"] == "denied"
+    assert rule_signals.detect_situation("code is mine, but nobody used it")["credentials_exposure"]["status"] == "denied"
+    assert not rule_signals.detect_situation("code is mine, but nobody used it")["credentials_shared"]
+    assert rule_signals.detect_situation("app is on my phone, but I granted no remote access")["app_installation"]["status"] == "denied"
+    assert not rule_signals.detect_situation("app is on my phone, but I granted no remote access")["app_installed"]
+    assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_sent"]
+    assert rule_signals.detect_situation("yes, I noticed an unauthorized debit")["money_loss"]["status"] == "confirmed"
+    assert rule_signals.detect_situation("No money was lost and no unauthorized activity was noticed")["money_loss"]["status"] == "denied"
+
     # Third-party action negative guards (actions performed by caller, technician, or third party)
     assert not rule_signals.detect_situation(
         "The caller provided an OTP to me for a demonstration."
